@@ -5,6 +5,8 @@
 #include <map>
 #include <utility>
 #include <algorithm>
+#include <memory>
+#include <future>
 
 const std::size_t HASH_TABLE_SIZE= 100003;
 const std::size_t SUBSTRING_SIZE = 6;
@@ -74,17 +76,22 @@ void add_substring_to_hashtable(const std::size_t seq_index, const std::string& 
  * @param[out] ht       hash table
  * @param[in]  filename input filename
  *
+ * @return     a shared ptr to hash table
  */
-void create_hash_table(HashTable& ht, const char* filename)
+std::shared_ptr<HashTable> create_hash_table(const std::string& filename)
 {
+    std::shared_ptr<HashTable> ht(new HashTable(HASH_TABLE_SIZE));
+
     // read sequence list from file
     SeqList seq_list;
-    read_sequence_list(seq_list, filename);
+    read_sequence_list(seq_list, filename.c_str());
 
     // add substrings information to hashtable
     for(std::size_t seq_index=0; seq_index< seq_list.size(); ++seq_index){
-        add_substring_to_hashtable(seq_index, seq_list[seq_index], ht);
+        add_substring_to_hashtable(seq_index, seq_list[seq_index], *ht);
     }
+
+    return ht;
 }
 
 inline void output_to_file(std::ofstream& out_file,
@@ -108,6 +115,9 @@ int compare_hash_table(const std::string& out_fn, const HashTable& x, const Hash
     if(x.size() != y.size()){
         return -1;
     }
+#if defined(__DEBUG__)
+    std::cout << "start to compare hash table" << std::endl;
+#endif /* __DEBUG__ */
 
     std::ofstream out_file(out_fn, std::ofstream::out);
 
@@ -153,25 +163,13 @@ int main(int argc, char const* argv[])
     std::cout << input_fn_a << std::endl << input_fn_b << std::endl << output_fn << std::endl;
 #endif /* __DEBUG__ */
 
-    HashTable hta(HASH_TABLE_SIZE);
-    create_hash_table(hta, input_fn_a.c_str());
+    auto create_hta = std::async(create_hash_table, input_fn_a);
+    auto create_htb = std::async(create_hash_table, input_fn_b);
 
-#if defined(__DEBUG__)
-    std::cout << "create hash table a finish." << std::endl;
-#endif /* __DEBUG__ */
+    std::shared_ptr<HashTable> phta = create_hta.get();
+    std::shared_ptr<HashTable> phtb = create_htb.get();
 
-    HashTable htb(HASH_TABLE_SIZE);
-    create_hash_table(htb, input_fn_b.c_str());
-
-#if defined(__DEBUG__)
-    std::cout << "create hash table b finish." << std::endl;
-#endif /* __DEBUG__ */
-
-    compare_hash_table(output_fn, hta, htb);
-
-#if defined(__DEBUG__)
-    std::cout << "compare hash table a b finsish." << std::endl;
-#endif /* __DEBUG__ */
+    compare_hash_table(output_fn, *phta, *phtb);
 
     return 0;
 }
