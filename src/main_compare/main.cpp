@@ -11,13 +11,18 @@
 const std::size_t HASH_TABLE_SIZE= 100003;
 const std::size_t SUBSTRING_SIZE = 6;
 
-typedef std::vector<std::string> SeqList;
+typedef std::string Seq;
+typedef std::vector<Seq> SeqList;
+
+typedef std::size_t SeqIndex;
+typedef std::size_t SubstrIndex;
 
 /* 
  * key:    hash value
  * value:  <substring (6 chars), <sequence index, substring location index> >
  * */
-typedef std::vector<std::map<std::string, std::vector<std::pair<int,int> > > > HashTable;
+//typedef std::vector<std::map<std::string, std::vector<std::pair<int,int> > > > HashTable;
+typedef std::vector<std::map<Seq, std::vector<std::pair<SeqIndex, SubstrIndex> > > > HashTable;
 
 
 /**
@@ -25,6 +30,7 @@ typedef std::vector<std::map<std::string, std::vector<std::pair<int,int> > > > H
  *
  * @param[out] seq      sequence list
  * @param[in]  filename input filename
+ *
  */
 void read_sequence_list(SeqList& seq, const char* filename)
 {
@@ -96,8 +102,8 @@ std::shared_ptr<HashTable> create_hash_table(const std::string& filename)
 
 inline void output_to_file(std::ofstream& out_file,
                            const std::string& mcs,
-                           const std::vector<std::pair<int, int>>& lx, 
-                           const std::vector<std::pair<int, int>>& ly)
+                           const std::vector<std::pair<SeqIndex, SubstrIndex>>& lx, 
+                           const std::vector<std::pair<SeqIndex, SubstrIndex>>& ly)
 {
     for_each(lx.begin(), lx.end(),
         [&out_file, &mcs, &ly](const std::pair<int, int>& x){
@@ -115,6 +121,7 @@ int compare_hash_table(const std::string& out_fn, const HashTable& x, const Hash
     if(x.size() != y.size()){
         return -1;
     }
+
 #if defined(__DEBUG__)
     std::cout << "start to compare hash table" << std::endl;
 #endif /* __DEBUG__ */
