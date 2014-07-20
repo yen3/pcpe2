@@ -1,3 +1,27 @@
-CC=clang++
-all:
-	$(CC) -D__DEBUG__ -g -std=c++11 -Wall -o main.out main.cpp
+VPATH = src
+CC = clang++
+CFLAG = -std=c++11 -stdlib=libc++ -O3 -Wall
+DEBUG = -ggdb -D__DEBUG__
+LIB =
+INCLUDE = -I./inc
+
+OBJ_DIR=build
+OBJS=main.o hash_table.o
+
+BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
+OUTPUT=main.out
+	  
+all: $(OBJS)
+	$(CC) $(DEBUG) $(CFLAG) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE)
+			 
+$(OBJ_DIR):
+	@mkdir $(OBJ_DIR)
+
+$(OBJS): %.o: %.cpp | $(OBJ_DIR)
+	$(CC) -c $(DEBUG) $(CFLAG) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
+
+					  
+clean:
+	-rm -f $(BUILD_OBJS)
+	-rm -f $(OBJ_DIR)/$(OUTPUT)
+	-rm -rf $(OBJ_DIR)
