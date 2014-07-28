@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include "hash_table.h"
+#include "esort.h"
+#include "max_comsubseq.h"
 
 int main(int argc, char const* argv[])
 {
@@ -24,6 +26,13 @@ int main(int argc, char const* argv[])
     }
 
     auto commom_subseq_fn_list = pcpe::common_subseq(input_fn_a, input_fn_b);
+
+    pcpe::Filename esort_result;
+    pcpe::esort(commom_subseq_fn_list, esort_result);
+
+#if 0
+    pcpe::Filename common_subseq_result = pcpe::maximum_common_subseq(esort_result);
+#endif
 
 
     return 0;

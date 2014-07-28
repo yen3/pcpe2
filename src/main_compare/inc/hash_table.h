@@ -1,9 +1,11 @@
+#ifndef __HASH_TABLE_H__
+#define __HASH_TABLE_H__
+
 #include <vector>
 #include <string>
+#include "pcpe_util.h"
 
 namespace pcpe{
-
-typedef std::string Filename;
 
 /**
   *  List all common subsequences whose length are 6.
@@ -22,3 +24,4 @@ std::shared_ptr<std::vector<Filename> > common_subseq(Filename fn_seq_a,
 
 }
 
+#endif

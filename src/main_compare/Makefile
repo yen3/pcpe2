@@ -6,7 +6,7 @@ LIB =
 INCLUDE = -I./inc
 
 OBJ_DIR=build
-OBJS=main.o hash_table.o
+OBJS=main.o hash_table.o esort.o max_comsubseq.o
 
 BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 OUTPUT=main.out

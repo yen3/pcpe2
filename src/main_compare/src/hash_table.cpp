@@ -14,10 +14,18 @@
 
 namespace pcpe{
 
+/*****************************************************************************/
+// Global Variables
+/*****************************************************************************/
 const std::size_t TASK_SIZE = 100;
 const std::size_t HASH_TABLE_SIZE= 100003;
 const std::size_t SUBSTRING_SIZE = 6;
 
+std::atomic_uint cstl_index(0);
+
+/*****************************************************************************/
+// Typedef  
+/*****************************************************************************/
 typedef std::string Seq;
 typedef std::vector<Seq> SeqList;
 
@@ -30,6 +38,10 @@ typedef std::size_t SubstrIndex;
  * */
 typedef std::vector<std::map<Seq, std::vector<std::pair<SeqIndex, SubstrIndex> > > > HashTable;
 
+
+/*****************************************************************************/
+// Functions 
+/*****************************************************************************/
 
 /**
  * @brief read sequence list from formated fasta file 
@@ -174,7 +186,6 @@ create_compare_hashtable_task_list(std::vector<Filename>& out_fn_list,
     }
 }
 
-std::atomic_uint cstl_index(0);
 
 void compare_hashtable_part(const CommonSubseqTaskList& cstl, const HashTable& x, const HashTable& y, int thread_num)
 {
