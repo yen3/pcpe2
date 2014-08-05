@@ -66,6 +66,7 @@ bool LocationInfoFile::empty()
 LocationInfoPtr LocationInfoFile::getEntry()
 {
     if(empty()){
+        std::cerr << "Error in query the min element" << std::endl;
         return nullptr;
     }
 

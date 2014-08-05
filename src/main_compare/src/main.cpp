@@ -30,10 +30,8 @@ int main(int argc, char const* argv[])
     pcpe::Filename esort_result;
     pcpe::esort(commom_subseq_fn_list, esort_result);
 
-#if 0
-    pcpe::Filename common_subseq_result = pcpe::maximum_common_subseq(esort_result);
-#endif
-
+    pcpe::Filename common_subseq_result;
+    pcpe::maximum_common_subseq(esort_result, common_subseq_result);
 
     return 0;
 }

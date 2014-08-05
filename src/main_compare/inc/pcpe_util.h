@@ -65,7 +65,7 @@ public:
     bool operator<=(const LocationInfo& rhs) const { return !(*this >= rhs); }
     bool operator!=(const LocationInfo& rhs) const { return !(*this == rhs); }
 
-private:
+protected:
     int x_;
     int y_;
     int x_loc_;

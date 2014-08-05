@@ -1,10 +1,11 @@
 #ifndef __MAX_COMSUBSEQ_H__
 #define __MAX_COMSUBSEQ_H__
 
-#include "hash_table.h"
+#include "pcpe_util.h"
 
 namespace pcpe {
-    Filename maximum_common_subseq(const Filename& esort_result);
+    void maximum_common_subseq(const Filename& esort_result,
+                               const Filename& reduce_result);
 } // namespace pcpe
 
 
