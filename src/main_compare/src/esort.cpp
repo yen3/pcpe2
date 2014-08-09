@@ -162,6 +162,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
         }
         else{
             std::cerr << "Error in find the min element" << std::endl;
+            std::exit(0);
         }
         
         // if the min element entry is empty, remove the LocationInfoFile element 
@@ -181,7 +182,6 @@ void esort_merge_sort_files(const FilenameList& fn_list,
             }
             li_list.clear();
         }
-
     }
 
     // if the LocationInfoFile list is not empty, write the remaining element
@@ -209,3 +209,5 @@ void esort(std::shared_ptr<FilenameList> fn_list,
 
 }
 
+#if defined(__GTEST_PCPE__)
+#endif  /* __GTEST_PCPE__  */

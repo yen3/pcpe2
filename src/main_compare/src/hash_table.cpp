@@ -10,6 +10,11 @@
 #include <future>
 #include <atomic>
 
+#if defined(__GTEST_PCPE__)
+#include <map>
+#include <gtest/gtest.h>
+#endif
+
 #include "hash_table.h"
 
 namespace pcpe{
@@ -70,6 +75,7 @@ inline std::size_t hash_value(const char* s)
 {
     return (s[0]-'A')*11881376 + (s[1]-'A')*456976 + (s[2]-'A')*17576 + (s[3]-'A')*676 + (s[4]-'A')*26 + (s[5]-'A')*1;
 }
+
 
 void add_substring_to_hashtable(const std::size_t seq_index, const std::string& s, HashTable& ht)
 {
@@ -282,5 +288,43 @@ common_subseq(Filename fn_seq_a,
 #endif
     return out_fn_list;
 }
+
+
+/*****************************************************************************/
+// Test Case 
+/*****************************************************************************/
+#if defined(__GTEST_PCPE__)
+
+TEST(hash_table, hash_value){
+    EXPECT_EQ(0, hash_value("AAAAAA"));
+    EXPECT_EQ(1, hash_value("AAAAAB"));
+    EXPECT_EQ(27, hash_value("AAAABB"));
+    EXPECT_EQ(703, hash_value("AAABBB"));
+}
+
+
+TEST(hash_table, add_substring_to_hashtable){
+    std::string s("ABCDABCDABCD");
+    HashTable ht(HASH_TABLE_SIZE);
+
+    std::map<std::string, int> sub_count;
+    for(std::size_t i=0; i<s.size()-SUBSTRING_SIZE; i++){
+        sub_count[s.substr(i, SUBSTRING_SIZE)] ++;
+    }
+
+    add_substring_to_hashtable(1, s, ht);
+
+    EXPECT_EQ(HASH_TABLE_SIZE, ht.size());
+    for(auto iter=sub_count.begin(); iter != sub_count.end(); ++iter){
+        const std::string& substring = iter->first;
+        const int substring_count = iter->second;
+        const std::size_t hash_index = hash_value(substring.c_str()) % ht.size();
+
+        EXPECT_EQ(substring_count, ht[hash_index][substring].size());
+    }
+
+}
+
+#endif
 
 }
