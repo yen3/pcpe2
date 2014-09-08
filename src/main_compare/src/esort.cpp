@@ -22,7 +22,7 @@ std::atomic_uint esfl_index(0);
 //  Classes
 /*****************************************************************************/
 class LocationInfoFile{
-    static const std::size_t READ_MAX_SIZE = 10000;
+    static const std::size_t READ_MAX_SIZE = 100000;
 
 public:
     LocationInfoFile(const Filename& fn);
@@ -135,7 +135,8 @@ void esort_sort_file(const FilenameList& fn_list) {
 
 void esort_merge_sort_files(const FilenameList& fn_list,
                             const Filename& esort_fn) {
-    const std::size_t WRITE_MAX_SIZE = 1000;
+    const std::size_t WRITE_MAX_SIZE = 100000;
+    std::size_t write_count = 0;
 
     // create LocationInfoFile list
     std::vector<LocationInfoFile> lif_list;
@@ -178,7 +179,9 @@ void esort_merge_sort_files(const FilenameList& fn_list,
         // (Optional) print sepearate operator, if the x and y value of two
         // continued element is not the same.
         if(li_list.size() >= WRITE_MAX_SIZE){
-            std::cout << "Write " << li_list.size() << std::endl;
+            write_count += li_list.size();
+            std::cout << "Write " << write_count << std::endl;
+
             for(auto& li: li_list){
                 esort_out << *li << "\n";
             }
