@@ -7,6 +7,7 @@
 
 namespace pcpe {
 
+#if 0
 class LocationInfoLength;
 
 std::istream& operator>>(std::istream& in, LocationInfoLength& li);
@@ -49,54 +50,55 @@ std::ostream& operator<<(std::ostream& out, const LocationInfoLength& li)
     out << " " << li.x_ << " " << li.y_ << " " << li.x_loc_ << " " << li.y_loc_ << li.length_;
     return out;
 }
-
+#endif
 
 void maximum_common_subseq(const Filename& esort_result,
                            const Filename& reduce_result)
 {
     const std::size_t kReadMaxSize = 1000000;
 
-    // open the read file 
-    std::ifstream esort_in(esort_result, std::ifstream::in);
-    
-    // open the reduce output file 
-    std::ofstream reduce_out(reduce_result, std::ofstream::out);
+    // open the read file
+    std::ifstream infile(esort_result, std::ifstream::in | std::ifstream::binary);
+
+    // open the reduce output file
+    ComSubseqFileWriter outfile(reduce_result);
 
     std::size_t remaining_size = 0;
-    std::array<LocationInfoLength, kReadMaxSize> li_list;
-    std::size_t li_list_size= 0;
+    std::array<ComSubseq, kReadMaxSize> com_list;
+    std::array<bool, kReadMaxSize> reduced_list;
+    std::size_t com_list_size = 0;
+    while(!infile.eof()){
+        reduced_list.fill(false);
 
-    while(1){
         // read the file with READ_MAX_SIZE - remaining size 
-        for(li_list_size = remaining_size;
-            li_list_size < kReadMaxSize && !esort_in.eof();
-            ++li_list_size){
-            esort_in >> li_list[li_list_size];
-        }
+        std::size_t read_size =
+            infile.readsome(static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
+                            sizeof(ComSubseq) * (kReadMaxSize - remaining_size)) / sizeof(ComSubseq);
+        com_list_size = remaining_size + read_size;
 
         // find the lastest index of the part (from READ_MAX_SIZE to 0)
         // if x1 != x2 and y1 != y2
-        std::size_t handle_size = li_list_size;
-        for(; li_list[handle_size-1].is_continue(li_list[handle_size-2]); --handle_size) ;
-        remaining_size = li_list_size - handle_size;
+        std::size_t handle_size = com_list_size;
+        for(; com_list[handle_size-1].isContinued(com_list[handle_size-2]); --handle_size) ;
+        remaining_size = com_list_size - handle_size;
 
         // start to reduce
         for(std::size_t i=0; i<handle_size; ++i){
-            if(!li_list[i].is_reduced()){
-                std::size_t l = li_list[i].get_length();
-                for(std::size_t j=i; j+1 < handle_size && li_list[j].is_continue(li_list[j+1]); j++){
-                    li_list[j+1].set_reduce();
+            if(!reduced_list[i]){
+                std::size_t l = com_list[i].getLength();
+                for(std::size_t j=i; j+1 < handle_size && com_list[j].isContinued(com_list[j+1]); j++){
+                    reduced_list[j+1] = true;
                     l++; 
                 }
 
-                li_list[i].set_length(l);
+                com_list[i].setLength(l);
             }
         }
 
         // write the reduce part to file
         for(std::size_t i=0; i<handle_size; ++i){
-            if(!li_list[i].is_reduced()){
-                reduce_out << li_list[i] << std::endl;
+            if(!reduced_list[i]){
+                outfile.writeSeq(com_list[i]);
             }
         }
 
@@ -104,9 +106,11 @@ void maximum_common_subseq(const Filename& esort_result,
         for(std::size_t i=0, r=handle_size;
             r< handle_size+remaining_size;
             ++i, ++r){
-            li_list[i] = li_list[r];
+            com_list[i] = com_list[r];
         }
     }
+    infile.close();
+    outfile.close();
 }
 
 } // namespace pcpe

@@ -18,6 +18,7 @@ namespace pcpe{
 /*****************************************************************************/
 std::atomic_uint esfl_index(0);
 
+#if 0
 /*****************************************************************************/
 //  Classes
 /*****************************************************************************/
@@ -42,10 +43,12 @@ private:
     std::size_t li_size_;
     std::ifstream infile_;
 };
+#endif
 
 /*****************************************************************************/
 //  Functions 
 /*****************************************************************************/
+#if 0
 LocationInfoFile::LocationInfoFile(const Filename& fn):
     li_size_(0),
     infile_(fn, std::ifstream::in) {
@@ -91,35 +94,27 @@ LocationInfoPtr LocationInfoFile::getEntry() {
 
     return min_loc;
 }
+#endif
 
 
 void esort_sort_file_task(const FilenameList& esfl) {
     std::size_t local_esfl_index;
     while(1){
         local_esfl_index = esfl_index.fetch_add(1);
-        if(local_esfl_index > esfl.size()){
+        if(local_esfl_index >= esfl.size()){
             break;
         }
 
         // read file to li_list
-        std::vector<LocationInfo> li_list;
+        std::vector<ComSubseq> li_list;
         const Filename& fn = esfl[local_esfl_index];
-        std::ifstream infile(fn, std::ifstream::in);
-        std::copy(std::istream_iterator<LocationInfo>(infile),
-                  std::istream_iterator<LocationInfo>(),
-                  std::back_inserter(li_list));
+        ComSubseqFile::readFile(fn, li_list);
 
-        infile.close();
-    
         // quick sort for li_list
         std::sort(li_list.begin(), li_list.end());
 
-        // wirte li_list to file and close
-        std::ofstream out_file(fn, std::ofstream::out);
-        std::copy(li_list.begin(),
-                  li_list.end(),
-                  std::ostream_iterator<LocationInfo>(out_file, "\n"));
-        out_file.close();
+        // write file to li_list
+        ComSubseqFile::writeFile(fn, li_list);
     }
 }
 
@@ -135,70 +130,42 @@ void esort_sort_file(const FilenameList& fn_list) {
 
 void esort_merge_sort_files(const FilenameList& fn_list,
                             const Filename& esort_fn) {
-    const std::size_t WRITE_MAX_SIZE = 100000;
     std::size_t write_count = 0;
 
-    // create LocationInfoFile list
-    std::vector<LocationInfoFile> lif_list;
+    // create read_file list
+    std::vector<ComSubseqFileReader> csfr_list;
     for(auto fn: fn_list){
-        lif_list.push_back(std::move(LocationInfoFile(fn)));
-    } 
+        csfr_list.push_back(std::move(ComSubseqFileReader(fn)));
+    }
+    
+    // heapify the read_file list first
+    std::make_heap(csfr_list.begin(), csfr_list.end());
 
-    // heapify the LocationInfoFile list  first
-    std::make_heap(lif_list.begin(), lif_list.end());
+    // open the merge output file and create empty location infor list
+    ComSubseqFileWriter esort_out(esort_fn);
+    while(!csfr_list.empty()){
+        // get the min element from these files
+        ComSubseq seq;
+        std::pop_heap(csfr_list.begin(), csfr_list.end());
+        csfr_list[csfr_list.size()-1].readSeq(seq);
 
-    // open the merge file and create empty location infor list
-    std::ofstream esort_out(esort_fn, std::ofstream::out);
-    std::vector<LocationInfoPtr> li_list;
-
-    while(!lif_list.empty()){
-        // pop out the min element from the LocationInfoFile list
-        std::pop_heap(lif_list.begin(), lif_list.end());
-
-        LocationInfoFile& lif = lif_list[lif_list.size()-1];
-        if(lif.size()){
-            LocationInfoPtr min_li= lif.getEntry();
-            if(min_li != nullptr){
-                li_list.push_back(min_li);
-            }
-            else{
-                std::cerr << "Error in find the min element" << std::endl;
-                std::exit(0);
-            }
+        // if the reading state of the file is eof, the list would remove the
+        // file. Otherwise it push heap the file 
+        if(csfr_list[csfr_list.size()-1].eof()){
+            csfr_list.pop_back();
         }
-        
-        // if the min element entry is empty, remove the LocationInfoFile element 
-        if(lif.empty()){
-            lif_list.pop_back();
+        lse{
+            std::push_heap(csfr_list.begin(), csfr_list.end());
         }
 
-        // pop in the LocationInfoFile entry into the list
-        std::push_heap(lif_list.begin(), lif_list.end());
-
-        // the merge array size is WRITE_MAX_SIZE, write to the merge file
-        // (Optional) print sepearate operator, if the x and y value of two
-        // continued element is not the same.
-        if(li_list.size() >= WRITE_MAX_SIZE){
-            write_count += li_list.size();
-            std::cout << "Write " << write_count << std::endl;
-
-            for(auto& li: li_list){
-                esort_out << *li << "\n";
-            }
-            li_list.clear();
+        // write the min element to the merge output file
+        esort_out.writeSeq(seq);
+        if(write_count++ % 10000 == 0){
+            std::cout << "write " << write_count << std::endl;
         }
     }
 
-    // if the LocationInfoFile list is not empty, write the remaining element
-    // to the merge file
-    if(li_list.size() > 0){
-        for(auto& li: li_list){
-            esort_out << *li << "\n";
-        }
-        li_list.clear();
-    }
-
-    // and close the merge file
+    // clean the write buffer and close the file
     esort_out.close();
 }
 
@@ -207,7 +174,7 @@ void esort(std::shared_ptr<FilenameList> fn_list,
 {
     // sort each file which contain partail subcommon subseqencs parallely.
     std::cout << "esrot parallel - start" << std::endl;
-    //esort_sort_file(*fn_list);
+    esort_sort_file(*fn_list);
     std::cout << "esrot parallel - end" << std::endl;
 
     // merge these sorted file into a file.
@@ -220,3 +187,4 @@ void esort(std::shared_ptr<FilenameList> fn_list,
 
 #if defined(__GTEST_PCPE__)
 #endif  /* __GTEST_PCPE__  */
+

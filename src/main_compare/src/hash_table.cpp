@@ -124,17 +124,14 @@ std::shared_ptr<HashTable> create_hash_table(const std::string& filename)
     return ht;
 }
 
-inline void output_to_file(std::ofstream& out_file,
+inline void output_to_file(ComSubseqFileWriter& out_file,
                            const std::string& mcs,
                            const std::vector<std::pair<SeqIndex, SubstrIndex>>& lx, 
                            const std::vector<std::pair<SeqIndex, SubstrIndex>>& ly)
 {
     for(const auto& x : lx){
         for(const auto& y: ly){
-            out_file << x.first << " " << y.first << " "
-                     << x.second << " " << y.second << " " 
-                     //<< mcs
-                     << std::endl;
+            out_file.writeSeq(ComSubseq(x.first, y.first, x.second, y.second, 6));
         }
     }
 }
@@ -198,11 +195,37 @@ void compare_hashtable_part(const CommonSubseqTaskList& cstl, const HashTable& x
     std::size_t local_cstl_index;
     while(1){
         local_cstl_index = cstl_index.fetch_add(1);
+        if(local_cstl_index >= cstl.size()){
+            break;
+        }
+
+        ComSubseqFileWriter outfile(cstl[local_cstl_index].fn);
+        for(std::size_t midx = cstl[local_cstl_index].begin;
+            midx < cstl[local_cstl_index].end;
+            ++midx){
+            for(auto hx = x[midx].begin(), hy = y[midx].begin();
+                hx != x[midx].end() && hy != y[midx].end();)
+            {
+                if(hx->first == hy->first){
+                    output_to_file(outfile, hx->first, hx->second, hy->second);
+                    ++hx;
+                    ++hy;
+                }
+                else if(hx->first > hy->first)  ++hy;
+                else   ++hx;
+            }
+        }
+        outfile.close();
+    }
+#if 0
+    std::size_t local_cstl_index;
+    while(1){
+        local_cstl_index = cstl_index.fetch_add(1);
         if(local_cstl_index > cstl.size()){
             break;
         }
 
-        std::ofstream out_file(cstl[local_cstl_index].fn.c_str(), std::ofstream::out);
+        ComSubseqFileWriter out_file(cstl[local_cstl_index].fn);
         for(std::size_t midx = cstl[local_cstl_index].begin;
             midx < cstl[local_cstl_index].end;
             ++midx){
@@ -220,6 +243,7 @@ void compare_hashtable_part(const CommonSubseqTaskList& cstl, const HashTable& x
         }
         out_file.close();
     }
+#endif
 }
 
 
