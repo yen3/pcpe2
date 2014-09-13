@@ -154,7 +154,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
         if(csfr_list[csfr_list.size()-1].eof()){
             csfr_list.pop_back();
         }
-        lse{
+        else{
             std::push_heap(csfr_list.begin(), csfr_list.end());
         }
 
