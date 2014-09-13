@@ -6,7 +6,6 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <array>
 
 namespace pcpe{
 
@@ -85,10 +84,10 @@ protected:
 
 class ComSubseqFile{
 public:
-    static void readFile(const Filename& fn, std::vector<ComSubseq>& com_list);
-    static void writeFile(const Filename& fn, std::vector<ComSubseq>& com_list);
+    static void readFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size=10000);
+    static void writeFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size=10000);
 
-    ComSubseqFile(Filename fn):com_list_(),com_list_size_(0), fn_(fn){
+    ComSubseqFile(Filename fn, std::size_t buffer_size=10000):com_list_(buffer_size),com_list_size_(0), fn_(fn){
     };
 
     virtual void readSeq(ComSubseq& seq) = 0; 
@@ -97,17 +96,15 @@ public:
     virtual bool is_open() = 0;
     virtual bool eof() = 0;
 protected:
-    const static std::size_t BUFFER_SIZE = 10000;
-
-    std::array<ComSubseq, BUFFER_SIZE> com_list_;
+    std::vector<ComSubseq> com_list_;
     std::size_t com_list_size_;
     Filename fn_;
 };
 
 class ComSubseqFileReader : public ComSubseqFile{
 public:
-    ComSubseqFileReader(Filename fn):
-        ComSubseqFile(fn),
+    ComSubseqFileReader(Filename fn, std::size_t buffer_size=10000):
+        ComSubseqFile(fn, buffer_size),
         infile_(fn_.c_str(), std::ifstream::in | std::ifstream::binary),
         read_buffer_idx_(0){
 
@@ -147,8 +144,8 @@ protected:
 
 class ComSubseqFileWriter : public ComSubseqFile{
 public:
-    ComSubseqFileWriter(Filename fn):
-        ComSubseqFile(fn),
+    ComSubseqFileWriter(Filename fn, std::size_t buffer_size=10000):
+        ComSubseqFile(fn, buffer_size),
         outfile_(fn_.c_str(), std::ofstream::out | std::ofstream::binary){
     };
 

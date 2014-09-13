@@ -56,12 +56,13 @@ void maximum_common_subseq(const Filename& esort_result,
                            const Filename& reduce_result)
 {
     const std::size_t kReadMaxSize = 1000000;
+    const std::size_t kWriteBufferSize = 1000000;
 
     // open the read file
     std::ifstream infile(esort_result, std::ifstream::in | std::ifstream::binary);
 
     // open the reduce output file
-    ComSubseqFileWriter outfile(reduce_result);
+    ComSubseqFileWriter outfile(reduce_result, kWriteBufferSize);
 
     std::size_t remaining_size = 0;
     std::array<ComSubseq, kReadMaxSize> com_list;
@@ -71,9 +72,9 @@ void maximum_common_subseq(const Filename& esort_result,
         reduced_list.fill(false);
 
         // read the file with READ_MAX_SIZE - remaining size 
-        std::size_t read_size =
-            infile.readsome(static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
-                            sizeof(ComSubseq) * (kReadMaxSize - remaining_size)) / sizeof(ComSubseq);
+        infile.read(static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
+                    sizeof(ComSubseq) * (kReadMaxSize - remaining_size));
+        std::size_t read_size = infile.gcount() / sizeof(ComSubseq);
         com_list_size = remaining_size + read_size;
 
         // find the lastest index of the part (from READ_MAX_SIZE to 0)

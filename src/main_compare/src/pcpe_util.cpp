@@ -8,12 +8,12 @@
 
 namespace pcpe{
 
-void ComSubseqFile::readFile(const Filename& fn, std::vector<ComSubseq>& com_list){
+void ComSubseqFile::readFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size){
     std::ifstream infile(fn, std::ifstream::in | std::ifstream::binary);
 
-    std::array<ComSubseq, BUFFER_SIZE> buffer;
+    std::vector<ComSubseq> buffer(buffer_size);
     while(1){
-        infile.read(static_cast<char*>(static_cast<void*>(&buffer[0])), sizeof(ComSubseq)*BUFFER_SIZE);
+        infile.read(static_cast<char*>(static_cast<void*>(&buffer[0])), sizeof(ComSubseq)*buffer.size());
         std::size_t read_size = infile.gcount();
 
         if(infile.eof() && read_size == 0){
@@ -29,13 +29,15 @@ void ComSubseqFile::readFile(const Filename& fn, std::vector<ComSubseq>& com_lis
 }
 
 
-void ComSubseqFile::writeFile(const Filename& fn, std::vector<ComSubseq>& com_list){
+void ComSubseqFile::writeFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size){
     std::ofstream outfile(fn, std::ofstream::out | std::ofstream::binary);
 
-    std::array<ComSubseq, BUFFER_SIZE> buffer;
+    std::vector<ComSubseq> buffer(buffer_size);
     for(std::size_t write_size= 0; write_size < com_list.size();){
         auto write_begin = com_list.begin() + write_size;
-        auto write_end = (write_size + BUFFER_SIZE > com_list.size())? com_list.end(): com_list.begin() + write_size + BUFFER_SIZE;
+        auto write_end = (write_size + buffer.size() > com_list.size())?
+                              com_list.end():
+                              com_list.begin() + write_size + buffer.size();
         auto current_write_size = write_end - write_begin;
         write_size += current_write_size;
 
@@ -71,11 +73,11 @@ void ComSubseqFileWriter::readSeq(ComSubseq& seq){
 }
 
 void ComSubseqFileWriter::writeSeq(const ComSubseq& seq){
-    if(com_list_size_ == BUFFER_SIZE){
+    if(com_list_size_ == com_list_.size()){
         write_buffer();
     }
 
-    if(com_list_size_ == BUFFER_SIZE){
+    if(com_list_size_ == com_list_.size()){
         std::cout << "write sequence error!" << std::endl;
         return;
     }
@@ -85,7 +87,7 @@ void ComSubseqFileWriter::writeSeq(const ComSubseq& seq){
 }
 
 void ComSubseqFileReader::read_buffer(){
-    if(!infile_.is_open() && com_list_size_ == BUFFER_SIZE){
+    if(!infile_.is_open() && com_list_size_ == com_list_.size()){
         return;
     }
 
@@ -99,7 +101,7 @@ void ComSubseqFileReader::read_buffer(){
     }
 
     infile_.read(static_cast<char*>(static_cast<void*>(&com_list_[com_list_size_])),
-                     sizeof(ComSubseq) * (BUFFER_SIZE - com_list_size_));
+                     sizeof(ComSubseq) * (com_list_.size() - com_list_size_));
     std::size_t read_size = infile_.gcount();
     com_list_size_ += read_size / sizeof(ComSubseq);
     read_buffer_idx_ = 0;

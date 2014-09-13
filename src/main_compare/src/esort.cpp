@@ -98,6 +98,8 @@ LocationInfoPtr LocationInfoFile::getEntry() {
 
 
 void esort_sort_file_task(const FilenameList& esfl) {
+    static const std::size_t kBufferSize = 100000;
+
     std::size_t local_esfl_index;
     while(1){
         local_esfl_index = esfl_index.fetch_add(1);
@@ -108,13 +110,13 @@ void esort_sort_file_task(const FilenameList& esfl) {
         // read file to li_list
         std::vector<ComSubseq> li_list;
         const Filename& fn = esfl[local_esfl_index];
-        ComSubseqFile::readFile(fn, li_list);
+        ComSubseqFile::readFile(fn, li_list, kBufferSize);
 
         // quick sort for li_list
         std::sort(li_list.begin(), li_list.end());
 
         // write file to li_list
-        ComSubseqFile::writeFile(fn, li_list);
+        ComSubseqFile::writeFile(fn, li_list, kBufferSize);
     }
 }
 
@@ -130,19 +132,21 @@ void esort_sort_file(const FilenameList& fn_list) {
 
 void esort_merge_sort_files(const FilenameList& fn_list,
                             const Filename& esort_fn) {
+    static const std::size_t kBufferSize = 100000;
+
     std::size_t write_count = 0;
 
     // create read_file list
     std::vector<ComSubseqFileReader> csfr_list;
     for(auto fn: fn_list){
-        csfr_list.push_back(std::move(ComSubseqFileReader(fn)));
+        csfr_list.push_back(std::move(ComSubseqFileReader(fn, kBufferSize)));
     }
     
     // heapify the read_file list first
     std::make_heap(csfr_list.begin(), csfr_list.end());
 
     // open the merge output file and create empty location infor list
-    ComSubseqFileWriter esort_out(esort_fn);
+    ComSubseqFileWriter esort_out(esort_fn, kBufferSize);
     while(!csfr_list.empty()){
         // get the min element from these files
         ComSubseq seq;
@@ -160,7 +164,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
 
         // write the min element to the merge output file
         esort_out.writeSeq(seq);
-        if(write_count++ % 10000 == 0){
+        if(write_count++ % 100000 == 0){
             std::cout << "write " << write_count << std::endl;
         }
     }
