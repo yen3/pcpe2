@@ -34,13 +34,13 @@ void esort_sort_file_task(const FilenameList& esfl) {
         // read file to li_list
         std::vector<ComSubseq> li_list;
         const Filename& fn = esfl[local_esfl_index];
-        ComSubseqFile::readFile(fn, li_list, kBufferSize);
+        ComSubseqFileReader::readFile(fn, li_list, kBufferSize);
 
         // quick sort for li_list
         std::sort(li_list.begin(), li_list.end());
 
         // write file to li_list
-        ComSubseqFile::writeFile(fn, li_list, kBufferSize);
+        ComSubseqFileWriter::writeFile(fn, li_list, kBufferSize);
     }
 }
 
@@ -63,7 +63,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
     // create read_file list
     std::vector<ComSubseqFileReader> csfr_list;
     for(auto fn: fn_list){
-        csfr_list.push_back(std::move(ComSubseqFileReader(fn, kBufferSize)));
+        csfr_list.push_back(ComSubseqFileReader(fn, kBufferSize));
     }
     
     // heapify the read_file list first

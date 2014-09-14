@@ -82,30 +82,14 @@ protected:
     int len_; 
 };
 
-class ComSubseqFile{
+class ComSubseqFileReader{
 public:
     static void readFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size=10000);
-    static void writeFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size=10000);
 
-    ComSubseqFile(Filename fn, std::size_t buffer_size=10000):com_list_(buffer_size),com_list_size_(0), fn_(fn){
-    };
-
-    virtual void readSeq(ComSubseq& seq) = 0; 
-    virtual void writeSeq(const ComSubseq& seq) = 0; 
-    virtual void close() = 0;
-    virtual bool is_open() = 0;
-    virtual bool eof() = 0;
-protected:
-    std::vector<ComSubseq> com_list_;
-    std::size_t com_list_size_;
-    Filename fn_;
-};
-
-class ComSubseqFileReader : public ComSubseqFile{
-public:
     ComSubseqFileReader(Filename fn, std::size_t buffer_size=10000):
-        ComSubseqFile(fn, buffer_size),
-        infile_(fn_.c_str(), std::ifstream::in | std::ifstream::binary),
+        com_list_(buffer_size),
+        com_list_size_(0),
+        infile_(fn.c_str(), std::ifstream::in | std::ifstream::binary),
         read_buffer_idx_(0){
 
         read_buffer();
@@ -138,15 +122,22 @@ public:
 
 protected:
     void read_buffer(); 
+
+    std::vector<ComSubseq> com_list_;
+    std::size_t com_list_size_;
+
     std::ifstream infile_;
     std::size_t read_buffer_idx_;
 };
 
-class ComSubseqFileWriter : public ComSubseqFile{
+class ComSubseqFileWriter{
 public:
+    static void writeFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size=10000);
+
     ComSubseqFileWriter(Filename fn, std::size_t buffer_size=10000):
-        ComSubseqFile(fn, buffer_size),
-        outfile_(fn_.c_str(), std::ofstream::out | std::ofstream::binary){
+        com_list_(buffer_size),
+        com_list_size_(0),
+        outfile_(fn.c_str(), std::ofstream::out | std::ofstream::binary){
     };
 
     virtual void readSeq(ComSubseq& seq);
@@ -168,6 +159,10 @@ public:
     
 protected:
     void write_buffer(); 
+
+    std::vector<ComSubseq> com_list_;
+    std::size_t com_list_size_;
+
     std::ofstream outfile_;
 };
 

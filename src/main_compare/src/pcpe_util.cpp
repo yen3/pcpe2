@@ -8,7 +8,7 @@
 
 namespace pcpe{
 
-void ComSubseqFile::readFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size){
+void ComSubseqFileReader::readFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size){
     std::ifstream infile(fn, std::ifstream::in | std::ifstream::binary);
 
     std::vector<ComSubseq> buffer(buffer_size);
@@ -29,7 +29,7 @@ void ComSubseqFile::readFile(const Filename& fn, std::vector<ComSubseq>& com_lis
 }
 
 
-void ComSubseqFile::writeFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size){
+void ComSubseqFileWriter::writeFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size){
     std::ofstream outfile(fn, std::ofstream::out | std::ofstream::binary);
 
     std::vector<ComSubseq> buffer(buffer_size);
