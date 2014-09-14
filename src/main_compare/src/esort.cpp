@@ -18,85 +18,9 @@ namespace pcpe{
 /*****************************************************************************/
 std::atomic_uint esfl_index(0);
 
-#if 0
-/*****************************************************************************/
-//  Classes
-/*****************************************************************************/
-class LocationInfoFile{
-    static const std::size_t READ_MAX_SIZE = 100000;
-
-public:
-    LocationInfoFile(const Filename& fn);
-    LocationInfoPtr getEntry();
-    bool empty();
-    inline std::size_t size() const { return li_size_; };
-
-    bool operator<(const LocationInfoFile& rhs)  const { return *li_[0] < *rhs.li_[0];  }
-    bool operator>(const LocationInfoFile& rhs)  const { return *li_[0] > *rhs.li_[0];  }
-    bool operator==(const LocationInfoFile& rhs) const { return *li_[0] == *rhs.li_[0]; }
-    bool operator>=(const LocationInfoFile& rhs) const { return !(*this < rhs);         }
-    bool operator<=(const LocationInfoFile& rhs) const { return !(*this >= rhs);        }
-    bool operator!=(const LocationInfoFile& rhs) const { return !(*this == rhs);        }
-
-private:
-    std::array<LocationInfoPtr, READ_MAX_SIZE> li_;
-    std::size_t li_size_;
-    std::ifstream infile_;
-};
-#endif
-
 /*****************************************************************************/
 //  Functions 
 /*****************************************************************************/
-#if 0
-LocationInfoFile::LocationInfoFile(const Filename& fn):
-    li_size_(0),
-    infile_(fn, std::ifstream::in) {
-
-    // read the array with maximum size  
-    LocationInfoPtr lip;
-    for(li_size_ = 0; !infile_.eof() && li_size_ < READ_MAX_SIZE; ++li_size_){
-        li_[li_size_] = LocationInfoPtr(new LocationInfo());
-        infile_ >> *li_[li_size_];
-    }
-    std::reverse(li_.begin(), li_.begin()+li_size_);
-}
-
-
-bool LocationInfoFile::empty() {
-    return !infile_.is_open() && li_size_ == 0;
-}
-
-
-LocationInfoPtr LocationInfoFile::getEntry() {
-    if(empty()){
-        std::cerr << "Error in query the min element" << std::endl;
-        return nullptr;
-    }
-
-    // pop the min entry and size - 1
-    LocationInfoPtr min_loc = li_[li_size_-1];
-    li_[li_size_-1] = nullptr;
-    li_size_--;
-    
-    // if the array size is 0, read the file with max read size 
-    if(li_size_ == 0 && infile_.is_open()){
-        for(li_size_ = 0; !infile_.eof() && li_size_ < READ_MAX_SIZE; ++li_size_){
-            li_[li_size_] = LocationInfoPtr(new LocationInfo());
-            infile_ >> *li_[li_size_];
-        }
-        std::reverse(li_.begin(), li_.begin()+li_size_);
-        
-        if(infile_.eof()){
-            infile_.close();
-        }
-    }
-
-    return min_loc;
-}
-#endif
-
-
 void esort_sort_file_task(const FilenameList& esfl) {
     static const std::size_t kBufferSize = 100000;
 

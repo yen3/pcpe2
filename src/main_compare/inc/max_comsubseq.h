@@ -4,8 +4,8 @@
 #include "pcpe_util.h"
 
 namespace pcpe {
-    void maximum_common_subseq(const Filename& esort_result,
-                               const Filename& reduce_result);
+void maximum_common_subseq(const Filename& esort_result,
+                           const Filename& reduce_result);
 } // namespace pcpe
 
 
