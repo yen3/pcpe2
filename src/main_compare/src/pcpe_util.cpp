@@ -51,12 +51,14 @@ void ComSubseqFileWriter::writeFile(const Filename& fn, std::vector<ComSubseq>& 
 
 
 void ComSubseqFileReader::readSeq(ComSubseq& seq){
-    if(read_buffer_idx_ ==  com_list_size_){
+    if(read_buffer_idx_ >=  com_list_size_){
         read_buffer();
     }
 
-    if(read_buffer_idx_ == com_list_size_){
-        std::cout << "read sequence error!" << std::endl;
+    if(read_buffer_idx_ >= com_list_size_){
+        std::cout << "read sequence error! "
+                  << " ridx: " << read_buffer_idx_
+                  << ", buffer size: " << com_list_size_ << std::endl;
         return;
     }
     
@@ -87,11 +89,13 @@ void ComSubseqFileWriter::writeSeq(const ComSubseq& seq){
 }
 
 void ComSubseqFileReader::read_buffer(){
-    if(!infile_.is_open() && com_list_size_ == com_list_.size()){
+    if(!infile_.is_open() && read_buffer_idx_ >= com_list_.size()){
+        std::cerr << "Read file error." << std::endl;
         return;
     }
 
-    if(read_buffer_idx_ != com_list_size_){
+    // move the remaining part to the begining of the buffer
+    if(read_buffer_idx_ < com_list_size_){
         // fidx = from index, tidx = to index
         for(std::size_t fidx = read_buffer_idx_, tidx= 0;
             fidx < com_list_size_;
@@ -100,10 +104,13 @@ void ComSubseqFileReader::read_buffer(){
         }
     }
 
-    infile_.read(static_cast<char*>(static_cast<void*>(&com_list_[com_list_size_])),
-                     sizeof(ComSubseq) * (com_list_.size() - com_list_size_));
-    std::size_t read_size = infile_.gcount();
-    com_list_size_ += read_size / sizeof(ComSubseq);
+    // fill the buffer
+    std::size_t read_size =
+        infile_.readsome(static_cast<char*>(static_cast<void*>(&com_list_[read_buffer_idx_])),
+                         sizeof(ComSubseq) * (com_list_.size() - read_buffer_idx_));
+    //std::size_t read_size = infile_.gcount();
+    std::cout << "read size " << read_size << " " << infile_.good() << infile_.eof() << infile_.fail() << infile_.bad() << infile_.rdstate() << std::endl;
+    com_list_size_ = read_buffer_idx_ + read_size / sizeof(ComSubseq);
     read_buffer_idx_ = 0;
 
     if(infile_.eof()){

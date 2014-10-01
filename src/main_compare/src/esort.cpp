@@ -89,7 +89,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
         // write the min element to the merge output file
         esort_out.writeSeq(seq);
         if(write_count++ % 100000 == 0){
-            std::cout << "write " << write_count << std::endl;
+            std::cout << "write " << write_count << " " << csfr_list.size() << std::endl;
         }
     }
 

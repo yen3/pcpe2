@@ -96,29 +96,39 @@ public:
 
     };
 
-    virtual void readSeq(ComSubseq& seq);
-    virtual void writeSeq(const ComSubseq& seq);
+    void readSeq(ComSubseq& seq);
+    void writeSeq(const ComSubseq& seq);
     
-    virtual void close(){
+    inline void close(){
         infile_.close();
         read_buffer_idx_ = 0;
         com_list_size_ = 0;
     }
     
-    virtual bool is_open(){ 
+    inline bool is_open(){ 
         return infile_.is_open();
     }
 
-    virtual bool eof(){
-        return !(infile_.is_open() || read_buffer_idx_ != com_list_size_);
+    inline bool eof(){
+        if(is_open()) return false;
+        else return read_buffer_idx_ >= com_list_size_; 
     }
     
-    bool operator<(const ComSubseqFileReader& rhs)  const { return com_list_[read_buffer_idx_] < rhs.com_list_[read_buffer_idx_];  }
-    bool operator>(const ComSubseqFileReader& rhs)  const { return com_list_[read_buffer_idx_] > rhs.com_list_[read_buffer_idx_];  }
-    bool operator==(const ComSubseqFileReader& rhs) const { return com_list_[read_buffer_idx_] == rhs.com_list_[read_buffer_idx_]; }
-    bool operator>=(const ComSubseqFileReader& rhs) const { return !(*this < rhs);         }
-    bool operator<=(const ComSubseqFileReader& rhs) const { return !(*this >= rhs);        }
-    bool operator!=(const ComSubseqFileReader& rhs) const { return !(*this == rhs);        }
+    inline bool operator<(const ComSubseqFileReader& rhs)  const {
+        return com_list_[read_buffer_idx_] < rhs.com_list_[read_buffer_idx_];
+    }
+
+    inline bool operator>(const ComSubseqFileReader& rhs)  const {
+        return com_list_[read_buffer_idx_] > rhs.com_list_[read_buffer_idx_];
+    }
+
+    inline bool operator==(const ComSubseqFileReader& rhs) const {
+        return com_list_[read_buffer_idx_] == rhs.com_list_[read_buffer_idx_];
+    }
+
+    inline bool operator>=(const ComSubseqFileReader& rhs) const { return !(*this < rhs);         }
+    inline bool operator<=(const ComSubseqFileReader& rhs) const { return !(*this >= rhs);        }
+    inline bool operator!=(const ComSubseqFileReader& rhs) const { return !(*this == rhs);        }
 
 protected:
     void read_buffer(); 
@@ -138,24 +148,18 @@ public:
         com_list_(buffer_size),
         com_list_size_(0),
         outfile_(fn.c_str(), std::ofstream::out | std::ofstream::binary){
-    };
+    }
 
-    virtual void readSeq(ComSubseq& seq);
-    virtual void writeSeq(const ComSubseq& seq);
+    void readSeq(ComSubseq& seq);
+    void writeSeq(const ComSubseq& seq);
 
-    virtual void close(){
+    inline void close(){
         write_buffer();
         outfile_.flush();
         outfile_.close();
     }
 
-    virtual bool is_open(){
-        return outfile_.is_open();
-    }
-
-    virtual bool eof(){
-        return false;
-    }
+    inline bool is_open(){ return outfile_.is_open(); }
     
 protected:
     void write_buffer(); 
