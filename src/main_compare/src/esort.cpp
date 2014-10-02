@@ -58,7 +58,9 @@ void esort_merge_sort_files(const FilenameList& fn_list,
                             const Filename& esort_fn) {
     static const std::size_t kBufferSize = 100000;
 
+#if defined(__DEBUG__)
     std::size_t write_count = 0;
+#endif
 
     // create read_file list
     std::vector<ComSubseqFileReader> csfr_list;
@@ -88,9 +90,11 @@ void esort_merge_sort_files(const FilenameList& fn_list,
 
         // write the min element to the merge output file
         esort_out.writeSeq(seq);
+#if defined(__DEBUG__) 
         if(write_count++ % 100000 == 0){
             std::cout << "write " << write_count << " " << csfr_list.size() << std::endl;
         }
+#endif
     }
 
     // clean the write buffer and close the file

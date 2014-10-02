@@ -7,51 +7,6 @@
 
 namespace pcpe {
 
-#if 0
-class LocationInfoLength;
-
-std::istream& operator>>(std::istream& in, LocationInfoLength& li);
-std::ostream& operator<<(std::ostream& out, const LocationInfoLength& li);
-
-class LocationInfoLength : public LocationInfo
-{
-    friend std::istream& operator>>(std::istream& in, LocationInfoLength& li);
-    friend std::ostream& operator<<(std::ostream& out, const LocationInfoLength& li);
-public:
-    LocationInfoLength():LocationInfo(),
-                         length_(kInitialCommonLength),
-                         reduced_(false){};
-    bool is_continue(const LocationInfoLength& li){
-        return (x_ == li.x_) && (y_ == li.y_) &&
-               (li.x_loc_ - x_loc_ == 1)  && (li.y_loc_ - y_loc_ == 1);
-    };
-    inline bool is_same_x_y(const LocationInfoLength& li){
-        return x_ == li.x_ && y_ == li.y_;
-    };
-    inline void set_reduce(){ reduced_ = true; };
-    inline bool is_reduced(){ return reduced_; };
-    inline void set_length(std::size_t l){ length_ = l; };
-    inline std::size_t get_length(){ return length_; };
-private:
-    static const int kInitialCommonLength = 6;
-    std::size_t length_;
-    bool reduced_;
-};
-
-
-std::istream& operator>>(std::istream& in, LocationInfoLength& li)
-{
-    in >> li.x_ >> li.y_ >> li.x_loc_ >> li.y_loc_;
-    return in;
-}
-
-std::ostream& operator<<(std::ostream& out, const LocationInfoLength& li)
-{
-    out << " " << li.x_ << " " << li.y_ << " " << li.x_loc_ << " " << li.y_loc_ << li.length_;
-    return out;
-}
-#endif
-
 void maximum_common_subseq(const Filename& esort_result,
                            const Filename& reduce_result)
 {
@@ -68,12 +23,19 @@ void maximum_common_subseq(const Filename& esort_result,
     std::array<ComSubseq, kReadMaxSize> com_list;
     std::array<bool, kReadMaxSize> reduced_list;
     std::size_t com_list_size = 0;
-    while(!infile.eof()){
+    bool read_fail = false;
+
+    while(!infile.eof() && !read_fail){
         reduced_list.fill(false);
 
         // read the file with READ_MAX_SIZE - remaining size 
         infile.read(static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
                     sizeof(ComSubseq) * (kReadMaxSize - remaining_size));
+
+        // check the read status. if the status is false, it means its the
+        // last time to read the file.
+        read_fail = infile.fail();
+
         std::size_t read_size = infile.gcount() / sizeof(ComSubseq);
         com_list_size = remaining_size + read_size;
 

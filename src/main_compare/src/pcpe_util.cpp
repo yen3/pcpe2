@@ -23,7 +23,6 @@ void ComSubseqFileReader::readFile(const Filename& fn, std::vector<ComSubseq>& c
         std::size_t buffer_size = read_size/ sizeof(ComSubseq);
         std::copy(buffer.begin(), buffer.begin() + buffer_size,
                   std::back_inserter(com_list));
-        //std::cout << buffer_size << " " << read_size << std::endl;
     }
     infile.close();
 }
@@ -75,11 +74,11 @@ void ComSubseqFileWriter::readSeq(ComSubseq& seq){
 }
 
 void ComSubseqFileWriter::writeSeq(const ComSubseq& seq){
-    if(com_list_size_ == com_list_.size()){
+    if(com_list_size_ >= com_list_.size()){
         write_buffer();
     }
 
-    if(com_list_size_ == com_list_.size()){
+    if(com_list_size_ >= com_list_.size()){
         std::cout << "write sequence error!" << std::endl;
         return;
     }
@@ -89,31 +88,33 @@ void ComSubseqFileWriter::writeSeq(const ComSubseq& seq){
 }
 
 void ComSubseqFileReader::read_buffer(){
-    if(!infile_.is_open() && read_buffer_idx_ >= com_list_.size()){
+    if(!infile_.is_open()){
         std::cerr << "Read file error." << std::endl;
         return;
     }
 
     // move the remaining part to the begining of the buffer
+    std::size_t remaining_size = 0;
     if(read_buffer_idx_ < com_list_size_){
-        // fidx = from index, tidx = to index
-        for(std::size_t fidx = read_buffer_idx_, tidx= 0;
+        // fidx = from index, remaining_size = to index
+        for(std::size_t fidx = read_buffer_idx_;
             fidx < com_list_size_;
-            fidx++, tidx++){
-            com_list_[tidx] = com_list_[fidx];
+            ++fidx, ++remaining_size){
+            com_list_[remaining_size] = com_list_[fidx];
         }
     }
 
-    // fill the buffer
-    std::size_t read_size =
-        infile_.readsome(static_cast<char*>(static_cast<void*>(&com_list_[read_buffer_idx_])),
-                         sizeof(ComSubseq) * (com_list_.size() - read_buffer_idx_));
-    //std::size_t read_size = infile_.gcount();
-    std::cout << "read size " << read_size << " " << infile_.good() << infile_.eof() << infile_.fail() << infile_.bad() << infile_.rdstate() << std::endl;
-    com_list_size_ = read_buffer_idx_ + read_size / sizeof(ComSubseq);
-    read_buffer_idx_ = 0;
+    // fill the buffer with new data
+    infile_.read(static_cast<char*>(static_cast<void*>(&com_list_[remaining_size])),
+                 sizeof(ComSubseq)* (com_list_.size() - remaining_size));
 
-    if(infile_.eof()){
+    bool read_fail = infile_.fail();
+    std::size_t read_size = infile_.gcount();
+
+    com_list_size_ = remaining_size + read_size / sizeof(ComSubseq);
+    read_buffer_idx_ = 0;
+    
+    if(infile_.eof() || read_fail){
         close();
     }
 }

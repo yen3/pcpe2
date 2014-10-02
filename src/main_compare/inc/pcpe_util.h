@@ -101,12 +101,10 @@ public:
     
     inline void close(){
         infile_.close();
-        read_buffer_idx_ = 0;
-        com_list_size_ = 0;
     }
     
     inline bool is_open(){ 
-        return infile_.is_open();
+        return infile_.is_open() || read_buffer_idx_ < com_list_size_;
     }
 
     inline bool eof(){
