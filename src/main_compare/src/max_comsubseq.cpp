@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include <algorithm>
 
 #include "pcpe_util.h"
 #include "max_comsubseq.h"
@@ -14,20 +15,22 @@ void maximum_common_subseq(const Filename& esort_result,
     const std::size_t kWriteBufferSize = 1000000;
 
     // open the read file
+    std::cout << "read file: " << esort_result << std::endl;
     std::ifstream infile(esort_result, std::ifstream::in | std::ifstream::binary);
 
     // open the reduce output file
     ComSubseqFileWriter outfile(reduce_result, kWriteBufferSize);
 
     std::size_t remaining_size = 0;
-    std::array<ComSubseq, kReadMaxSize> com_list;
-    std::array<bool, kReadMaxSize> reduced_list;
+    std::vector<ComSubseq> com_list(kReadMaxSize);
+    std::vector<bool> reduced_list(kReadMaxSize);
     std::size_t com_list_size = 0;
     bool read_fail = false;
 
     while(!infile.eof() && !read_fail){
-        reduced_list.fill(false);
+        std::fill(reduced_list.begin(), reduced_list.end(), false);
 
+        std::cout << "read size " << kReadMaxSize - remaining_size << std::endl;
         // read the file with READ_MAX_SIZE - remaining size 
         infile.read(static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
                     sizeof(ComSubseq) * (kReadMaxSize - remaining_size));
@@ -42,7 +45,12 @@ void maximum_common_subseq(const Filename& esort_result,
         // find the lastest index of the part (from READ_MAX_SIZE to 0)
         // if x1 != x2 and y1 != y2
         std::size_t handle_size = com_list_size;
-        for(; com_list[handle_size-1].isContinued(com_list[handle_size-2]); --handle_size) ;
+        for(; com_list[handle_size-1].isSameSeqeunce(com_list[handle_size-2]); --handle_size) ;
+        if(!read_fail){
+            handle_size -= 1;
+        }
+        std::cout << "handle size " << handle_size << " " << com_list_size << std::endl;
+
         remaining_size = com_list_size - handle_size;
 
         // start to reduce
@@ -62,6 +70,9 @@ void maximum_common_subseq(const Filename& esort_result,
         for(std::size_t i=0; i<handle_size; ++i){
             if(!reduced_list[i]){
                 outfile.writeSeq(com_list[i]);
+                if(com_list[i].getLength() >= 7){
+                    com_list[i].print();
+                }
             }
         }
 

@@ -55,23 +55,33 @@ public:
         return false;
     }
 
-    bool operator==(const ComSubseq& rhs) const
+    inline bool operator==(const ComSubseq& rhs) const
     {
         return (x_ == rhs.x_) && (y_ == rhs.y_) &&
                (x_loc_ == rhs.x_loc_) && (y_loc_ && rhs.y_loc_);
     }
     
-    bool operator>=(const ComSubseq& rhs) const { return !(*this < rhs); }
-    bool operator<=(const ComSubseq& rhs) const { return !(*this >= rhs); }
-    bool operator!=(const ComSubseq& rhs) const { return !(*this == rhs); }
+    inline bool operator>=(const ComSubseq& rhs) const { return !(*this < rhs); }
+    inline bool operator<=(const ComSubseq& rhs) const { return !(*this >= rhs); }
+    inline bool operator!=(const ComSubseq& rhs) const { return !(*this == rhs); }
 
     inline int getLength(){ return len_; };
     inline void setLength(int len){ len_ = len; };
 
-    bool isContinued(const ComSubseq& rhs){
+    inline bool isContinued(const ComSubseq& rhs){
         return (x_ == rhs.x_) && (y_ == rhs.y_) &&
                (rhs.x_loc_ - x_loc_ == 1)  && (rhs.y_loc_ - y_loc_ == 1);
     }
+
+    inline bool isSameSeqeunce(const ComSubseq& rhs){
+        return (x_ == rhs.x_) && (y_ == rhs.y_); 
+    }
+
+#if defined(__DEBUG__)
+    inline void print(){
+        std::cout << x_ << "\t" << y_ << "\t" << x_loc_ << "\t" << y_loc_ << "\t" << len_ << std::endl;
+    }
+#endif
 
 
 protected:
