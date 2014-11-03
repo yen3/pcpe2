@@ -26,24 +26,13 @@ int main(int argc, char const* argv[])
         return -1;
     }
 
-
     std::cout << "Create common subseq files - start" << std::endl;
-    //auto commom_subseq_fn_list = pcpe::common_subseq(input_fn_a, input_fn_b);
+    auto commom_subseq_fn_list = pcpe::common_subseq(input_fn_a, input_fn_b);
     std::cout << "Create common subseq files - end" << std::endl;
-
-#if 0
-    std::shared_ptr<pcpe::FilenameList> commom_subseq_fn_list(new pcpe::FilenameList());
-    for(std::size_t fn_index = 0; fn_index < 100; fn_index++){
-        std::ostringstream oss;
-        oss << "sub_hash_" << fn_index; 
-        commom_subseq_fn_list -> push_back(oss.str());
-        std::cout << oss.str() << std::endl;
-    }
-#endif
 
     std::cout << "esort subseqeunce files - start" << std::endl;
     pcpe::Filename esort_result = "esort_test.txt";
-//    pcpe::esort(commom_subseq_fn_list, esort_result);
+    pcpe::esort(commom_subseq_fn_list, esort_result);
     std::cout << "esort subseqeunce files - end" << std::endl;
 
     std::cout << "find all maximum subseqeunce - start" << std::endl;

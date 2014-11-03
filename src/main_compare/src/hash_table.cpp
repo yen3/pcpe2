@@ -41,7 +41,8 @@ typedef std::size_t SubstrIndex;
  * key:    hash value
  * value:  <substring (6 chars), <sequence index, substring location index> >
  * */
-typedef std::vector<std::map<Seq, std::vector<std::pair<SeqIndex, SubstrIndex> > > > HashTable;
+typedef std::vector<
+    std::map<Seq, std::vector<std::pair<SeqIndex, SubstrIndex> > > > HashTable;
 
 
 /*****************************************************************************/
@@ -71,13 +72,16 @@ void read_sequence_list(SeqList& seq, const char* filename)
     in_file.clear();
 }
 
-inline std::size_t hash_value(const char* s)
+std::size_t hash_value(const char* s)
 {
-    return (s[0]-'A')*11881376 + (s[1]-'A')*456976 + (s[2]-'A')*17576 + (s[3]-'A')*676 + (s[4]-'A')*26 + (s[5]-'A')*1;
+    return (s[0]-'A')*11881376 + (s[1]-'A')*456976 +
+           (s[2]-'A')*17576 + (s[3]-'A')*676 + (s[4]-'A')*26 + (s[5]-'A')*1;
 }
 
 
-void add_substring_to_hashtable(const std::size_t seq_index, const std::string& s, HashTable& ht)
+void add_substring_to_hashtable(const std::size_t seq_index,
+                                const std::string& s,
+                                HashTable& ht)
 {
     if(s.size() < SUBSTRING_SIZE) return;
 
@@ -87,9 +91,11 @@ void add_substring_to_hashtable(const std::size_t seq_index, const std::string& 
 #if defined(__DEBUG__)
         try{
             ht[hash_value(s.c_str()+ substr_index) % ht.size()]
-                [s.substr(substr_index, SUBSTRING_SIZE)].push_back(std::make_pair(seq_index, substr_index));
+              [s.substr(substr_index, SUBSTRING_SIZE)].push_back(
+                      std::make_pair(seq_index, substr_index));
         }catch(const std::out_of_range& oor){
-            std::cerr << "Error " << substr_index << " " << s << " " << oor.what() << std::endl;
+            std::cerr << "Error " << substr_index << " "
+                      << s << " " << oor.what() << std::endl;
             exit(1);
         }
 #else 
@@ -126,19 +132,23 @@ std::shared_ptr<HashTable> create_hash_table(const std::string& filename)
 
 inline void output_to_file(ComSubseqFileWriter& out_file,
                            const std::string& mcs,
-                           const std::vector<std::pair<SeqIndex, SubstrIndex>>& lx, 
-                           const std::vector<std::pair<SeqIndex, SubstrIndex>>& ly)
+                           const std::vector<std::pair<SeqIndex,
+                                                       SubstrIndex>>& lx, 
+                           const std::vector<std::pair<SeqIndex,
+                                                       SubstrIndex>>& ly)
 {
     for(const auto& x : lx){
         for(const auto& y: ly){
-            out_file.writeSeq(ComSubseq(x.first, y.first, x.second, y.second, 6));
+            out_file.writeSeq(ComSubseq(x.first, y.first,
+                                        x.second, y.second, 6));
         }
     }
 }
 
 
 class CommonSubseqTask{
-    friend std::ostream& operator<<(std::ostream& os, const CommonSubseqTask& cst);
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const CommonSubseqTask& cst);
 public:
     CommonSubseqTask(std::size_t begin_index,
                      std::size_t end_index,
@@ -190,7 +200,10 @@ create_compare_hashtable_task_list(std::vector<Filename>& out_fn_list,
 }
 
 
-void compare_hashtable_part(const CommonSubseqTaskList& cstl, const HashTable& x, const HashTable& y, int thread_num)
+void compare_hashtable_part(const CommonSubseqTaskList& cstl,
+                            const HashTable& x,
+                            const HashTable& y,
+                            int thread_num)
 {
     std::size_t local_cstl_index;
     while(1){
@@ -217,33 +230,6 @@ void compare_hashtable_part(const CommonSubseqTaskList& cstl, const HashTable& x
         }
         outfile.close();
     }
-#if 0
-    std::size_t local_cstl_index;
-    while(1){
-        local_cstl_index = cstl_index.fetch_add(1);
-        if(local_cstl_index > cstl.size()){
-            break;
-        }
-
-        ComSubseqFileWriter out_file(cstl[local_cstl_index].fn);
-        for(std::size_t midx = cstl[local_cstl_index].begin;
-            midx < cstl[local_cstl_index].end;
-            ++midx){
-            for(auto hx = x[midx].begin(), hy = y[midx].begin();
-                hx != x[midx].end() && hy != y[midx].end();)
-            {
-                if(hx->first == hy->first){
-                    output_to_file(out_file, hx->first, hx->second, hy->second);
-                    ++hx;
-                    ++hy;
-                }
-                else if(hx->first > hy->first)  ++hy;
-                else   ++hx;
-            }
-        }
-        out_file.close();
-    }
-#endif
 }
 
 
@@ -313,7 +299,7 @@ common_subseq(Filename fn_seq_a,
     return out_fn_list;
 }
 
-
+#if 0
 /*****************************************************************************/
 // Test Case 
 /*****************************************************************************/
@@ -348,7 +334,7 @@ TEST(hash_table, add_substring_to_hashtable){
     }
 
 }
-
+#endif
 #endif
 
 }
