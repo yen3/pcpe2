@@ -31,6 +31,8 @@ std::atomic_uint cstl_index(0);
 /*****************************************************************************/
 // Typedef  
 /*****************************************************************************/
+class CommonSubseqTask;
+
 typedef std::string Seq;
 typedef std::vector<Seq> SeqList;
 
@@ -43,6 +45,8 @@ typedef std::size_t SubstrIndex;
  * */
 typedef std::vector<
     std::map<Seq, std::vector<std::pair<SeqIndex, SubstrIndex> > > > HashTable;
+
+typedef std::vector<CommonSubseqTask> CommonSubseqTaskList;
 
 
 /*****************************************************************************/
@@ -163,7 +167,6 @@ public:
     const Filename fn;
 };
 
-typedef std::vector<CommonSubseqTask> CommonSubseqTaskList;
 
 std::ostream& operator<<(std::ostream& os, const CommonSubseqTask& cst){
     os << cst.fn << " " << cst.begin << " " << cst.end;
@@ -216,16 +219,13 @@ void compare_hashtable_part(const CommonSubseqTaskList& cstl,
         for(std::size_t midx = cstl[local_cstl_index].begin;
             midx < cstl[local_cstl_index].end;
             ++midx){
-            for(auto hx = x[midx].begin(), hy = y[midx].begin();
-                hx != x[midx].end() && hy != y[midx].end();)
-            {
-                if(hx->first == hy->first){
-                    output_to_file(outfile, hx->first, hx->second, hy->second);
-                    ++hx;
-                    ++hy;
+            for(auto hx = x[midx].begin(); hx != x[midx].end(); ++hx) {
+                for(auto hy = x[midx].begin(); hy != x[midx].end(); ++hy) {
+                    if(hx->first == hy->first){
+                        output_to_file(outfile,
+                                hx->first, hx->second, hy->second);
+                    }
                 }
-                else if(hx->first > hy->first)  ++hy;
-                else   ++hx;
             }
         }
         outfile.close();
