@@ -9,6 +9,7 @@
 #include <memory>
 #include <future>
 #include <atomic>
+#include <cassert>
 
 #if defined(__GTEST_PCPE__)
 #include <map>
@@ -17,40 +18,21 @@
 
 #include "hash_table.h"
 
+#if defined(__DEBUG__)
+#define DEBUG_PRINT \
+    std::cout << __FILE__ << ": " << __LINE__ << ": "
+#endif
+
 namespace pcpe{
 
 /*****************************************************************************/
 // Global Variables
 /*****************************************************************************/
-const std::size_t TASK_SIZE = 100;
-const std::size_t HASH_TABLE_SIZE= 100003;
-const std::size_t SUBSTRING_SIZE = 6;
-
 std::atomic_uint cstl_index(0);
 
-/*****************************************************************************/
-// Typedef  
-/*****************************************************************************/
-class CommonSubseqTask;
-
-typedef std::string Seq;
-typedef std::vector<Seq> SeqList;
-
-typedef std::size_t SeqIndex;
-typedef std::size_t SubstrIndex;
-
-/* 
- * key:    hash value
- * value:  <substring (6 chars), <sequence index, substring location index> >
- * */
-typedef std::vector<
-    std::map<Seq, std::vector<std::pair<SeqIndex, SubstrIndex> > > > HashTable;
-
-typedef std::vector<CommonSubseqTask> CommonSubseqTaskList;
-
 
 /*****************************************************************************/
-// Functions 
+// Functions - Build hash table 
 /*****************************************************************************/
 
 /**
@@ -70,7 +52,14 @@ void read_sequence_list(SeqList& seq, const char* filename)
     for(std::size_t i=0; i<str_read_size; i++){
         in_file >> read_size >> s;
         seq.push_back(std::move(s));
+#if __DEBUG__
+        assert(seq[seq.size()-1].size() == read_size);
+#endif
     }
+
+#if __DEBUG__
+    assert(str_read_size == seq.size());
+#endif
 
     in_file.close();
     in_file.clear();
@@ -90,7 +79,7 @@ void add_substring_to_hashtable(const std::size_t seq_index,
     if(s.size() < SUBSTRING_SIZE) return;
 
     for(std::size_t substr_index = 0;
-        substr_index < s.size()-SUBSTRING_SIZE;
+        substr_index <= s.size()-SUBSTRING_SIZE;
         ++substr_index){
 #if defined(__DEBUG__)
         try{
@@ -134,6 +123,11 @@ std::shared_ptr<HashTable> create_hash_table(const std::string& filename)
     return ht;
 }
 
+/*****************************************************************************/
+// Functions - Compare hash table
+/*****************************************************************************/
+
+
 inline void output_to_file(ComSubseqFileWriter& out_file,
                            const std::string& mcs,
                            const std::vector<std::pair<SeqIndex,
@@ -144,41 +138,16 @@ inline void output_to_file(ComSubseqFileWriter& out_file,
     for(const auto& x : lx){
         for(const auto& y: ly){
             out_file.writeSeq(ComSubseq(x.first, y.first,
-                                        x.second, y.second, 6));
+                                        x.second, y.second, SUBSTRING_SIZE));
         }
     }
 }
 
-
-class CommonSubseqTask{
-    friend std::ostream& operator<<(std::ostream& os,
-                                    const CommonSubseqTask& cst);
-public:
-    CommonSubseqTask(std::size_t begin_index,
-                     std::size_t end_index,
-                     const Filename& filename):begin(begin_index),
-                                               end(end_index),
-                                               fn(filename)
-    {
-    };
-
-    const std::size_t begin;
-    const std::size_t end;
-    const Filename fn;
-};
-
-
-std::ostream& operator<<(std::ostream& os, const CommonSubseqTask& cst){
-    os << cst.fn << " " << cst.begin << " " << cst.end;
-    return os;
-};
-
-
 void 
 create_compare_hashtable_task_list(std::vector<Filename>& out_fn_list,
                                    CommonSubseqTaskList& cstl,
-                                   int task_size,
-                                   int hash_table_size,
+                                   const std::size_t task_size,
+                                   const std::size_t hash_table_size,
                                    const Filename& out_fn_prefix)
 {
     out_fn_list = std::move(std::vector<Filename>(TASK_SIZE));
@@ -202,11 +171,29 @@ create_compare_hashtable_task_list(std::vector<Filename>& out_fn_list,
     }
 }
 
-
-void compare_hashtable_part(const CommonSubseqTaskList& cstl,
+void compare_hashtable_part(const CommonSubseqTask& cst,
                             const HashTable& x,
-                            const HashTable& y,
-                            int thread_num)
+                            const HashTable& y){
+    ComSubseqFileWriter outfile(cst.fn);
+    for(std::size_t midx = cst.begin;
+        midx < cst.end;
+        ++midx){
+        for(auto hx = x[midx].begin(); hx != x[midx].end(); ++hx) {
+            for(auto hy = y[midx].begin(); hy != y[midx].end(); ++hy) {
+                if(hx->first == hy->first){
+                    output_to_file(outfile,
+                            hx->first, hx->second, hy->second);
+                }
+            }
+        }
+    }
+    outfile.close();
+}
+
+
+void compare_hashtable_task(const CommonSubseqTaskList& cstl,
+                            const HashTable& x,
+                            const HashTable& y)
 {
     std::size_t local_cstl_index;
     while(1){
@@ -214,21 +201,11 @@ void compare_hashtable_part(const CommonSubseqTaskList& cstl,
         if(local_cstl_index >= cstl.size()){
             break;
         }
+#if __DEBUG__
+        DEBUG_PRINT << local_cstl_index << std::endl;
+#endif
 
-        ComSubseqFileWriter outfile(cstl[local_cstl_index].fn);
-        for(std::size_t midx = cstl[local_cstl_index].begin;
-            midx < cstl[local_cstl_index].end;
-            ++midx){
-            for(auto hx = x[midx].begin(); hx != x[midx].end(); ++hx) {
-                for(auto hy = x[midx].begin(); hy != x[midx].end(); ++hy) {
-                    if(hx->first == hy->first){
-                        output_to_file(outfile,
-                                hx->first, hx->second, hy->second);
-                    }
-                }
-            }
-        }
-        outfile.close();
+        compare_hashtable_part(cstl[local_cstl_index], x, y);
     }
 }
 
@@ -249,14 +226,13 @@ common_subseq_files(const HashTable& x,
 
     // start to run the all tasks
     std::vector<std::thread> tasks(std::thread::hardware_concurrency());
-    std::size_t thread_num = 0;
 #if __DEBUG__
     std::cout << "craete " <<  tasks.size() << " thread" << std::endl;
 #endif
     for(auto& task : tasks){
-        task = std::thread(compare_hashtable_part, cstl, x, y, thread_num);
-        thread_num++;
+        task = std::thread(compare_hashtable_task, cstl, x, y);
     }
+
     for(auto& task : tasks){
         task.join();
     }
@@ -292,49 +268,13 @@ common_subseq(Filename fn_seq_a,
     std::shared_ptr<HashTable> phta = create_hta.get();
     std::shared_ptr<HashTable> phtb = create_htb.get();
 
+    std::cout << __FILE__ << ": " << __LINE__ << ": create hash table done" << std::endl;  
+
     auto out_fn_list = common_subseq_files(*phta, *phtb);
 #if defined(__DEBUG__)
     std::cout << __FILE__ << ": " << __LINE__ << ": " << cstl_index << std::endl;  
 #endif
     return out_fn_list;
 }
-
-#if 0
-/*****************************************************************************/
-// Test Case 
-/*****************************************************************************/
-#if defined(__GTEST_PCPE__)
-
-TEST(hash_table, hash_value){
-    EXPECT_EQ(0, hash_value("AAAAAA"));
-    EXPECT_EQ(1, hash_value("AAAAAB"));
-    EXPECT_EQ(27, hash_value("AAAABB"));
-    EXPECT_EQ(703, hash_value("AAABBB"));
-}
-
-
-TEST(hash_table, add_substring_to_hashtable){
-    std::string s("ABCDABCDABCD");
-    HashTable ht(HASH_TABLE_SIZE);
-
-    std::map<std::string, int> sub_count;
-    for(std::size_t i=0; i<s.size()-SUBSTRING_SIZE; i++){
-        sub_count[s.substr(i, SUBSTRING_SIZE)] ++;
-    }
-
-    add_substring_to_hashtable(1, s, ht);
-
-    EXPECT_EQ(HASH_TABLE_SIZE, ht.size());
-    for(auto iter=sub_count.begin(); iter != sub_count.end(); ++iter){
-        const std::string& substring = iter->first;
-        const int substring_count = iter->second;
-        const std::size_t hash_index = hash_value(substring.c_str()) % ht.size();
-
-        EXPECT_EQ(substring_count, ht[hash_index][substring].size());
-    }
-
-}
-#endif
-#endif
 
 }

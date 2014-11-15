@@ -30,6 +30,7 @@ int main(int argc, char const* argv[])
     auto commom_subseq_fn_list = pcpe::common_subseq(input_fn_a, input_fn_b);
     std::cout << "Create common subseq files - end" << std::endl;
 
+#if 0
     std::cout << "esort subseqeunce files - start" << std::endl;
     pcpe::Filename esort_result = "esort_test.txt";
     pcpe::esort(commom_subseq_fn_list, esort_result);
@@ -39,6 +40,7 @@ int main(int argc, char const* argv[])
     pcpe::Filename common_subseq_result = "common_subseq_result.txt";
     pcpe::maximum_common_subseq(esort_result, common_subseq_result);
     std::cout << "find all maximum subseqeunce - end" << std::endl;
+#endif
 
     return 0;
 }

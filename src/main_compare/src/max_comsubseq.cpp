@@ -70,7 +70,7 @@ void maximum_common_subseq(const Filename& esort_result,
         for(std::size_t i=0; i<handle_size; ++i){
             if(!reduced_list[i]){
                 outfile.writeSeq(com_list[i]);
-                if(com_list[i].getLength() >= 7){
+                if(com_list[i].getLength() >= 8){
                     com_list[i].print();
                 }
             }

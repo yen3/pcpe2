@@ -20,33 +20,8 @@
 namespace pcpe{
 
 /*****************************************************************************/
-// Typedef  
-/*****************************************************************************/
-class CommonSubseqTask;
-
-typedef std::string Seq;
-typedef std::vector<Seq> SeqList;
-
-typedef std::size_t SeqIndex;
-typedef std::size_t SubstrIndex;
-
-/* 
- * key:    hash value
- * value:  <substring (6 chars), <sequence index, substring location index> >
- * */
-typedef std::vector<
-    std::map<Seq, std::vector<std::pair<SeqIndex, SubstrIndex> > > > HashTable;
-
-typedef std::vector<CommonSubseqTask> CommonSubseqTaskList;
-
-/*****************************************************************************/
 // Function protypes 
 /*****************************************************************************/
-const std::size_t HASH_TABLE_SIZE= 100003;
-const std::size_t SUBSTRING_SIZE = 6;
-
-extern std::atomic_uint cstl_index;
-
 extern void read_sequence_list(SeqList& seq, const char* filename);
 
 extern std::size_t hash_value(const char* s);
@@ -63,13 +38,16 @@ extern std::ostream& operator<<(std::ostream& os,
 
 extern void create_compare_hashtable_task_list(std::vector<Filename>& out_fn_list,
                                                CommonSubseqTaskList& cstl,
-                                               int task_size,
-                                               int hash_table_size,
+                                               const std::size_t task_size,
+                                               const std::size_t hash_table_size,
                                                const Filename& out_fn_prefix);
-extern void compare_hashtable_part(const CommonSubseqTaskList& cstl,
+extern void compare_hashtable_part(const CommonSubseqTask& cst,
                                    const HashTable& x,
-                                   const HashTable& y,
-                                   int thread_num);
+                                   const HashTable& y);
+
+extern void compare_hashtable_task(const CommonSubseqTaskList& cstl,
+                                   const HashTable& x,
+                                   const HashTable& y);
 
 extern std::shared_ptr<std::vector<Filename>>
 common_subseq_files(const HashTable& x,
@@ -93,25 +71,163 @@ TEST(hash_table, hash_value){
 
 
 TEST(hash_table, add_substring_to_hashtable){
-    std::string s("ABCDABCDABCD");
+    std::string s("ABCDEFGHI");
     HashTable ht(HASH_TABLE_SIZE);
-
-    std::map<std::string, int> sub_count;
-    for(std::size_t i=0; i<s.size()-SUBSTRING_SIZE; i++){
-        sub_count[s.substr(i, SUBSTRING_SIZE)] ++;
-    }
 
     add_substring_to_hashtable(1, s, ht);
 
-    EXPECT_EQ(HASH_TABLE_SIZE, ht.size());
-    for(auto iter=sub_count.begin(); iter != sub_count.end(); ++iter){
-        const std::string& substring = iter->first;
-        const int substring_count = iter->second;
-        const std::size_t hash_index = hash_value(substring.c_str()) % ht.size();
+    EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()].size(), 1);
 
-        EXPECT_EQ(substring_count, ht[hash_index][substring].size());
+    EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()]["ABCDEF"].size(), 1);
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"].size(), 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"].size(), 1);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"].size(), 1);
+
+    EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()]["ABCDEF"][0].first , 1);
+    EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()]["ABCDEF"][0].second, 0);
+                                                           
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"][0].first , 1);
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"][0].second, 1);
+                                                           
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][0].first , 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][0].second, 2);
+                                                           
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"][0].first , 1);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"][0].second, 3);
+}
+
+
+TEST(hash_table, read_sequence_list){
+    std::string filename("./testdata/test_seq1.txt");
+
+    SeqList seq_list;
+    read_sequence_list(seq_list, filename.c_str());
+    EXPECT_EQ(seq_list.size(), 3);
+    EXPECT_EQ(seq_list[0], "ABCDEFG");
+    EXPECT_EQ(seq_list[1], "ABCDEFGH");
+    EXPECT_EQ(seq_list[2], "ABCDEFGHI");
+}
+
+TEST(hash_table, read_sequence_list_2){
+    std::string filename("./testdata/test_seq2.txt");
+
+    SeqList seq_list;
+    read_sequence_list(seq_list, filename.c_str());
+    EXPECT_EQ(seq_list.size(), 2);
+    EXPECT_EQ(seq_list[0], "BCDEFG");
+    EXPECT_EQ(seq_list[1], "CDEFGHI");
+}
+
+
+TEST(hash_table, test_create_hash_table){
+    std::string filename("./testdata/test_seq1.txt");
+
+    std::shared_ptr<HashTable> pht = create_hash_table(filename);
+
+    HashTable& ht = *pht;
+
+    EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()].size(), 1);
+
+    EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()]["ABCDEF"].size(), 3);
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"].size(), 3);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"].size(), 2);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"].size(), 1);
+
+    for(std::size_t i=0; i<3; ++i){
+        EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()]["ABCDEF"][i].first, i);
+        EXPECT_EQ(ht[hash_value("ABCDEF") % ht.size()]["ABCDEF"][i].second, 0);
+    }
+
+    for(std::size_t i=0; i<3; ++i){
+        EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"][i].first, i);
+        EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"][i].second, 1);
+    }
+
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][0].first , 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][0].second, 2);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][1].first , 2);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][1].second, 2);
+
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"][0].first , 2);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"][0].second, 3);
+}
+
+TEST(hash_table, test_create_hash_table_2){
+    std::string filename("./testdata/test_seq2.txt");
+
+    std::shared_ptr<HashTable> pht = create_hash_table(filename);
+
+    HashTable& ht = *pht;
+
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()].size(), 1);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()].size(), 1);
+
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"].size(), 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"].size(), 1);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"].size(), 1);
+
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"][0].first, 0);
+    EXPECT_EQ(ht[hash_value("BCDEFG") % ht.size()]["BCDEFG"][0].second, 0);
+
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][0].first , 1);
+    EXPECT_EQ(ht[hash_value("CDEFGH") % ht.size()]["CDEFGH"][0].second, 0);
+
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"][0].first , 1);
+    EXPECT_EQ(ht[hash_value("DEFGHI") % ht.size()]["DEFGHI"][0].second, 1);
+}
+
+
+TEST(hash_table, create_compare_hashtable_task_list){
+    std::vector<Filename> out_fn_list;
+    CommonSubseqTaskList cstl;
+    const std::size_t task_size = TASK_SIZE;
+    const std::size_t hash_table_size = HASH_TABLE_SIZE;
+    Filename out_fn_prefix = "sub_hash";
+
+    create_compare_hashtable_task_list(out_fn_list,
+                                       cstl,
+                                       task_size,
+                                       hash_table_size,
+                                       out_fn_prefix);
+
+    // assert output file name list
+    EXPECT_EQ(out_fn_list.size(), task_size);
+
+    for(std::size_t fn_index = 0; fn_index < out_fn_list.size(); fn_index++){
+        std::ostringstream oss;
+        oss << out_fn_prefix << "_" << fn_index; 
+        EXPECT_EQ(out_fn_list[fn_index], oss.str());
+    }
+
+    // assert task information list
+    EXPECT_EQ(cstl.size(), task_size);
+
+    std::size_t task_index_size = static_cast<std::size_t>(static_cast<double>(hash_table_size)/ static_cast<double>(cstl.size()));
+
+    for(std::size_t cidx = 0; cidx < cstl.size(); ++cidx){
+        EXPECT_EQ(cstl[cidx].fn, out_fn_list[cidx]);
+        EXPECT_EQ(cstl[cidx].begin,  task_index_size * cidx);
+
+        if(cidx < cstl.size() - 1){
+            EXPECT_EQ(cstl[cidx].end,  task_index_size * (cidx+1));
+        }
+        else{
+            EXPECT_EQ(cstl[cidx].end,  hash_table_size);
+        }
+
+        if(cidx > 0 && cidx < cstl.size() - 1){
+            EXPECT_EQ(cstl[cidx].begin,  cstl[cidx-1].end) << task_index_size;
+        }
     }
 }
+
 
 }
 #endif
