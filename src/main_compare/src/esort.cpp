@@ -21,9 +21,21 @@ std::atomic_uint esfl_index(0);
 /*****************************************************************************/
 //  Functions 
 /*****************************************************************************/
-void esort_sort_file_task(const FilenameList& esfl) {
+void esort_sort_file(const Filename& fn){
     static const std::size_t kBufferSize = 100000;
 
+    // read file to li_list
+    std::vector<ComSubseq> li_list;
+    ComSubseqFileReader::readFile(fn, li_list, kBufferSize);
+
+    // quick sort for li_list
+    std::sort(li_list.begin(), li_list.end());
+
+    // write file to li_list
+    ComSubseqFileWriter::writeFile(fn, li_list, kBufferSize);
+}
+
+void esort_sort_file_task(const FilenameList& esfl) {
     std::size_t local_esfl_index;
     while(1){
         local_esfl_index = esfl_index.fetch_add(1);
@@ -31,20 +43,11 @@ void esort_sort_file_task(const FilenameList& esfl) {
             break;
         }
 
-        // read file to li_list
-        std::vector<ComSubseq> li_list;
-        const Filename& fn = esfl[local_esfl_index];
-        ComSubseqFileReader::readFile(fn, li_list, kBufferSize);
-
-        // quick sort for li_list
-        std::sort(li_list.begin(), li_list.end());
-
-        // write file to li_list
-        ComSubseqFileWriter::writeFile(fn, li_list, kBufferSize);
+        esort_sort_file(esfl[local_esfl_index]);
     }
 }
 
-void esort_sort_file(const FilenameList& fn_list) {
+void esort_sort_files(const FilenameList& fn_list) {
     std::vector<std::thread> tasks(std::thread::hardware_concurrency());
     for(auto& task : tasks){
         task = std::thread(esort_sort_file_task, fn_list);
@@ -106,7 +109,7 @@ void esort(std::shared_ptr<FilenameList> fn_list,
 {
     // sort each file which contain partail subcommon subseqencs parallely.
     std::cout << "esrot parallel - start" << std::endl;
-    esort_sort_file(*fn_list);
+    esort_sort_files(*fn_list);
     std::cout << "esrot parallel - end" << std::endl;
 
     // merge these sorted file into a file.

@@ -14,7 +14,7 @@
 namespace pcpe{
 
 extern void esort_sort_file_task(const FilenameList& esfl);
-extern void esort_sort_file(const FilenameList& fn_list);
+extern void esort_sort_files(const FilenameList& fn_list);
 extern void esort_merge_sort_files(const FilenameList& fn_list,
                                    const Filename& esort_fn);
 extern void esort(std::shared_ptr<FilenameList> fn_list,
