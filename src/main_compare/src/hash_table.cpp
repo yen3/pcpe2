@@ -138,7 +138,11 @@ inline void output_to_file(ComSubseqFileWriter& out_file,
     for(const auto& x : lx){
         for(const auto& y: ly){
             out_file.writeSeq(ComSubseq(x.first, y.first,
-                                        x.second, y.second, SUBSTRING_SIZE));
+                                        x.second, y.second,
+                                        SUBSTRING_SIZE));
+#if 0 
+            std::cout << "(" << x.first << ", " << y.first << ", " << x.second << ", " << y.second << ")" << std::endl;
+#endif
         }
     }
 }
@@ -173,8 +177,10 @@ create_compare_hashtable_task_list(std::vector<Filename>& out_fn_list,
 
 void compare_hashtable_part(const CommonSubseqTask& cst,
                             const HashTable& x,
-                            const HashTable& y){
+                            const HashTable& y)
+{
     ComSubseqFileWriter outfile(cst.fn);
+
     for(std::size_t midx = cst.begin;
         midx < cst.end;
         ++midx){

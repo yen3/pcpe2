@@ -58,7 +58,7 @@ public:
     inline bool operator==(const ComSubseq& rhs) const
     {
         return (x_ == rhs.x_) && (y_ == rhs.y_) &&
-               (x_loc_ == rhs.x_loc_) && (y_loc_ && rhs.y_loc_);
+               (x_loc_ == rhs.x_loc_) && (y_loc_ == rhs.y_loc_);
     }
     
     inline bool operator>=(const ComSubseq& rhs) const { return !(*this < rhs); }
@@ -79,7 +79,7 @@ public:
 
 #if defined(__DEBUG__)
     inline void print(){
-        std::cout << x_ << "\t" << y_ << "\t" << x_loc_ << "\t" << y_loc_ << "\t" << len_ << std::endl;
+        std::cout << "(" << x_ << ", " << y_ << ", " << x_loc_ << ", " << y_loc_ << ", " << len_ << ")" << std::endl;
     }
 #endif
 
@@ -93,10 +93,18 @@ protected:
 };
 
 class ComSubseqFileReader{
+#if !defined(__GTEST_PCPE__)
+    static const std::size_t gINITIAL_READ_BUFFER_SIZE = 10000;
+#else
+    static const std::size_t gINITIAL_READ_BUFFER_SIZE = 2;
+#endif
 public:
-    static void readFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size=10000);
+    static void readFile(const Filename& fn,
+             std::vector<ComSubseq>& com_list,
+             std::size_t buffer_size=gINITIAL_READ_BUFFER_SIZE);
 
-    ComSubseqFileReader(Filename fn, std::size_t buffer_size=10000):
+    ComSubseqFileReader(Filename fn,
+            std::size_t buffer_size=gINITIAL_READ_BUFFER_SIZE):
         com_list_(buffer_size),
         com_list_size_(0),
         infile_(fn.c_str(), std::ifstream::in | std::ifstream::binary),
@@ -149,13 +157,26 @@ protected:
 };
 
 class ComSubseqFileWriter{
+#if !defined(__GTEST_PCPE__)
+    static const std::size_t gINITIAL_WRITE_BUFFER_SIZE = 10000;
+#else
+    static const std::size_t gINITIAL_WRITE_BUFFER_SIZE = 2;
+#endif
 public:
-    static void writeFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size=10000);
+    static void writeFile(const Filename& fn,
+                          std::vector<ComSubseq>& com_list,
+                          std::size_t buffer_size=gINITIAL_WRITE_BUFFER_SIZE);
 
-    ComSubseqFileWriter(Filename fn, std::size_t buffer_size=10000):
+    ComSubseqFileWriter(Filename fn,
+            std::size_t buffer_size=gINITIAL_WRITE_BUFFER_SIZE):
         com_list_(buffer_size),
         com_list_size_(0),
         outfile_(fn.c_str(), std::ofstream::out | std::ofstream::binary){
+    }
+    ~ComSubseqFileWriter(){
+        if(is_open()){
+            close();
+        }
     }
 
     void readSeq(ComSubseq& seq);

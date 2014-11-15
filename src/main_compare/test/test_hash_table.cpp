@@ -228,6 +228,105 @@ TEST(hash_table, create_compare_hashtable_task_list){
     }
 }
 
+void print_HashTable(const HashTable& ht){
+    for(std::size_t i=0; i<ht.size(); ++i){
+        if(ht[i].size()){
+            std::cout << i << std::endl;
+            for(auto& kv : ht[i]){
+                std::cout << "\t" << kv.first << " ";
+                for(auto& loc: kv.second){
+                    std::cout << "(" << loc.first << ", " << loc.second << ") "; 
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+}
+
+
+TEST(hash_table, test_compare_hashtable_part){
+    Filename seq1_fn("./testdata/test_seq1.txt");
+    Filename seq2_fn("./testdata/test_seq2.txt");
+
+    std::shared_ptr<HashTable> phtx = create_hash_table(seq1_fn);
+    std::shared_ptr<HashTable> phty = create_hash_table(seq2_fn);
+    HashTable& htx = *phtx;
+    HashTable& hty = *phty;
+
+#if 0
+    print_HashTable(htx);
+    std::cout << std::endl << "-----" << std::endl;
+    print_HashTable(hty);
+#endif
+    Filename out_fn("./testoutput/test_compare_hashtable_part.out");
+    CommonSubseqTask cst(0, htx.size(), out_fn);
+
+    compare_hashtable_part(cst, htx, hty);
+
+    std::vector<ComSubseq> ans;
+    ans.push_back(ComSubseq(1, 1, 2, 0));
+    ans.push_back(ComSubseq(2, 1, 2, 0));
+    ans.push_back(ComSubseq(0, 0, 1, 0));
+    ans.push_back(ComSubseq(1, 0, 1, 0));
+    ans.push_back(ComSubseq(2, 0, 1, 0));
+    ans.push_back(ComSubseq(2, 1, 3, 1));
+
+    std::vector<ComSubseq> csl; 
+    ComSubseqFileReader::readFile(out_fn, csl, 1);
+
+    EXPECT_EQ(csl.size(), ans.size());
+    for(std::size_t i=0; i<ans.size(); ++i){
+        EXPECT_EQ(csl[i], ans[i]) << i << " not the same";
+    }
+}
+
+TEST(hash_table, test_compare_hashtable_part_2){
+    std::vector<Filename> out_fn_list;
+    CommonSubseqTaskList cstl;
+    Filename out_fn_prefix = "./testoutput/sub_hash";
+
+    Filename seq1_fn("./testdata/test_seq1.txt");
+    Filename seq2_fn("./testdata/test_seq2.txt");
+    std::shared_ptr<HashTable> phtx = create_hash_table(seq1_fn);
+    std::shared_ptr<HashTable> phty = create_hash_table(seq2_fn);
+    HashTable& htx = *phtx;
+    HashTable& hty = *phty;
+
+#if 0
+    print_HashTable(htx);
+    std::cout << std::endl << "-----" << std::endl;
+    print_HashTable(hty);
+#endif
+
+    create_compare_hashtable_task_list(out_fn_list,
+                                       cstl,
+                                       TASK_SIZE,
+                                       htx.size(),
+                                       out_fn_prefix);
+
+    for(auto& cst: cstl){
+        compare_hashtable_part(cst, htx, hty);
+    }
+
+    std::vector<ComSubseq> csl; 
+    for(auto& out_fn: out_fn_list){
+        ComSubseqFileReader::readFile(out_fn, csl, 1);
+    }
+
+    std::vector<ComSubseq> ans;
+    ans.push_back(ComSubseq(1, 1, 2, 0));
+    ans.push_back(ComSubseq(2, 1, 2, 0));
+    ans.push_back(ComSubseq(0, 0, 1, 0));
+    ans.push_back(ComSubseq(1, 0, 1, 0));
+    ans.push_back(ComSubseq(2, 0, 1, 0));
+    ans.push_back(ComSubseq(2, 1, 3, 1));
+
+    EXPECT_EQ(csl.size(), 6);
+    for(std::size_t i=0; i<ans.size(); ++i){
+        EXPECT_EQ(csl[i], ans[i]) << i << " not the same";
+    }
+}
+
 
 }
 #endif

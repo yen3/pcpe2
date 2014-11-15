@@ -8,6 +8,14 @@
 
 namespace pcpe{
 
+/**
+ * @brief  Read the whole sequence file
+ *
+ * @param[in]  fn  read file name
+ * @param[out] com_list the seqeunce list. The list could be empty since the
+ *                      function use back inserter to read content to the list 
+ * @param[in]  buffer_size (optional) 
+ */
 void ComSubseqFileReader::readFile(const Filename& fn, std::vector<ComSubseq>& com_list, std::size_t buffer_size){
     std::ifstream infile(fn, std::ifstream::in | std::ifstream::binary);
 

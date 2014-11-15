@@ -1,0 +1,8 @@
+tags
+cscope.out
+build
+src/main_compare/test/gtest/
+src/main_compare/test/testoutput/
+.DS_Store
+example/sub_hash_*
+example/*.txt
