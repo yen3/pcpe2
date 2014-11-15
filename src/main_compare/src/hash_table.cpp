@@ -207,7 +207,7 @@ void compare_hashtable_task(const CommonSubseqTaskList& cstl,
         if(local_cstl_index >= cstl.size()){
             break;
         }
-#if __DEBUG__
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
         DEBUG_PRINT << local_cstl_index << std::endl;
 #endif
 
@@ -219,7 +219,12 @@ void compare_hashtable_task(const CommonSubseqTaskList& cstl,
 std::shared_ptr<std::vector<Filename>>
 common_subseq_files(const HashTable& x,
                     const HashTable& y,
-                    const Filename& out_fn_prefix="sub_hash")
+#if !defined(__GTEST_PCPE__)
+                    const Filename& out_fn_prefix="sub_hash"
+#else
+                    const Filename& out_fn_prefix="testoutput/sub_hash"
+#endif
+                    )
 {
     if(x.size() != y.size()){
         return nullptr;
@@ -232,7 +237,7 @@ common_subseq_files(const HashTable& x,
 
     // start to run the all tasks
     std::vector<std::thread> tasks(std::thread::hardware_concurrency());
-#if __DEBUG__
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
     std::cout << "craete " <<  tasks.size() << " thread" << std::endl;
 #endif
     for(auto& task : tasks){
@@ -264,7 +269,7 @@ common_subseq(Filename fn_seq_a,
               Filename fn_seq_b)
 {
 
-#if defined(__DEBUG__)
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
     std::cout << fn_seq_a << std::endl << fn_seq_b << std::endl;
 #endif /* __DEBUG__ */
 
@@ -274,10 +279,12 @@ common_subseq(Filename fn_seq_a,
     std::shared_ptr<HashTable> phta = create_hta.get();
     std::shared_ptr<HashTable> phtb = create_htb.get();
 
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
     std::cout << __FILE__ << ": " << __LINE__ << ": create hash table done" << std::endl;  
+#endif
 
     auto out_fn_list = common_subseq_files(*phta, *phtb);
-#if defined(__DEBUG__)
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
     std::cout << __FILE__ << ": " << __LINE__ << ": " << cstl_index << std::endl;  
 #endif
     return out_fn_list;

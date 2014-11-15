@@ -328,5 +328,34 @@ TEST(hash_table, test_compare_hashtable_part_2){
 }
 
 
+TEST(hash_table, test_common_subseq){
+    Filename seq1_fn("./testdata/test_seq1.txt");
+    Filename seq2_fn("./testdata/test_seq2.txt");
+
+    std::shared_ptr<std::vector<Filename> > pout_fn_list = 
+        common_subseq(seq1_fn, seq2_fn);
+
+    std::vector<Filename>& out_fn_list = *pout_fn_list;
+    
+    std::vector<ComSubseq> csl; 
+    for(auto& out_fn: out_fn_list){
+        ComSubseqFileReader::readFile(out_fn, csl, 1);
+    }
+
+    std::vector<ComSubseq> ans;
+    ans.push_back(ComSubseq(1, 1, 2, 0));
+    ans.push_back(ComSubseq(2, 1, 2, 0));
+    ans.push_back(ComSubseq(0, 0, 1, 0));
+    ans.push_back(ComSubseq(1, 0, 1, 0));
+    ans.push_back(ComSubseq(2, 0, 1, 0));
+    ans.push_back(ComSubseq(2, 1, 3, 1));
+
+    EXPECT_EQ(csl.size(), 6);
+    for(std::size_t i=0; i<ans.size(); ++i){
+        EXPECT_EQ(csl[i], ans[i]) << i << " not the same";
+    }
+}
+
+
 }
 #endif

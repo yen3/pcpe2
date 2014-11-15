@@ -2,7 +2,6 @@
 #define __ESORT_H__
 
 #include <vector>
-#include <string>
 #include "pcpe_util.h"
 
 namespace pcpe{
