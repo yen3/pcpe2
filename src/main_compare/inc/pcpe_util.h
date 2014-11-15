@@ -94,17 +94,17 @@ protected:
 
 class ComSubseqFileReader{
 #if !defined(__GTEST_PCPE__)
-    static const std::size_t gINITIAL_READ_BUFFER_SIZE = 10000;
+    static const std::size_t kInitalReadBufferSize = 10000;
 #else
-    static const std::size_t gINITIAL_READ_BUFFER_SIZE = 2;
+    static const std::size_t kInitalReadBufferSize = 2;
 #endif
 public:
     static void readFile(const Filename& fn,
              std::vector<ComSubseq>& com_list,
-             std::size_t buffer_size=gINITIAL_READ_BUFFER_SIZE);
+             std::size_t buffer_size=kInitalReadBufferSize);
 
     ComSubseqFileReader(Filename fn,
-            std::size_t buffer_size=gINITIAL_READ_BUFFER_SIZE):
+            std::size_t buffer_size=kInitalReadBufferSize):
         com_list_(buffer_size),
         com_list_size_(0),
         infile_(fn.c_str(), std::ifstream::in | std::ifstream::binary),
@@ -158,17 +158,17 @@ protected:
 
 class ComSubseqFileWriter{
 #if !defined(__GTEST_PCPE__)
-    static const std::size_t gINITIAL_WRITE_BUFFER_SIZE = 10000;
+    static const std::size_t kInitialWriteBufferSize = 10000;
 #else
-    static const std::size_t gINITIAL_WRITE_BUFFER_SIZE = 2;
+    static const std::size_t kInitialWriteBufferSize = 2;
 #endif
 public:
     static void writeFile(const Filename& fn,
                           std::vector<ComSubseq>& com_list,
-                          std::size_t buffer_size=gINITIAL_WRITE_BUFFER_SIZE);
+                          std::size_t buffer_size=kInitialWriteBufferSize);
 
     ComSubseqFileWriter(Filename fn,
-            std::size_t buffer_size=gINITIAL_WRITE_BUFFER_SIZE):
+            std::size_t buffer_size=kInitialWriteBufferSize):
         com_list_(buffer_size),
         com_list_size_(0),
         outfile_(fn.c_str(), std::ofstream::out | std::ofstream::binary){
