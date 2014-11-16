@@ -93,34 +93,22 @@ void esort_merge_sort_files(const FilenameList& fn_list,
         std::pop_heap(csfr_list.begin(), csfr_list.end(), cmp);
         csfr_list[csfr_list.size()-1].readSeq(seq);
 
-#if defined(__GTEST_PCPE__)
-        seq.print();
+        // write the min element to the merge output file
+        esort_out.writeSeq(seq);
+#if defined(__DEBUG__)  && !defined(__GTEST_PCPE__)
+        if(write_count++ % 100000 == 0){
+            std::cout << __FILE__ << " " << __LINE__ << ": " << "write " << write_count << " " << csfr_list.size() << std::endl;
+        }
 #endif
 
         // if the reading state of the file is eof, the list would remove the
         // file. Otherwise it push heap the file 
         if(csfr_list[csfr_list.size()-1].eof()){
-#if defined(__DEBUG__)
-            std::cout << __FILE__ << " " << __LINE__ << ": "
-                      << csfr_list[csfr_list.size()-1].getFn() << std::endl;
-#endif
             csfr_list.pop_back();
         }
         else{
             std::push_heap(csfr_list.begin(), csfr_list.end(), cmp);
         }
-
-        // write the min element to the merge output file
-        esort_out.writeSeq(seq);
-#if defined(__DEBUG__) 
-#if !defined(__GTEST_PCPE__)
-        if(write_count++ % 100000 == 0){
-#endif
-            std::cout << __FILE__ << " " << __LINE__ << ": " << "write " << write_count << " " << csfr_list.size() << std::endl;
-#if !defined(__GTEST_PCPE__)
-        }
-#endif
-#endif
     }
 
     // clean the write buffer and close the file

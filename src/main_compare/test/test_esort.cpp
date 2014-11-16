@@ -186,12 +186,24 @@ TEST(esort, test_esort_merge_sort_files){
 
     ComSubseqList csl;
     ComSubseqFileReader::readFile("./testoutput/esort_merged_output.out", csl);
+
+#if 0
     std::cout << std::endl << std::endl;
     for(auto& cs: csl){
         cs.print();
     }
     std::cout << std::endl << std::endl;
+#endif
 
+    std::vector<ComSubseq> ans;
+    ans.push_back(ComSubseq(0, 0, 1, 0));
+    ans.push_back(ComSubseq(1, 0, 1, 0));
+    ans.push_back(ComSubseq(1, 1, 2, 0));
+    ans.push_back(ComSubseq(2, 0, 1, 0));
+    ans.push_back(ComSubseq(2, 1, 2, 0));
+    ans.push_back(ComSubseq(2, 1, 3, 1));
+
+    assert_comsubseq_list(csl, ans);
 }
 
 }

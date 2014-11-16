@@ -9,6 +9,25 @@
 namespace pcpe{
 
 /**
+ * @brief  Get File size
+ *
+ * @param filename input file name
+ *
+ * @return the size of the file (unit: byte)
+ */
+std::size_t get_filesize(const Filename& fn)
+{
+    std::ifstream in(fn, std::ifstream::ate | std::ifstream::binary);
+
+    std::size_t fsize = static_cast<std::size_t>(in.tellg());
+
+    in.close();
+
+    return fsize; 
+}
+
+
+/**
  * @brief  Read the whole sequence file
  *
  * @param[in]  fn  read file name
@@ -58,10 +77,6 @@ void ComSubseqFileWriter::writeFile(const Filename& fn, std::vector<ComSubseq>& 
 
 
 void ComSubseqFileReader::readSeq(ComSubseq& seq){
-    if(read_buffer_idx_ >=  com_list_size_){
-        read_buffer();
-    }
-
     if(read_buffer_idx_ >= com_list_size_){
         std::cout << __FILE__ << " " << __LINE__ << ": "
 #if defined(__DEBUG__)
@@ -74,6 +89,10 @@ void ComSubseqFileReader::readSeq(ComSubseq& seq){
     
     seq = com_list_[read_buffer_idx_];
     ++read_buffer_idx_;
+
+    if(read_buffer_idx_ >=  com_list_size_ && infile_.is_open()){
+        read_buffer();
+    }
 }
 
 void ComSubseqFileReader::writeSeq(const ComSubseq& seq){
@@ -119,16 +138,15 @@ void ComSubseqFileReader::read_buffer(){
     infile_.read(static_cast<char*>(static_cast<void*>(&com_list_[remaining_size])),
                  sizeof(ComSubseq)* (com_list_.size() - remaining_size));
 
-    bool read_fail = infile_.fail();
+    infile_.fail();
     std::size_t read_size = infile_.gcount();
-    //if(fn_ == "./testoutput/esort_output_1.out"){
-        std::cout << __FILE__ << " " << __LINE__ << ": " << fn_ << " " << read_size << " " << read_fail << std::endl;
-    //}
 
     com_list_size_ = remaining_size + read_size / sizeof(ComSubseq);
     read_buffer_idx_ = 0;
-    
-    if(infile_.eof() || read_fail){
+
+    current_read_file_size_ += read_size; 
+
+    if(current_read_file_size_ >= file_size_){
         close();
     }
 }

@@ -11,8 +11,11 @@ namespace pcpe{
 
 typedef std::string Filename;
 typedef std::vector<Filename> FilenameList;
+
 class ComSubseq;
 typedef std::vector<ComSubseq> ComSubseqList;
+
+std::size_t get_filesize(const Filename& fn);
 
 class ComSubseq{
 public:
@@ -135,7 +138,9 @@ public:
         com_list_(buffer_size),
         com_list_size_(0),
         infile_(fn.c_str(), std::ifstream::in | std::ifstream::binary),
-        read_buffer_idx_(0)
+        read_buffer_idx_(0),
+        file_size_(get_filesize(fn)),
+        current_read_file_size_(0)
 #if defined(__DEBUG__)
         ,fn_(fn)
 #endif
@@ -166,20 +171,30 @@ public:
     
     inline bool operator<(const ComSubseqFileReader& rhs)  const {
         std::cout << "read_buffer_idx_: "<< read_buffer_idx_ << std::endl;
-        return com_list_[read_buffer_idx_] < rhs.com_list_[read_buffer_idx_];
+        return com_list_[read_buffer_idx_] < rhs.com_list_[rhs.read_buffer_idx_];
     }
 
     inline bool operator>(const ComSubseqFileReader& rhs)  const {
-        return com_list_[read_buffer_idx_] > rhs.com_list_[read_buffer_idx_];
+        return com_list_[read_buffer_idx_] > rhs.com_list_[rhs.read_buffer_idx_];
     }
 
     inline bool operator==(const ComSubseqFileReader& rhs) const {
-        return com_list_[read_buffer_idx_] == rhs.com_list_[read_buffer_idx_];
+        return com_list_[read_buffer_idx_] == rhs.com_list_[rhs.read_buffer_idx_];
     }
 
     inline bool operator>=(const ComSubseqFileReader& rhs) const { return !(*this < rhs);         }
     inline bool operator<=(const ComSubseqFileReader& rhs) const { return !(*this >= rhs);        }
     inline bool operator!=(const ComSubseqFileReader& rhs) const { return !(*this == rhs);        }
+
+#if defined(__DEBUG__)
+    void print(){
+        std::cout << fn_ << ": " << "read_buffer_idx_ : " << read_buffer_idx_ << std::endl;
+        for(std::size_t i = 0; i< com_list_size_; ++i){
+            std::cout << "\t";
+            com_list_[i].print();
+        }
+    }
+#endif
 
 protected:
     void read_buffer(); 
@@ -189,6 +204,9 @@ protected:
 
     std::ifstream infile_;
     std::size_t read_buffer_idx_;
+
+    std::size_t file_size_;               // unit: byte
+    std::size_t current_read_file_size_;  // unit: byte
 
 #if defined(__DEBUG__)
     Filename fn_;
@@ -250,6 +268,7 @@ protected:
     Filename fn_;
 #endif
 };
+
 
 } // namespace pcpe
 
