@@ -63,8 +63,11 @@ void ComSubseqFileReader::readSeq(ComSubseq& seq){
     }
 
     if(read_buffer_idx_ >= com_list_size_){
-        std::cout << "read sequence error! "
-                  << " ridx: " << read_buffer_idx_
+        std::cout << __FILE__ << " " << __LINE__ << ": "
+#if defined(__DEBUG__)
+                  << fn_ << " "
+#endif
+                  << "read sequence error! " << " ridx: " << read_buffer_idx_
                   << ", buffer size: " << com_list_size_ << std::endl;
         return;
     }
@@ -87,7 +90,7 @@ void ComSubseqFileWriter::writeSeq(const ComSubseq& seq){
     }
 
     if(com_list_size_ >= com_list_.size()){
-        std::cout << "write sequence error!" << std::endl;
+        std::cerr << __FILE__ << " - " << __FILE__ << ": " << "write sequence error!" << std::endl;
         return;
     }
 
@@ -97,7 +100,7 @@ void ComSubseqFileWriter::writeSeq(const ComSubseq& seq){
 
 void ComSubseqFileReader::read_buffer(){
     if(!infile_.is_open()){
-        std::cerr << "Read file error." << std::endl;
+        std::cerr << __FILE__ << " - " << __FILE__ << ": " << "Read file error." << std::endl;
         return;
     }
 
@@ -118,6 +121,9 @@ void ComSubseqFileReader::read_buffer(){
 
     bool read_fail = infile_.fail();
     std::size_t read_size = infile_.gcount();
+    //if(fn_ == "./testoutput/esort_output_1.out"){
+        std::cout << __FILE__ << " " << __LINE__ << ": " << fn_ << " " << read_size << " " << read_fail << std::endl;
+    //}
 
     com_list_size_ = remaining_size + read_size / sizeof(ComSubseq);
     read_buffer_idx_ = 0;

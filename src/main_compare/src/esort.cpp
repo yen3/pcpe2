@@ -21,7 +21,8 @@ std::atomic_uint esfl_index(0);
 /*****************************************************************************/
 //  Functions 
 /*****************************************************************************/
-void esort_sort_file(const Filename& fn){
+void esort_sort_file(const Filename& fn)
+{
     static const std::size_t kBufferSize = 100000;
 
     // read file to li_list
@@ -35,13 +36,18 @@ void esort_sort_file(const Filename& fn){
     ComSubseqFileWriter::writeFile(fn, li_list, kBufferSize);
 }
 
-void esort_sort_file_task(const FilenameList& esfl) {
+
+void esort_sort_file_task(const FilenameList& esfl)
+{
     std::size_t local_esfl_index;
     while(1){
         local_esfl_index = esfl_index.fetch_add(1);
         if(local_esfl_index >= esfl.size()){
             break;
         }
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
+        std::cout << local_esfl_index << std::endl;
+#endif
 
         esort_sort_file(esfl[local_esfl_index]);
     }
@@ -57,9 +63,11 @@ void esort_sort_files(const FilenameList& fn_list) {
     }
 }
 
+
 void esort_merge_sort_files(const FilenameList& fn_list,
-                            const Filename& esort_fn) {
-    static const std::size_t kBufferSize = 100000;
+                            const Filename& esort_fn,
+                            const std::size_t kBufferSize = 100000)
+{
 
 #if defined(__DEBUG__)
     std::size_t write_count = 0;
@@ -70,39 +78,55 @@ void esort_merge_sort_files(const FilenameList& fn_list,
     for(auto fn: fn_list){
         csfr_list.push_back(ComSubseqFileReader(fn, kBufferSize));
     }
-    
+
     // heapify the read_file list first
-    std::make_heap(csfr_list.begin(), csfr_list.end());
+    auto cmp = [](const ComSubseqFileReader& x, const ComSubseqFileReader& y){
+        return x > y; 
+    };
+    std::make_heap(csfr_list.begin(), csfr_list.end(), cmp);
 
     // open the merge output file and create empty location infor list
     ComSubseqFileWriter esort_out(esort_fn, kBufferSize);
     while(!csfr_list.empty()){
         // get the min element from these files
         ComSubseq seq;
-        std::pop_heap(csfr_list.begin(), csfr_list.end());
+        std::pop_heap(csfr_list.begin(), csfr_list.end(), cmp);
         csfr_list[csfr_list.size()-1].readSeq(seq);
+
+#if defined(__GTEST_PCPE__)
+        seq.print();
+#endif
 
         // if the reading state of the file is eof, the list would remove the
         // file. Otherwise it push heap the file 
         if(csfr_list[csfr_list.size()-1].eof()){
+#if defined(__DEBUG__)
+            std::cout << __FILE__ << " " << __LINE__ << ": "
+                      << csfr_list[csfr_list.size()-1].getFn() << std::endl;
+#endif
             csfr_list.pop_back();
         }
         else{
-            std::push_heap(csfr_list.begin(), csfr_list.end());
+            std::push_heap(csfr_list.begin(), csfr_list.end(), cmp);
         }
 
         // write the min element to the merge output file
         esort_out.writeSeq(seq);
 #if defined(__DEBUG__) 
+#if !defined(__GTEST_PCPE__)
         if(write_count++ % 100000 == 0){
-            std::cout << "write " << write_count << " " << csfr_list.size() << std::endl;
+#endif
+            std::cout << __FILE__ << " " << __LINE__ << ": " << "write " << write_count << " " << csfr_list.size() << std::endl;
+#if !defined(__GTEST_PCPE__)
         }
+#endif
 #endif
     }
 
     // clean the write buffer and close the file
     esort_out.close();
 }
+
 
 void esort(std::shared_ptr<FilenameList> fn_list,
            const Filename esort_fn)
@@ -118,8 +142,6 @@ void esort(std::shared_ptr<FilenameList> fn_list,
     std::cout << "esrot merge files - end" << std::endl;
 }
 
-}
 
-#if defined(__GTEST_PCPE__)
-#endif  /* __GTEST_PCPE__  */
+}
 

@@ -11,6 +11,8 @@ namespace pcpe{
 
 typedef std::string Filename;
 typedef std::vector<Filename> FilenameList;
+class ComSubseq;
+typedef std::vector<ComSubseq> ComSubseqList;
 
 class ComSubseq{
 public:
@@ -27,6 +29,17 @@ public:
 
     bool operator<(const ComSubseq& rhs) const
     {
+        if(x_ == rhs.x_){
+            if(y_ == rhs.y_){
+                if(x_loc_ == rhs.x_loc_){
+                    return y_loc_ < rhs.y_loc_;
+                }
+                return x_loc_ < rhs.x_loc_;
+            }
+            return y_ < rhs.y_;
+        }
+        return x_ < rhs.x_;
+#if 0
         int c[4] = {x_ - rhs.x_,
                     y_ - rhs.y_,
                     x_loc_ - rhs.x_loc_,
@@ -38,10 +51,12 @@ public:
             } 
         }
         return false;
+#endif
     }
 
     bool operator>(const ComSubseq& rhs) const
     {
+#if 0
         int c[4] = {x_ - rhs.x_,
                     y_ - rhs.y_,
                     x_loc_ - rhs.x_loc_,
@@ -53,6 +68,17 @@ public:
             } 
         }
         return false;
+#endif
+        if(x_ == rhs.x_){
+            if(y_ == rhs.y_){
+                if(x_loc_ == rhs.x_loc_){
+                    return y_loc_ > rhs.y_loc_;
+                }
+                return x_loc_ > rhs.x_loc_;
+            }
+            return y_ > rhs.y_;
+        }
+        return x_ > rhs.x_;
     }
 
     inline bool operator==(const ComSubseq& rhs) const
@@ -70,7 +96,8 @@ public:
 
     inline bool isContinued(const ComSubseq& rhs){
         return (x_ == rhs.x_) && (y_ == rhs.y_) &&
-               (rhs.x_loc_ - x_loc_ == 1)  && (rhs.y_loc_ - y_loc_ == 1);
+               ((rhs.x_loc_ - x_loc_ == 1)  || (x_loc_ - rhs.x_loc_ == 1)) &&
+               ((rhs.y_loc_ - y_loc_ == 1)  || (y_loc_ - rhs.y_loc_ == 1));
     }
 
     inline bool isSameSeqeunce(const ComSubseq& rhs){
@@ -108,7 +135,11 @@ public:
         com_list_(buffer_size),
         com_list_size_(0),
         infile_(fn.c_str(), std::ifstream::in | std::ifstream::binary),
-        read_buffer_idx_(0){
+        read_buffer_idx_(0)
+#if defined(__DEBUG__)
+        ,fn_(fn)
+#endif
+    {
 
         read_buffer();
 
@@ -116,6 +147,9 @@ public:
 
     void readSeq(ComSubseq& seq);
     void writeSeq(const ComSubseq& seq);
+#if defined(__DEBUG__)
+    const Filename& getFn(){ return fn_; };
+#endif
     
     inline void close(){
         infile_.close();
@@ -131,6 +165,7 @@ public:
     }
     
     inline bool operator<(const ComSubseqFileReader& rhs)  const {
+        std::cout << "read_buffer_idx_: "<< read_buffer_idx_ << std::endl;
         return com_list_[read_buffer_idx_] < rhs.com_list_[read_buffer_idx_];
     }
 
@@ -154,6 +189,10 @@ protected:
 
     std::ifstream infile_;
     std::size_t read_buffer_idx_;
+
+#if defined(__DEBUG__)
+    Filename fn_;
+#endif
 };
 
 class ComSubseqFileWriter{
@@ -171,8 +210,14 @@ public:
             std::size_t buffer_size=kInitialWriteBufferSize):
         com_list_(buffer_size),
         com_list_size_(0),
-        outfile_(fn.c_str(), std::ofstream::out | std::ofstream::binary){
+        outfile_(fn.c_str(), std::ofstream::out | std::ofstream::binary)
+#if defined(__DEBUG__)
+        ,fn_(fn)
+#endif
+    {
+
     }
+
     ~ComSubseqFileWriter(){
         if(is_open()){
             close();
@@ -181,6 +226,9 @@ public:
 
     void readSeq(ComSubseq& seq);
     void writeSeq(const ComSubseq& seq);
+#if defined(__DEBUG__)
+    const Filename& getFn(){ return fn_;};
+#endif
 
     inline void close(){
         write_buffer();
@@ -197,6 +245,10 @@ protected:
     std::size_t com_list_size_;
 
     std::ofstream outfile_;
+
+#if defined(__DEBUG__)
+    Filename fn_;
+#endif
 };
 
 } // namespace pcpe
