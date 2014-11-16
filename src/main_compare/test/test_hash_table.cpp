@@ -69,6 +69,27 @@ TEST(hash_table, hash_value){
     EXPECT_EQ(703, hash_value("AAABBB"));
 }
 
+TEST(hash_table, read_sequence_list){
+    std::string filename("./testdata/test_seq1.txt");
+
+    SeqList seq_list;
+    read_sequence_list(seq_list, filename.c_str());
+    EXPECT_EQ(seq_list.size(), 3);
+    EXPECT_EQ(seq_list[0], "ABCDEFG");
+    EXPECT_EQ(seq_list[1], "ABCDEFGH");
+    EXPECT_EQ(seq_list[2], "ABCDEFGHI");
+}
+
+TEST(hash_table, read_sequence_list_2){
+    std::string filename("./testdata/test_seq2.txt");
+
+    SeqList seq_list;
+    read_sequence_list(seq_list, filename.c_str());
+    EXPECT_EQ(seq_list.size(), 2);
+    EXPECT_EQ(seq_list[0], "BCDEFG");
+    EXPECT_EQ(seq_list[1], "CDEFGHI");
+}
+
 
 TEST(hash_table, add_substring_to_hashtable){
     std::string s("ABCDEFGHI");
@@ -100,26 +121,6 @@ TEST(hash_table, add_substring_to_hashtable){
 }
 
 
-TEST(hash_table, read_sequence_list){
-    std::string filename("./testdata/test_seq1.txt");
-
-    SeqList seq_list;
-    read_sequence_list(seq_list, filename.c_str());
-    EXPECT_EQ(seq_list.size(), 3);
-    EXPECT_EQ(seq_list[0], "ABCDEFG");
-    EXPECT_EQ(seq_list[1], "ABCDEFGH");
-    EXPECT_EQ(seq_list[2], "ABCDEFGHI");
-}
-
-TEST(hash_table, read_sequence_list_2){
-    std::string filename("./testdata/test_seq2.txt");
-
-    SeqList seq_list;
-    read_sequence_list(seq_list, filename.c_str());
-    EXPECT_EQ(seq_list.size(), 2);
-    EXPECT_EQ(seq_list[0], "BCDEFG");
-    EXPECT_EQ(seq_list[1], "CDEFGHI");
-}
 
 
 TEST(hash_table, test_create_hash_table){

@@ -25,7 +25,7 @@ run:
 	./build/test_main.out
 
 test:
-	./build/test_main.out
+	make -j4 && ./build/test_main.out
 
 					  
 clean:
