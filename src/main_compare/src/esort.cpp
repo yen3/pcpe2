@@ -69,7 +69,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
                             const std::size_t kBufferSize = 100000)
 {
 
-#if defined(__DEBUG__)
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
     std::size_t write_count = 0;
 #endif
 
@@ -91,10 +91,11 @@ void esort_merge_sort_files(const FilenameList& fn_list,
         // get the min element from these files
         ComSubseq seq;
         std::pop_heap(csfr_list.begin(), csfr_list.end(), cmp);
-        csfr_list[csfr_list.size()-1].readSeq(seq);
+        csfr_list.back().readSeq(seq);
 
         // write the min element to the merge output file
         esort_out.writeSeq(seq);
+
 #if defined(__DEBUG__)  && !defined(__GTEST_PCPE__)
         if(write_count++ % 100000 == 0){
             std::cout << __FILE__ << " " << __LINE__ << ": " << "write " << write_count << " " << csfr_list.size() << std::endl;
@@ -103,7 +104,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
 
         // if the reading state of the file is eof, the list would remove the
         // file. Otherwise it push heap the file 
-        if(csfr_list[csfr_list.size()-1].eof()){
+        if(csfr_list.back().eof()){
             csfr_list.pop_back();
         }
         else{
