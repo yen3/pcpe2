@@ -91,7 +91,7 @@ public:
     }
     
     inline bool operator>=(const ComSubseq& rhs) const { return !(*this < rhs); }
-    inline bool operator<=(const ComSubseq& rhs) const { return !(*this >= rhs); }
+    inline bool operator<=(const ComSubseq& rhs) const { return !(*this > rhs); }
     inline bool operator!=(const ComSubseq& rhs) const { return !(*this == rhs); }
 
     inline int getLength(){ return len_; };
@@ -133,6 +133,10 @@ public:
              std::vector<ComSubseq>& com_list,
              std::size_t buffer_size=kInitalReadBufferSize);
 
+    static bool esortMergeCompare(const ComSubseqFileReader& x,
+                                  const ComSubseqFileReader& y);
+
+    ComSubseqFileReader() = default;
     ComSubseqFileReader(Filename fn,
             std::size_t buffer_size=kInitalReadBufferSize):
         com_list_(buffer_size),
@@ -168,23 +172,7 @@ public:
         if(is_open()) return false;
         else return read_buffer_idx_ >= com_list_size_; 
     }
-    
-    inline bool operator<(const ComSubseqFileReader& rhs)  const {
-        std::cout << "read_buffer_idx_: "<< read_buffer_idx_ << std::endl;
-        return com_list_[read_buffer_idx_] < rhs.com_list_[rhs.read_buffer_idx_];
-    }
 
-    inline bool operator>(const ComSubseqFileReader& rhs)  const {
-        return com_list_[read_buffer_idx_] > rhs.com_list_[rhs.read_buffer_idx_];
-    }
-
-    inline bool operator==(const ComSubseqFileReader& rhs) const {
-        return com_list_[read_buffer_idx_] == rhs.com_list_[rhs.read_buffer_idx_];
-    }
-
-    inline bool operator>=(const ComSubseqFileReader& rhs) const { return !(*this < rhs);         }
-    inline bool operator<=(const ComSubseqFileReader& rhs) const { return !(*this >= rhs);        }
-    inline bool operator!=(const ComSubseqFileReader& rhs) const { return !(*this == rhs);        }
 
 #if defined(__DEBUG__)
     void print(){
@@ -224,6 +212,7 @@ public:
                           std::vector<ComSubseq>& com_list,
                           std::size_t buffer_size=kInitialWriteBufferSize);
 
+    ComSubseqFileWriter() = default;
     ComSubseqFileWriter(Filename fn,
             std::size_t buffer_size=kInitialWriteBufferSize):
         com_list_(buffer_size),

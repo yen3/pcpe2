@@ -6,8 +6,8 @@ LIB = -L./gtest -lgtest
 INCLUDE = -I../inc -I./gtest/include
 
 OBJ_DIR=build
-OBJS=test_main.o test_hash_table.o test_esort.o hash_table.o esort.o \
-	 max_comsubseq.o pcpe_util.o
+OBJS=test_main.o test_hash_table.o test_esort.o test_pcpe_util.o hash_table.o \
+     esort.o max_comsubseq.o pcpe_util.o
 
 BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 OUTPUT=test_main.out

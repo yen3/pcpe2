@@ -9,14 +9,14 @@
 namespace pcpe {
 
 void maximum_common_subseq(const Filename& esort_result,
-                           const Filename& reduce_result)
-{
+                           const Filename& reduce_result) {
     const std::size_t kReadMaxSize = 1000000;
     const std::size_t kWriteBufferSize = 1000000;
 
     // open the read file
     std::cout << "read file: " << esort_result << std::endl;
-    std::ifstream infile(esort_result, std::ifstream::in | std::ifstream::binary);
+    std::ifstream infile(esort_result,
+                         std::ifstream::in | std::ifstream::binary);
 
     // open the reduce output file
     ComSubseqFileWriter outfile(reduce_result, kWriteBufferSize);
@@ -27,13 +27,14 @@ void maximum_common_subseq(const Filename& esort_result,
     std::size_t com_list_size = 0;
     bool read_fail = false;
 
-    while(!infile.eof() && !read_fail){
+    while (!infile.eof() && !read_fail) {
         std::fill(reduced_list.begin(), reduced_list.end(), false);
 
         std::cout << "read size " << kReadMaxSize - remaining_size << std::endl;
-        // read the file with READ_MAX_SIZE - remaining size 
-        infile.read(static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
-                    sizeof(ComSubseq) * (kReadMaxSize - remaining_size));
+        // read the file with READ_MAX_SIZE - remaining size
+        infile.read(
+            static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
+            sizeof(ComSubseq) * (kReadMaxSize - remaining_size));
 
         // check the read status. if the status is false, it means its the
         // last time to read the file.
@@ -45,21 +46,28 @@ void maximum_common_subseq(const Filename& esort_result,
         // find the lastest index of the part (from READ_MAX_SIZE to 0)
         // if x1 != x2 and y1 != y2
         std::size_t handle_size = com_list_size;
-        for(; com_list[handle_size-1].isSameSeqeunce(com_list[handle_size-2]); --handle_size) ;
-        if(!read_fail){
+        for (; com_list[handle_size - 1].isSameSeqeunce(
+                 com_list[handle_size - 2]);
+             --handle_size)
+            ;
+        if (!read_fail) {
             handle_size -= 1;
         }
-        std::cout << "handle size " << handle_size << " " << com_list_size << std::endl;
+        std::cout << "handle size " << handle_size << " " << com_list_size
+                  << std::endl;
 
         remaining_size = com_list_size - handle_size;
 
         // start to reduce
-        for(std::size_t i=0; i<handle_size; ++i){
-            if(!reduced_list[i]){
+        for (std::size_t i = 0; i < handle_size; ++i) {
+            if (!reduced_list[i]) {
                 std::size_t l = com_list[i].getLength();
-                for(std::size_t j=i; j+1 < handle_size && com_list[j].isContinued(com_list[j+1]); j++){
-                    reduced_list[j+1] = true;
-                    l++; 
+                for (std::size_t j = i;
+                     j + 1 < handle_size &&
+                         com_list[j].isContinued(com_list[j + 1]);
+                     j++) {
+                    reduced_list[j + 1] = true;
+                    l++;
                 }
 
                 com_list[i].setLength(l);
@@ -67,19 +75,18 @@ void maximum_common_subseq(const Filename& esort_result,
         }
 
         // write the reduce part to file
-        for(std::size_t i=0; i<handle_size; ++i){
-            if(!reduced_list[i]){
+        for (std::size_t i = 0; i < handle_size; ++i) {
+            if (!reduced_list[i]) {
                 outfile.writeSeq(com_list[i]);
-                if(com_list[i].getLength() >= 8){
+                if (com_list[i].getLength() >= 8) {
                     com_list[i].print();
                 }
             }
         }
 
         // move the remaining to the begin of the vector
-        for(std::size_t i=0, r=handle_size;
-            r< handle_size+remaining_size;
-            ++i, ++r){
+        for (std::size_t i = 0, r = handle_size;
+             r < handle_size + remaining_size; ++i, ++r) {
             com_list[i] = com_list[r];
         }
     }
@@ -87,5 +94,4 @@ void maximum_common_subseq(const Filename& esort_result,
     outfile.close();
 }
 
-} // namespace pcpe
-
+}  // namespace pcpe

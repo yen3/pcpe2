@@ -80,17 +80,16 @@ void esort_merge_sort_files(const FilenameList& fn_list,
     }
 
     // heapify the read_file list first
-    auto cmp = [](const ComSubseqFileReader& x, const ComSubseqFileReader& y){
-        return x > y; 
-    };
-    std::make_heap(csfr_list.begin(), csfr_list.end(), cmp);
+    std::make_heap(csfr_list.begin(), csfr_list.end(),
+                   ComSubseqFileReader::esortMergeCompare);
 
     // open the merge output file and create empty location infor list
     ComSubseqFileWriter esort_out(esort_fn, kBufferSize);
     while(!csfr_list.empty()){
         // get the min element from these files
         ComSubseq seq;
-        std::pop_heap(csfr_list.begin(), csfr_list.end(), cmp);
+        std::pop_heap(csfr_list.begin(), csfr_list.end(),
+                      ComSubseqFileReader::esortMergeCompare);
         csfr_list.back().readSeq(seq);
 
         // write the min element to the merge output file
@@ -98,7 +97,8 @@ void esort_merge_sort_files(const FilenameList& fn_list,
 
 #if defined(__DEBUG__)  && !defined(__GTEST_PCPE__)
         if(write_count++ % 100000 == 0){
-            std::cout << __FILE__ << " " << __LINE__ << ": " << "write " << write_count << " " << csfr_list.size() << std::endl;
+            std::cout << __FILE__ << " " << __LINE__ << ": " << "write "
+                      << write_count << " " << csfr_list.size() << std::endl;
         }
 #endif
 
@@ -108,7 +108,8 @@ void esort_merge_sort_files(const FilenameList& fn_list,
             csfr_list.pop_back();
         }
         else{
-            std::push_heap(csfr_list.begin(), csfr_list.end(), cmp);
+            std::push_heap(csfr_list.begin(), csfr_list.end(),
+                           ComSubseqFileReader::esortMergeCompare);
         }
     }
 
