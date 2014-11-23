@@ -6,6 +6,9 @@
 
 namespace pcpe {
 
+extern void assert_comsubseq_list(const ComSubseqList& cslx,
+                                  const ComSubseqList& csly);
+
 TEST(pcpe_util, test_get_filesize) {
     EXPECT_EQ(get_filesize("./testdata/test_seq1.txt"), 35);
     EXPECT_EQ(get_filesize("./testdata/test_seq2.txt"), 21);
@@ -65,5 +68,159 @@ TEST(pcpe_util, test_ComSubseq_SequenceFunction) {
     EXPECT_FALSE(x.isContinued(y));
     EXPECT_FALSE(y.isContinued(x));
 }
+
+TEST(pcpe_util, test_ComSubseqFileReader_readFile) {
+    Filename input_filename("./testdata/test_esort_file.in");
+
+    std::vector<ComSubseq> com_seq_list;
+    ComSubseqFileReader::readFile(input_filename, com_seq_list);
+
+    std::vector<ComSubseq> ans_list;
+    ans_list.push_back(ComSubseq(1, 1, 2, 0));
+    ans_list.push_back(ComSubseq(2, 1, 2, 0));
+    ans_list.push_back(ComSubseq(0, 0, 1, 0));
+    ans_list.push_back(ComSubseq(1, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 1, 3, 1));
+
+    assert_comsubseq_list(com_seq_list, ans_list);
+}
+
+
+TEST(pcpe_util, test_ComSubseqFileReader) {
+    Filename ifn("./testdata/test_esort_file.in");  // input filename
+
+    ComSubseqFileReader csfr(ifn);
+
+#if defined(__DEBUG__)
+    EXPECT_EQ(csfr.getFn(), ifn);
+#endif
+
+    EXPECT_TRUE(csfr.is_open());
+    EXPECT_FALSE(csfr.eof());
+
+    std::vector<ComSubseq> ans_list;
+    ans_list.push_back(ComSubseq(1, 1, 2, 0));
+    ans_list.push_back(ComSubseq(2, 1, 2, 0));
+    ans_list.push_back(ComSubseq(0, 0, 1, 0));
+    ans_list.push_back(ComSubseq(1, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 1, 3, 1));
+
+    for (auto i = 0; i < ans_list.size(); ++i) {
+        ComSubseq read_seq;
+        csfr.readSeq(read_seq);
+
+        EXPECT_EQ(read_seq, ans_list[i]) << i << std::endl;
+
+        if (i != ans_list.size() - 1) {
+            EXPECT_TRUE(csfr.is_open()) << i << std::endl;
+            EXPECT_FALSE(csfr.eof()) << i << std::endl;
+        } else{
+            EXPECT_FALSE(csfr.is_open());
+            EXPECT_TRUE(csfr.eof());
+        }
+    }
+
+    EXPECT_FALSE(csfr.is_open());
+    EXPECT_TRUE(csfr.eof());
+}
+
+TEST(pcpe_util, test_ComSubseqFileWriter_writeFile) {
+    Filename input_filename("./testdata/test_esort_file.in");
+    Filename output_filename(
+        "./testoutput/test_ComSubseqFileWriter_writeFile.out");
+
+    {
+        std::vector<ComSubseq> com_seq_list;
+        ComSubseqFileReader::readFile(input_filename, com_seq_list);
+        ComSubseqFileWriter::writeFile(output_filename, com_seq_list);
+    }
+
+
+    std::vector<ComSubseq> com_seq_list;
+    ComSubseqFileReader::readFile(output_filename, com_seq_list);
+
+    std::vector<ComSubseq> ans_list;
+    ans_list.push_back(ComSubseq(1, 1, 2, 0));
+    ans_list.push_back(ComSubseq(2, 1, 2, 0));
+    ans_list.push_back(ComSubseq(0, 0, 1, 0));
+    ans_list.push_back(ComSubseq(1, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 1, 3, 1));
+
+    assert_comsubseq_list(com_seq_list, ans_list);
+}
+
+TEST(pcpe_util, test_ComSubseqFileWriter) {
+    std::vector<ComSubseq> ans_list;
+    ans_list.push_back(ComSubseq(1, 1, 2, 0));
+    ans_list.push_back(ComSubseq(2, 1, 2, 0));
+    ans_list.push_back(ComSubseq(0, 0, 1, 0));
+    ans_list.push_back(ComSubseq(1, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 1, 3, 1));
+
+    Filename output_filename("./testoutput/test_ComSubseqFileWriter.out");
+
+    {
+        ComSubseqFileWriter csfw(output_filename);
+        EXPECT_TRUE(csfw.is_open());
+
+        for(const auto& cs: ans_list){
+            csfw.writeSeq(cs);
+
+            EXPECT_TRUE(csfw.is_open());
+        }
+
+        csfw.close();
+        EXPECT_FALSE(csfw.is_open());
+    }
+
+
+    std::vector<ComSubseq> com_seq_list;
+    ComSubseqFileReader::readFile(output_filename, com_seq_list);
+    
+    assert_comsubseq_list(com_seq_list, ans_list);
+}
+
+TEST(pcpe_util, test_ComSubseqFileWriter2) {
+    std::vector<ComSubseq> ans_list;
+    ans_list.push_back(ComSubseq(1, 1, 2, 0));
+    ans_list.push_back(ComSubseq(2, 1, 2, 0));
+    ans_list.push_back(ComSubseq(0, 0, 1, 0));
+    ans_list.push_back(ComSubseq(1, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 0, 1, 0));
+    ans_list.push_back(ComSubseq(2, 1, 3, 1));
+
+    Filename output_filename("./testoutput/test_ComSubseqFileWriter.out");
+
+    {
+        ComSubseqFileWriter csfw(output_filename);
+        EXPECT_TRUE(csfw.is_open());
+
+        for(const auto& cs: ans_list){
+            csfw.writeSeq(cs);
+
+            EXPECT_TRUE(csfw.is_open());
+        }
+
+        csfw.close();
+        EXPECT_FALSE(csfw.is_open());
+    }
+
+    std::vector<ComSubseq> com_seq_list;
+    ComSubseqFileReader csfr(output_filename);
+    while(!csfr.eof()){
+        ComSubseq seq;
+        csfr.readSeq(seq);
+        com_seq_list.push_back(seq);
+    }
+
+    assert_comsubseq_list(com_seq_list, ans_list);
+
+}
+
+
 }
 #endif
