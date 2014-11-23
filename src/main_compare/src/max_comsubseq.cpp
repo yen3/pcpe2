@@ -9,30 +9,31 @@ namespace pcpe {
 
 void maximum_common_subseq(const Filename& esort_result,
                            const Filename& reduce_result,
-                           const std::size_t kReadMaxSize,
-                           const std::size_t kWriteBufferSize) {
+                           const std::size_t read_buffer_size,
+                           const std::size_t write_buffer_size) {
     // open the read file
     std::cout << "read file: " << esort_result << std::endl;
     std::ifstream infile(esort_result,
                          std::ifstream::in | std::ifstream::binary);
 
     // open the reduce output file
-    ComSubseqFileWriter outfile(reduce_result, kWriteBufferSize);
+    ComSubseqFileWriter outfile(reduce_result, write_buffer_size);
 
     std::size_t remaining_size = 0;
-    std::vector<ComSubseq> com_list(kReadMaxSize);
-    std::vector<bool> reduced_list(kReadMaxSize);
+    ComSubseq* com_list = new ComSubseq[read_buffer_size];
+    bool* reduced_list = new bool[read_buffer_size];
+
     std::size_t com_list_size = 0;
     bool read_fail = false;
 
     while (!infile.eof() && !read_fail) {
-        std::fill(reduced_list.begin(), reduced_list.end(), false);
+        std::fill(reduced_list, reduced_list + read_buffer_size, false);
 
-        std::cout << "read size " << kReadMaxSize - remaining_size << std::endl;
+        std::cout << "read size " << read_buffer_size - remaining_size << std::endl;
         // read the file with READ_MAX_SIZE - remaining size
         infile.read(
             reinterpret_cast<char*>(&com_list[remaining_size]),
-            sizeof(ComSubseq) * (kReadMaxSize - remaining_size));
+            sizeof(ComSubseq) * (read_buffer_size - remaining_size));
 
         // check the read status. if the status is false, it means its the
         // last time to read the file.
@@ -92,6 +93,9 @@ void maximum_common_subseq(const Filename& esort_result,
     }
     infile.close();
     outfile.close();
+
+    delete [] com_list;
+    delete [] reduced_list;
 }
 
 }  // namespace pcpe
