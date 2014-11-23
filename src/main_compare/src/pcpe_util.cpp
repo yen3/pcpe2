@@ -43,7 +43,7 @@ void ComSubseqFileReader::readFile(const Filename& fn,
 
     std::vector<ComSubseq> buffer(buffer_size);
     while (1) {
-        infile.read(static_cast<char*>(static_cast<void*>(&buffer[0])),
+        infile.read(reinterpret_cast<char*>(&buffer[0]),
                     sizeof(ComSubseq) * buffer.size());
         std::size_t read_size = infile.gcount();
 
@@ -73,7 +73,7 @@ void ComSubseqFileWriter::writeFile(const Filename& fn,
         write_size += current_write_size;
 
         std::copy(write_begin, write_end, buffer.begin());
-        outfile.write(static_cast<char*>(static_cast<void*>(&buffer[0])),
+        outfile.write(reinterpret_cast<char*>(&buffer[0]),
                       sizeof(ComSubseq) * current_write_size);
     }
     outfile.flush();
@@ -138,7 +138,7 @@ void ComSubseqFileReader::read_buffer() {
 
     // fill the buffer with new data
     infile_.read(
-        static_cast<char*>(static_cast<void*>(&com_list_[remaining_size])),
+        reinterpret_cast<char*>(&com_list_[remaining_size]),
         sizeof(ComSubseq) * (com_list_.size() - remaining_size));
 
     infile_.fail();
@@ -159,7 +159,7 @@ void ComSubseqFileWriter::write_buffer() {
         return;
     }
 
-    outfile_.write(static_cast<char*>(static_cast<void*>(&com_list_[0])),
+    outfile_.write(reinterpret_cast<char*>(&com_list_[0]),
                    sizeof(ComSubseq) * com_list_size_);
     com_list_size_ = 0;
 }

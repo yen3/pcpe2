@@ -1,6 +1,5 @@
 #include <vector>
 #include <string>
-#include <array>
 #include <algorithm>
 
 #include "pcpe_util.h"
@@ -9,10 +8,9 @@
 namespace pcpe {
 
 void maximum_common_subseq(const Filename& esort_result,
-                           const Filename& reduce_result) {
-    const std::size_t kReadMaxSize = 1000000;
-    const std::size_t kWriteBufferSize = 1000000;
-
+                           const Filename& reduce_result,
+                           const std::size_t kReadMaxSize,
+                           const std::size_t kWriteBufferSize) {
     // open the read file
     std::cout << "read file: " << esort_result << std::endl;
     std::ifstream infile(esort_result,
@@ -33,7 +31,7 @@ void maximum_common_subseq(const Filename& esort_result,
         std::cout << "read size " << kReadMaxSize - remaining_size << std::endl;
         // read the file with READ_MAX_SIZE - remaining size
         infile.read(
-            static_cast<char*>(static_cast<void*>(&com_list[remaining_size])),
+            reinterpret_cast<char*>(&com_list[remaining_size]),
             sizeof(ComSubseq) * (kReadMaxSize - remaining_size));
 
         // check the read status. if the status is false, it means its the
@@ -78,9 +76,11 @@ void maximum_common_subseq(const Filename& esort_result,
         for (std::size_t i = 0; i < handle_size; ++i) {
             if (!reduced_list[i]) {
                 outfile.writeSeq(com_list[i]);
+#if defined(__DEBUG__)
                 if (com_list[i].getLength() >= 8) {
                     com_list[i].print();
                 }
+#endif
             }
         }
 
