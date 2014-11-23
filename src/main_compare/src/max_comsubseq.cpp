@@ -50,7 +50,9 @@ void fill_buffer_from_file(std::ifstream& infile,
                            ComSubseq* com_list,
                            std::size_t& com_list_size, bool& read_fail) {
 
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
     std::cout << "read size " << read_buffer_size - remaining_size << std::endl;
+#endif
 
     // read the file with READ_MAX_SIZE - remaining size
     infile.read(reinterpret_cast<char*>(&com_list[remaining_size]),
@@ -106,7 +108,10 @@ static
 void reduce_com_seq_list(ComSubseq* com_list, bool* reduced_list,
                          const std::size_t handle_size) {
 
+    // initialized the reduce list
     std::fill(reduced_list, reduced_list + handle_size, false);
+
+    // find the maximum common subsequence from the com_list
     for (std::size_t i = 0; i < handle_size; ++i) {
         if (!reduced_list[i]) {
             std::size_t l = com_list[i].getLength();
@@ -204,3 +209,4 @@ void maximum_common_subseq(const Filename& esort_result,
 }
 
 }  // namespace pcpe
+
