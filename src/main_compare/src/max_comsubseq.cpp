@@ -10,10 +10,10 @@ namespace pcpe {
 /**
  * @brief Move the unreduced part to the begin of the buffer.
  *
- * @param[inout] com_list read buffer
- * @param[in] com_list_size current size of the read buffer
- * @param[in] last_handle_size the prcoessed size of the read buffer
- * @param[out] remaining_size the unreduced size of the read buffer
+ * @param[in][out] com_list read buffer
+ * @param[in]      com_list_size current size of the read buffer
+ * @param[in]      last_handle_size the prcoessed size of the read buffer
+ * @param[out]     remaining_size the unreduced size of the read buffer
  */
 #if !defined(__GTEST_PCPE__)
 static
@@ -33,13 +33,13 @@ void move_remaining_part(ComSubseq* com_list,
 /**
  * @brief  read file contents to fill the read buffer for maximum_common_subseq
  *
- * @param[in]    infile  input file reader stream
- * @param[in]    remaining_size the current remaining size for the `com_list`
- * @param[in]    read_buffer_size the maximum size for the `com_list`
- * @param[inout] com_list the read buffer, it is also as a output.
- * @param[out]   com_list_size the current size of `com_list` after the
- *                             reading process
- * @param[out]   read_fail the reading status of the infile
+ * @param[in]      infile  input file reader stream
+ * @param[in]      remaining_size the current remaining size for the `com_list`
+ * @param[in]      read_buffer_size the maximum size for the `com_list`
+ * @param[in][out] com_list the read buffer, it is also as a output.
+ * @param[out]     com_list_size the current size of `com_list` after the
+ *                               reading process
+ * @param[out]     read_fail the reading status of the infile
  */
 #if !defined(__GTEST_PCPE__)
 static
@@ -48,7 +48,8 @@ void fill_buffer_from_file(std::ifstream& infile,
                            const std::size_t remaining_size,
                            const std::size_t read_buffer_size,
                            ComSubseq* com_list,
-                           std::size_t& com_list_size, bool& read_fail) {
+                           std::size_t& com_list_size,
+                           bool& read_fail) {
 
 #if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
     std::cout << "read size " << read_buffer_size - remaining_size << std::endl;
@@ -58,7 +59,7 @@ void fill_buffer_from_file(std::ifstream& infile,
     infile.read(reinterpret_cast<char*>(&com_list[remaining_size]),
                 sizeof(ComSubseq) * (read_buffer_size - remaining_size));
 
-    // check the read status. if the status is false, it means its the
+    // check the read status. if the status is false, it means it's the
     // last time to read the file.
     read_fail = infile.fail();
 
@@ -69,9 +70,9 @@ void fill_buffer_from_file(std::ifstream& infile,
 /**
  * @brief  
  *
- * @param[in] com_list
- * @param[in] com_list_size
- * @param[in] read_fail
+ * @param[in]  com_list
+ * @param[in]  com_list_size
+ * @param[in]  read_fail
  * @param[out] handle_size
  *
  */
@@ -133,14 +134,16 @@ void reduce_com_seq_list(ComSubseq* com_list, bool* reduced_list,
 static
 #endif
 void write_reduced_com_list_file(ComSubseqFileWriter& outfile,
-                                 ComSubseq* com_list, bool* reduced_list,
+                                 ComSubseq* com_list,
+                                 bool* reduced_list,
                                  const std::size_t handle_size) {
+
     // write the reduce part to file
     for (std::size_t i = 0; i < handle_size; ++i) {
         if (!reduced_list[i]) {
             outfile.writeSeq(com_list[i]);
-#if defined(__DEBUG__)
-            if (com_list[i].getLength() >= 8) {
+#if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
+            if (com_list[i].getLength() >= 9) {
                 com_list[i].print();
             }
 #endif
