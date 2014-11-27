@@ -7,6 +7,7 @@
 #include <atomic>
 #include <array>
 #include <algorithm>
+#include <memory>
 
 #include "pcpe_util.h"
 #include "esort.h"
@@ -60,6 +61,7 @@ void esort_sort_files(const FilenameList& fn_list) {
     }
 }
 
+
 void esort_merge_sort_files(const FilenameList& fn_list,
                             const Filename& esort_fn,
                             const std::size_t kBufferSize = 100000) {
@@ -68,9 +70,10 @@ void esort_merge_sort_files(const FilenameList& fn_list,
 #endif
 
     // create read_file list
-    std::vector<ComSubseqFileReader> csfr_list;
+    std::vector<std::shared_ptr<ComSubseqFileReader> > csfr_list;
     for (auto fn : fn_list) {
-        csfr_list.push_back(ComSubseqFileReader(fn, kBufferSize));
+        csfr_list.push_back(std::make_shared<ComSubseqFileReader>(
+            ComSubseqFileReader(fn, kBufferSize)));
     }
 
     // heapify the read_file list first
@@ -84,7 +87,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
         ComSubseq seq;
         std::pop_heap(csfr_list.begin(), csfr_list.end(),
                       ComSubseqFileReader::esortMergeCompare);
-        csfr_list.back().readSeq(seq);
+        csfr_list.back()->readSeq(seq);
 
         // write the min element to the merge output file
         esort_out.writeSeq(seq);
@@ -99,7 +102,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
 
         // if the reading state of the file is eof, the list would remove the
         // file. Otherwise it push heap the file
-        if (csfr_list.back().eof()) {
+        if (csfr_list.back()->eof()) {
             csfr_list.pop_back();
         } else {
             std::push_heap(csfr_list.begin(), csfr_list.end(),
@@ -122,4 +125,6 @@ void esort(std::shared_ptr<FilenameList> fn_list, const Filename esort_fn) {
     esort_merge_sort_files(*fn_list, esort_fn);
     std::cout << "esrot merge files - end" << std::endl;
 }
+
+
 }
