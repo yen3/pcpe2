@@ -23,9 +23,10 @@ std::size_t get_filesize(const Filename& fn) {
     return fsize;
 }
 
-bool ComSubseqFileReader::esortMergeCompare(const ComSubseqFileReader& x,
-                                            const ComSubseqFileReader& y) {
-    return x.com_list_[x.read_buffer_idx_] > y.com_list_[y.read_buffer_idx_];
+bool ComSubseqFileReader::esortMergeCompare(
+                         const std::shared_ptr<ComSubseqFileReader> x,
+                         const std::shared_ptr<ComSubseqFileReader> y) {
+    return x->com_list_[x->read_buffer_idx_] > y->com_list_[y->read_buffer_idx_];
 }
 
 /**

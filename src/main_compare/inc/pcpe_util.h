@@ -133,8 +133,8 @@ public:
              std::vector<ComSubseq>& com_list,
              std::size_t buffer_size=kInitalReadBufferSize);
 
-    static bool esortMergeCompare(const ComSubseqFileReader& x,
-                                  const ComSubseqFileReader& y);
+    static bool esortMergeCompare(const std::shared_ptr<ComSubseqFileReader> x,
+                                  const std::shared_ptr<ComSubseqFileReader> y);
 
     ComSubseqFileReader() = default;
     ComSubseqFileReader(Filename fn,
