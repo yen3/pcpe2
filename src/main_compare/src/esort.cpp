@@ -72,8 +72,8 @@ void esort_merge_sort_files(const FilenameList& fn_list,
     // create read_file list
     std::vector<std::shared_ptr<ComSubseqFileReader> > csfr_list;
     for (auto fn : fn_list) {
-        csfr_list.push_back(std::make_shared<ComSubseqFileReader>(
-            ComSubseqFileReader(fn, kBufferSize)));
+        csfr_list.push_back(std::shared_ptr<ComSubseqFileReader>(
+                    new ComSubseqFileReader(fn, kBufferSize)));
     }
 
     // heapify the read_file list first

@@ -185,6 +185,9 @@ public:
 #endif
 
 protected:
+    ComSubseqFileReader(const ComSubseqFileReader&);
+    ComSubseqFileReader(const ComSubseqFileReader&&);
+    ComSubseqFileReader& operator=(const ComSubseqFileReader&);
     void read_buffer(); 
 
     std::vector<ComSubseq> com_list_;

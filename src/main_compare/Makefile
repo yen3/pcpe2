@@ -1,6 +1,6 @@
 VPATH = src
-CC = clang++
-#CFLAG = -std=c++11 -stdlib=libc++ -O3 -Wall
+#CC = g++-4.9
+CC = clang++ 
 CFLAG = -std=c++11 -O3 -Wall
 DEBUG = -ggdb -D__DEBUG__
 LIB =
