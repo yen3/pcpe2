@@ -26,6 +26,9 @@ typedef std::array<bool, kBufferSize> ComSubseqTestReducedBuffer;
 /*****************************************************************************/
 void assert_comsubseq_list(const ComSubseqList& cslx,
                            const ComSubseqList& csly);
+
+extern void copy_seq_file(const Filename& ifn, const Filename& ofn);
+
 extern void move_remaining_part(ComSubseq* com_list,
                                 const std::size_t com_list_size,
                                 const std::size_t last_handle_size,
@@ -245,7 +248,59 @@ TEST(max_comsubseq, test_write_reduced_com_list_file){
         ComSubseq(2, 0, 1, 0, 6),
         ComSubseq(2, 1, 2, 0, 8),
     };
+
     assert_comsubseq_list(com_seq_list, ans_list);
+}
+
+TEST(max_comsubseq, test_maximum_common_subseq) {
+    Filename oifn("./testdata/test_esort_file.in");
+    Filename ifn("./testoutput/test_maximum_common_subseq_input.in");
+    Filename ofn("./testoutput/test_maximum_common_subseq_merged.out");
+
+    // copy oifn file to ifn since the esort_sort_file would sort the file
+    // and write back
+    copy_seq_file(oifn, ifn);
+
+    
+    {
+        std::vector<ComSubseq> ans;
+        ans.push_back(ComSubseq(0, 0, 1, 0));
+        ans.push_back(ComSubseq(1, 0, 1, 0));
+        ans.push_back(ComSubseq(1, 1, 2, 0));
+        ans.push_back(ComSubseq(2, 0, 1, 0));
+        ans.push_back(ComSubseq(2, 1, 2, 0));
+        ans.push_back(ComSubseq(2, 1, 3, 1));
+        
+        extern void esort_sort_file(const Filename& fn);
+        esort_sort_file(ifn);
+        std::vector<ComSubseq> csl;
+        ComSubseqFileReader::readFile(ifn, csl);
+
+        assert_comsubseq_list(csl, ans);
+    }
+
+    {
+        maximum_common_subseq(ifn, ofn, 3);
+
+        std::vector<ComSubseq> ans;
+        ans.push_back(ComSubseq(0, 0, 1, 0, 6));
+        ans.push_back(ComSubseq(1, 0, 1, 0, 6));
+        ans.push_back(ComSubseq(1, 1, 2, 0, 6));
+        ans.push_back(ComSubseq(2, 0, 1, 0, 6));
+        ans.push_back(ComSubseq(2, 1, 2, 0, 7));
+
+        std::vector<ComSubseq> csl;
+        ComSubseqFileReader::readFile(ofn, csl);
+#if 0
+        for(auto& cs: csl){
+            cs.print(); 
+        }
+#endif
+
+        assert_comsubseq_list(csl, ans);
+    }
+
+
 
 }
 

@@ -1,6 +1,7 @@
 VPATH = ../src
 CC = clang++
-CFLAG = -std=c++11 -stdlib=libc++ -O3 -Wall
+#CFLAG = -std=c++11 -stdlib=libc++ -O3 -Wall
+CFLAG = -std=c++11 -O3 -Wall
 DEBUG = -ggdb -D__DEBUG__ -D__GTEST_PCPE__
 LIB = -L./gtest -lgtest
 INCLUDE = -I../inc -I./gtest/include

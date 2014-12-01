@@ -249,6 +249,10 @@ public:
     inline bool is_open(){ return outfile_.is_open(); }
     
 protected:
+    ComSubseqFileWriter(const ComSubseqFileWriter&);
+    ComSubseqFileWriter(const ComSubseqFileWriter&&);
+    ComSubseqFileWriter& operator=(const ComSubseqFileWriter&);
+
     void write_buffer(); 
 
     std::vector<ComSubseq> com_list_;

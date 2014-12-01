@@ -184,7 +184,7 @@ void maximum_common_subseq(const Filename& esort_result,
     // present the read status in the current iterator
     bool read_fail = false; 
 
-    while (!infile.eof() && !read_fail) {
+    while (!infile.eof()) {
         // read the contents of file to fill the read buffer
         fill_buffer_from_file(infile, remaining_size, read_buffer_size,
                               com_list, com_list_size, read_fail);
