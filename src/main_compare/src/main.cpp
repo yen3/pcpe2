@@ -29,7 +29,8 @@ void get_current_path(Filename& current_path){
 
     char* cwd; 
     if((cwd = getcwd(p, kPwdBufferSize)) == NULL){
-        std::cout << "Get PWD error !" << std::endl;
+        std::cout << "Get current path error !" << std::endl;
+        std::exit(1);
     }
 
     current_path = cwd;
@@ -96,26 +97,52 @@ void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
 void get_esort_output_file_name(const Filename& input_seq_x_fn,
                                 const Filename& input_seq_y_fn,
                                 Filename& esort_fn){
+    Filename cwd;
+    get_current_path(cwd);
+
+    Filename pid_prefix;
+    get_pid_filename_prefix(pid_prefix);
+
+    Filename basename_x;
+    get_file_basename_without_sufix(input_seq_x_fn, basename_x);
+
+    Filename basename_y;
+    get_file_basename_without_sufix(input_seq_y_fn, basename_y);
+
+    std::ostringstream os;
+    os << cwd << "/" << pid_prefix << "_" << basename_x << "_" << basename_y
+       << "_esort_result.bin"; 
+
+    esort_fn = os.str();
+
+    std::cout << esort_fn << std::endl;
 
 }
 
 void common_peptide_explorer(const Filename& input_seq_x_fn,
                              const Filename& input_seq_y_fn,
                              const Filename& output_fn) {
+    Filename subseq_prefix;
+    Filename esort_result_fn;
+
+    get_common_subseq_output_prefix(input_seq_x_fn, input_seq_y_fn,
+                                    subseq_prefix);
+    get_esort_output_file_name(input_seq_x_fn, input_seq_y_fn,
+                               esort_result_fn);
 
     std::cout << "Create common subseq files - start" << std::endl;
     auto commom_subseq_fn_list =
-        pcpe::common_subseq(input_seq_x_fn, input_seq_y_fn);
+        common_subseq(input_seq_x_fn, input_seq_y_fn);
     std::cout << "Create common subseq files - end" << std::endl;
 
     std::cout << "esort subseqeunce files - start" << std::endl;
-    pcpe::Filename esort_result = "esort_test.txt";
-    pcpe::esort(commom_subseq_fn_list, esort_result);
+    //Filename esort_result = "esort_test.txt";
+    esort(commom_subseq_fn_list, esort_result_fn);
     std::cout << "esort subseqeunce files - end" << std::endl;
 
     std::cout << "find all maximum subseqeunce - start" << std::endl;
-    pcpe::Filename common_subseq_result = "common_subseq_result.txt";
-    pcpe::maximum_common_subseq(esort_result, common_subseq_result);
+    //Filename common_subseq_result = "common_subseq_result.txt";
+    maximum_common_subseq(esort_result_fn, output_fn);
     std::cout << "find all maximum subseqeunce - end" << std::endl;
 
 }
@@ -146,6 +173,8 @@ int main(int argc, char const* argv[])
 
     pcpe::Filename output;
     pcpe::get_common_subseq_output_prefix(input_fn_a, input_fn_b, output);
+    std::cout << output << std::endl;
+    pcpe::get_esort_output_file_name(input_fn_a, input_fn_b, output);
     std::cout << output << std::endl;
     //pcpe::common_peptide_explorer(input_fn_a, input_fn_b, output_fn);
 
