@@ -33,6 +33,30 @@ typedef std::vector<ComSubseq> ComSubseqList;
 std::size_t get_filesize(const Filename& fn);
 
 
+/**
+ * @brief Generate a temporary filename for saving external sort result
+ *
+ * @param input_seq_x_fn[in] sequnece filename 
+ * @param input_seq_y_fn[in] sequnece filename 
+ * @param esort_fn[out]      temporary filename
+ */
+void get_esort_output_file_name(const Filename& input_seq_x_fn,
+                                const Filename& input_seq_y_fn,
+                                Filename& esort_fn);
+
+/**
+ * @brief Generate a temporary filename prefix for saving the comparsion result
+ *        between hash tables 
+ *
+ * @param input_seq_x_fn[in]  sequnece filename 
+ * @param input_seq_y_fn[in]  sequnece filename 
+ * @param output_prefix[out]  temporary filename prefix
+ */
+void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
+                                     const Filename& input_seq_y_fn,
+                                     Filename& output_prefix);
+
+
 /*****************************************************************************/
 // Class prototype 
 /*****************************************************************************/

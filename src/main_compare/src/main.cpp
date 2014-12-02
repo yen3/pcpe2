@@ -6,118 +6,8 @@
 #include "max_comsubseq.h"
 
 
-#include <algorithm>
-#include <sstream>
-#include <unistd.h>
-#include <libgen.h>
-
 namespace pcpe {
 
-void get_pid_filename_prefix(Filename& pid_prefix) {
-    pid_t cpid = getpid(); // cpid: current pid
-
-    std::ostringstream os;
-    os << cpid;
-
-    pid_prefix = os.str();
-}
-
-
-void get_current_path(Filename& current_path){
-    const std::size_t kPwdBufferSize = 1024;
-    char p[kPwdBufferSize];
-
-    char* cwd; 
-    if((cwd = getcwd(p, kPwdBufferSize)) == NULL){
-        std::cout << "Get current path error !" << std::endl;
-        std::exit(1);
-    }
-
-    current_path = cwd;
-}
-
-
-void get_file_basename(const Filename& path, Filename& output_basename) {
-    const std::size_t kBaseNameBufferSize = 1024; 
-    char base_name[kBaseNameBufferSize];
-    std::fill(base_name, base_name + path.size() + 1, 0);
-    std::copy(path.begin(), path.end(), base_name);
-
-    basename(base_name);
-    output_basename = base_name;
-}
-
-void get_file_basename_without_sufix(const Filename& path, Filename& output_basename) {
-    get_file_basename(path, output_basename);
-
-    if(output_basename.rfind(".") != std::string::npos){
-        output_basename = output_basename.substr(0, output_basename.rfind("."));
-    }
-}
-
-
-/**
- * @brief  
- *
- * @param input_seq_x_fn[in]
- * @param input_seq_y_fn[in]
- * @param output_prefix[out]
- */
-void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
-                                     const Filename& input_seq_y_fn,
-                                     Filename& output_prefix) {
-    Filename cwd;
-    get_current_path(cwd);
-
-    Filename pid_prefix;
-    get_pid_filename_prefix(pid_prefix);
-
-    Filename basename_x;
-    get_file_basename_without_sufix(input_seq_x_fn, basename_x);
-
-    Filename basename_y;
-    get_file_basename_without_sufix(input_seq_y_fn, basename_y);
-
-    std::ostringstream os;
-    os << cwd << "/" << pid_prefix << "_" << basename_x << "_" << basename_y
-       << "_hash_"; 
-
-    output_prefix = os.str();
-
-    std::cout << output_prefix << std::endl;
-}
-
-/**
- * @brief  
- *
- * @param input_seq_x_fn[in]
- * @param input_seq_y_fn[in]
- * @param esort_fn[out]
- */
-void get_esort_output_file_name(const Filename& input_seq_x_fn,
-                                const Filename& input_seq_y_fn,
-                                Filename& esort_fn){
-    Filename cwd;
-    get_current_path(cwd);
-
-    Filename pid_prefix;
-    get_pid_filename_prefix(pid_prefix);
-
-    Filename basename_x;
-    get_file_basename_without_sufix(input_seq_x_fn, basename_x);
-
-    Filename basename_y;
-    get_file_basename_without_sufix(input_seq_y_fn, basename_y);
-
-    std::ostringstream os;
-    os << cwd << "/" << pid_prefix << "_" << basename_x << "_" << basename_y
-       << "_esort_result.bin"; 
-
-    esort_fn = os.str();
-
-    std::cout << esort_fn << std::endl;
-
-}
 
 void common_peptide_explorer(const Filename& input_seq_x_fn,
                              const Filename& input_seq_y_fn,
@@ -166,17 +56,14 @@ int main(int argc, char const* argv[])
         input_fn_a = argv[1];
         input_fn_b = argv[2];
         output_fn = argv[3];
+
+        std::cout << "./pcpe2 input_sequence_filename_x input_sequence_filename_y output_filename" << std::endl;
     }
     else{
         return -1;
     }
 
-    pcpe::Filename output;
-    pcpe::get_common_subseq_output_prefix(input_fn_a, input_fn_b, output);
-    std::cout << output << std::endl;
-    pcpe::get_esort_output_file_name(input_fn_a, input_fn_b, output);
-    std::cout << output << std::endl;
-    //pcpe::common_peptide_explorer(input_fn_a, input_fn_b, output_fn);
+    pcpe::common_peptide_explorer(input_fn_a, input_fn_b, output_fn);
 
     return 0;
 }
