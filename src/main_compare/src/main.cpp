@@ -37,14 +37,13 @@ void get_current_path(Filename& current_path){
 
 
 void get_file_basename(const Filename& path, Filename& output_basename) {
-    char* base_name = new char[path.size() + 1];
+    const std::size_t kBaseNameBufferSize = 1024; 
+    char base_name[kBaseNameBufferSize];
     std::fill(base_name, base_name + path.size() + 1, 0);
     std::copy(path.begin(), path.end(), base_name);
 
-    base_name = basename(base_name);
+    basename(base_name);
     output_basename = base_name;
-
-    delete [] base_name;
 }
 
 void get_file_basename_without_sufix(const Filename& path, Filename& output_basename) {
@@ -68,22 +67,18 @@ void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
                                      Filename& output_prefix) {
     Filename cwd;
     get_current_path(cwd);
-    std::cout << cwd << std::endl;
 
     Filename pid_prefix;
     get_pid_filename_prefix(pid_prefix);
-    std::cout << pid_prefix << std::endl;
 
     Filename basename_x;
     get_file_basename_without_sufix(input_seq_x_fn, basename_x);
-    std::cout << basename_x << std::endl;
 
     Filename basename_y;
     get_file_basename_without_sufix(input_seq_y_fn, basename_y);
-    std::cout << basename_y << std::endl;
 
     std::ostringstream os;
-    os << cwd << "_" << pid_prefix << "_" << basename_x << "_" << basename_y
+    os << cwd << "/" << pid_prefix << "_" << basename_x << "_" << basename_y
        << "_hash_"; 
 
     output_prefix = os.str();
