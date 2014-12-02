@@ -9,14 +9,33 @@
 
 namespace pcpe{
 
+/*****************************************************************************/
+// Typedef  
+/*****************************************************************************/
 typedef std::string Filename;
 typedef std::vector<Filename> FilenameList;
 
 class ComSubseq;
 typedef std::vector<ComSubseq> ComSubseqList;
 
+/*****************************************************************************/
+// Function prototype 
+/*****************************************************************************/
+/**
+ * @brief  Get file size from a file path
+ *         The function would not check the file path is valid. It also does
+ *         not throw an exception when the file is not founded.
+ *
+ * @param fn a valid file path
+ *
+ * @return file size (unit: byte)
+ */
 std::size_t get_filesize(const Filename& fn);
 
+
+/*****************************************************************************/
+// Class prototype 
+/*****************************************************************************/
 class ComSubseq{
 public:
     ComSubseq(int x=0,
@@ -26,12 +45,10 @@ public:
               int len=6):
                   x_(x), y_(y),
                   x_loc_(x_loc), y_loc_(y_loc),
-                  len_(len)
-    {
+                  len_(len) {
     }
 
-    bool operator<(const ComSubseq& rhs) const
-    {
+    bool operator<(const ComSubseq& rhs) const {
         if(x_ == rhs.x_){
             if(y_ == rhs.y_){
                 if(x_loc_ == rhs.x_loc_){
@@ -42,36 +59,9 @@ public:
             return y_ < rhs.y_;
         }
         return x_ < rhs.x_;
-#if 0
-        int c[4] = {x_ - rhs.x_,
-                    y_ - rhs.y_,
-                    x_loc_ - rhs.x_loc_,
-                    y_loc_ - rhs.y_loc_};
-
-        for(std::size_t cidx= 0; cidx< 4; ++cidx){
-            if(c[cidx]  != 0){
-                return c[cidx] < 0;
-            } 
-        }
-        return false;
-#endif
     }
 
-    bool operator>(const ComSubseq& rhs) const
-    {
-#if 0
-        int c[4] = {x_ - rhs.x_,
-                    y_ - rhs.y_,
-                    x_loc_ - rhs.x_loc_,
-                    y_loc_ - rhs.y_loc_};
-
-        for(std::size_t cidx= 0; cidx< 4; ++cidx){
-            if(c[cidx]  != 0){
-                return c[cidx] > 0;
-            } 
-        }
-        return false;
-#endif
+    bool operator>(const ComSubseq& rhs) const {
         if(x_ == rhs.x_){
             if(y_ == rhs.y_){
                 if(x_loc_ == rhs.x_loc_){
@@ -84,32 +74,38 @@ public:
         return x_ > rhs.x_;
     }
 
-    inline bool operator==(const ComSubseq& rhs) const
-    {
+    inline bool operator==(const ComSubseq& rhs) const {
         return (x_ == rhs.x_) && (y_ == rhs.y_) &&
                (x_loc_ == rhs.x_loc_) && (y_loc_ == rhs.y_loc_);
     }
     
-    inline bool operator>=(const ComSubseq& rhs) const { return !(*this < rhs); }
-    inline bool operator<=(const ComSubseq& rhs) const { return !(*this > rhs); }
-    inline bool operator!=(const ComSubseq& rhs) const { return !(*this == rhs); }
+    inline bool operator>=(const ComSubseq& rhs) const {
+        return !(*this < rhs); 
+    }
+    inline bool operator<=(const ComSubseq& rhs) const {
+        return !(*this > rhs);
+    }
+    inline bool operator!=(const ComSubseq& rhs) const {
+        return !(*this == rhs);
+    }
 
-    inline int getLength(){ return len_; };
+    inline int getLength() const { return len_; };
     inline void setLength(int len){ len_ = len; };
 
-    inline bool isContinued(const ComSubseq& rhs){
+    inline bool isContinued(const ComSubseq& rhs) const {
         return (x_ == rhs.x_) && (y_ == rhs.y_) &&
                ((rhs.x_loc_ - x_loc_ == 1)  || (x_loc_ - rhs.x_loc_ == 1)) &&
                ((rhs.y_loc_ - y_loc_ == 1)  || (y_loc_ - rhs.y_loc_ == 1));
     }
 
-    inline bool isSameSeqeunce(const ComSubseq& rhs){
+    inline bool isSameSeqeunce(const ComSubseq& rhs) const {
         return (x_ == rhs.x_) && (y_ == rhs.y_); 
     }
 
 #if defined(__DEBUG__)
     inline void print(){
-        std::cout << "(" << x_ << ", " << y_ << ", " << x_loc_ << ", " << y_loc_ << ", " << len_ << ")" << std::endl;
+        std::cout << "(" << x_ << ", " << y_ << ", " << x_loc_ << ", "
+                  << y_loc_ << ", " << len_ << ")" << std::endl;
     }
 #endif
 
@@ -157,18 +153,18 @@ public:
     void readSeq(ComSubseq& seq);
     void writeSeq(const ComSubseq& seq);
 #if defined(__DEBUG__)
-    const Filename& getFn(){ return fn_; };
+    const Filename& getFn() const { return fn_; };
 #endif
     
     inline void close(){
         infile_.close();
     }
     
-    inline bool is_open(){ 
+    inline bool is_open() const { 
         return infile_.is_open() || read_buffer_idx_ < com_list_size_;
     }
 
-    inline bool eof(){
+    inline bool eof() const {
         if(is_open()) return false;
         else return read_buffer_idx_ >= com_list_size_; 
     }
@@ -176,7 +172,8 @@ public:
 
 #if defined(__DEBUG__)
     void print(){
-        std::cout << fn_ << ": " << "read_buffer_idx_ : " << read_buffer_idx_ << std::endl;
+        std::cout << fn_ << ": " << "read_buffer_idx_ : "
+                  << read_buffer_idx_ << std::endl;
         for(std::size_t i = 0; i< com_list_size_; ++i){
             std::cout << "\t";
             com_list_[i].print();
@@ -246,7 +243,7 @@ public:
         outfile_.close();
     }
 
-    inline bool is_open(){ return outfile_.is_open(); }
+    inline bool is_open() const { return outfile_.is_open(); }
     
 protected:
     ComSubseqFileWriter(const ComSubseqFileWriter&);

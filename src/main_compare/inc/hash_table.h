@@ -64,8 +64,9 @@ public:
   *           locate the maximum subsequences.
   * 
   */
-std::shared_ptr<std::vector<Filename> > common_subseq(Filename fn_seq_a,
-                                                      Filename fn_seq_b);
+std::shared_ptr<std::vector<Filename> > common_subseq(const Filename& fn_seq_a,
+                                                      const Filename& fn_seq_b,
+                                                      const Filename& temp_file_prefix="subhash");
 
 }
 

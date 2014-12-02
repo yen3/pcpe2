@@ -48,9 +48,6 @@ extern std::shared_ptr<std::vector<Filename>> common_subseq_files(
     const HashTable& x, const HashTable& y,
     const Filename& out_fn_prefix = "sub_hash");
 
-extern std::shared_ptr<std::vector<Filename>> common_subseq(Filename fn_seq_a,
-                                                            Filename fn_seq_b);
-
 /*****************************************************************************/
 // Test functions
 /*****************************************************************************/
