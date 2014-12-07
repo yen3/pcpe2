@@ -71,6 +71,9 @@ public:
                   x_loc_(x_loc), y_loc_(y_loc),
                   len_(len) {
     }
+    ComSubseq(const ComSubseq&) = default;
+    ComSubseq& operator=(const ComSubseq&) = default;
+    ~ComSubseq() = default;
 
     bool operator<(const ComSubseq& rhs) const {
         if(x_ == rhs.x_){
@@ -173,6 +176,9 @@ public:
         read_buffer();
 
     };
+    ComSubseqFileReader(const ComSubseqFileReader&) = delete;
+    ComSubseqFileReader(const ComSubseqFileReader&&) = delete ;
+    ComSubseqFileReader& operator=(const ComSubseqFileReader&) = delete;
 
     void readSeq(ComSubseq& seq);
     void writeSeq(const ComSubseq& seq);
@@ -206,9 +212,6 @@ public:
 #endif
 
 protected:
-    ComSubseqFileReader(const ComSubseqFileReader&);
-    ComSubseqFileReader(const ComSubseqFileReader&&);
-    ComSubseqFileReader& operator=(const ComSubseqFileReader&);
     void read_buffer(); 
 
     std::vector<ComSubseq> com_list_;
@@ -249,6 +252,10 @@ public:
 
     }
 
+    ComSubseqFileWriter(const ComSubseqFileWriter&) = delete;
+    ComSubseqFileWriter(const ComSubseqFileWriter&&) = delete;
+    ComSubseqFileWriter& operator=(const ComSubseqFileWriter&) = delete;
+
     ~ComSubseqFileWriter(){
         if(is_open()){
             close();
@@ -258,7 +265,7 @@ public:
     void readSeq(ComSubseq& seq);
     void writeSeq(const ComSubseq& seq);
 #if defined(__DEBUG__)
-    const Filename& getFn(){ return fn_;};
+    const Filename& getFn() const { return fn_;};
 #endif
 
     inline void close(){
@@ -270,10 +277,6 @@ public:
     inline bool is_open() const { return outfile_.is_open(); }
     
 protected:
-    ComSubseqFileWriter(const ComSubseqFileWriter&);
-    ComSubseqFileWriter(const ComSubseqFileWriter&&);
-    ComSubseqFileWriter& operator=(const ComSubseqFileWriter&);
-
     void write_buffer(); 
 
     std::vector<ComSubseq> com_list_;

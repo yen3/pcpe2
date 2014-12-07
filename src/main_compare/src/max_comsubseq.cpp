@@ -23,10 +23,9 @@ void move_remaining_part(ComSubseq* com_list,
                          const std::size_t last_handle_size,
                          std::size_t& remaining_size) {
     remaining_size = com_list_size - last_handle_size;
-    for (std::size_t i = 0, r = last_handle_size;
-         r < last_handle_size + remaining_size; ++i, ++r) {
-        com_list[i] = com_list[r];
-    }
+    std::copy(com_list + last_handle_size,
+              com_list + last_handle_size + remaining_size,
+              com_list);
 }
 
 
