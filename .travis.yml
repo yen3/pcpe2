@@ -1,0 +1,5 @@
+compiler: clang
+
+script:
+    - cd src/main_compare; make
+
