@@ -1,6 +1,6 @@
 VPATH = src
-#CC = g++-4.9
-CC = clang++ 
+CXX = g++-4.8
+#CXX = clang++ 
 CFLAG = -std=c++11 -O3 -Wall
 DEBUG = -ggdb -D__DEBUG__
 LIB =
@@ -13,13 +13,13 @@ BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 OUTPUT=main.out
 	  
 all: $(OBJS)
-	$(CC) $(DEBUG) $(CFLAG) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE)
+	$(CXX) $(DEBUG) $(CFLAG) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE)
 			 
 $(OBJ_DIR):
 	@mkdir $(OBJ_DIR)
 
 $(OBJS): %.o: %.cpp | $(OBJ_DIR)
-	$(CC) -c $(DEBUG) $(CFLAG) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
+	$(CXX) -c $(DEBUG) $(CFLAG) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
 
 					  
 clean:
