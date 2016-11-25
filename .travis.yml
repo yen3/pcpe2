@@ -12,6 +12,4 @@ install:
 script:
     - cd src/main_compare; make
 
-dist: trusty
-
-sudo: required
+dist: xenial
