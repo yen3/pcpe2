@@ -1,8 +1,7 @@
 VPATH = src
-CXX = g++-4.8
-#CXX = clang++ 
-CFLAG = -std=c++11 -O3 -Wall
-DEBUG = -ggdb -D__DEBUG__
+CXX = g++
+CXXFLAG = -std=c++11 -O2 -Wall -Wextra
+DEBUG = -g3 -D__DEBUG__
 LIB =
 INCLUDE = -I./inc
 
@@ -11,17 +10,17 @@ OBJS=main.o hash_table.o esort.o max_comsubseq.o pcpe_util.o
 
 BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 OUTPUT=main.out
-	  
+
 all: $(OBJS)
-	$(CXX) $(DEBUG) $(CFLAG) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE)
-			 
+	$(CXX) $(DEBUG) $(CXXFLAG) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE) -lpthread
+
 $(OBJ_DIR):
 	@mkdir $(OBJ_DIR)
 
 $(OBJS): %.o: %.cpp | $(OBJ_DIR)
-	$(CXX) -c $(DEBUG) $(CFLAG) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
+	$(CXX) -c $(DEBUG) $(CXXFLAG) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
 
-					  
+
 clean:
 	-rm -f $(BUILD_OBJS)
 	-rm -f $(OBJ_DIR)/$(OUTPUT)
