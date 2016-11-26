@@ -254,7 +254,7 @@ TEST(hash_table, test_compare_hashtable_part) {
     ans.push_back(ComSubseq(2, 1, 3, 1));
 
     std::vector<ComSubseq> csl;
-    ComSubseqFileReader::readFile(out_fn, csl, 1);
+    ComSubseqFileReader::readFile(out_fn, csl);
 
     EXPECT_EQ(csl.size(), ans.size());
     for (std::size_t i = 0; i < ans.size(); ++i) {
@@ -289,7 +289,7 @@ TEST(hash_table, test_compare_hashtable_part_2) {
 
     std::vector<ComSubseq> csl;
     for (auto& out_fn : out_fn_list) {
-        ComSubseqFileReader::readFile(out_fn, csl, 1);
+        ComSubseqFileReader::readFile(out_fn, csl);
     }
 
     std::vector<ComSubseq> ans;
@@ -317,7 +317,7 @@ TEST(hash_table, test_common_subseq) {
 
     std::vector<ComSubseq> csl;
     for (auto& out_fn : out_fn_list) {
-        ComSubseqFileReader::readFile(out_fn, csl, 1);
+        ComSubseqFileReader::readFile(out_fn, csl);
     }
 
     std::vector<ComSubseq> ans;

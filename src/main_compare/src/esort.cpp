@@ -23,17 +23,15 @@ std::atomic_uint esfl_index(0);
 //  Functions
 /*****************************************************************************/
 void esort_sort_file(const Filename& fn) {
-    static const std::size_t kBufferSize = 100000;
-
     // read file to li_list
     std::vector<ComSubseq> li_list;
-    ComSubseqFileReader::readFile(fn, li_list, kBufferSize);
+    ComSubseqFileReader::readFile(fn, li_list);
 
     // quick sort for li_list
     std::sort(li_list.begin(), li_list.end());
 
     // write file to li_list
-    ComSubseqFileWriter::writeFile(fn, li_list, kBufferSize);
+    ComSubseqFileWriter::writeFile(fn, li_list);
 }
 
 void esort_sort_file_task(const FilenameList& esfl) {

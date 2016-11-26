@@ -10,7 +10,7 @@
 namespace pcpe{
 
 /*****************************************************************************/
-// Typedef  
+// Typedef
 /*****************************************************************************/
 typedef std::string Filename;
 typedef std::vector<Filename> FilenameList;
@@ -19,7 +19,7 @@ class ComSubseq;
 typedef std::vector<ComSubseq> ComSubseqList;
 
 /*****************************************************************************/
-// Function prototype 
+// Function prototype
 /*****************************************************************************/
 /**
  * @brief  Get file size from a file path
@@ -36,8 +36,8 @@ std::size_t get_filesize(const Filename& fn);
 /**
  * @brief Generate a temporary filename for saving external sort result
  *
- * @param input_seq_x_fn[in] sequnece filename 
- * @param input_seq_y_fn[in] sequnece filename 
+ * @param input_seq_x_fn[in] sequnece filename
+ * @param input_seq_y_fn[in] sequnece filename
  * @param esort_fn[out]      temporary filename
  */
 void get_esort_output_file_name(const Filename& input_seq_x_fn,
@@ -46,10 +46,10 @@ void get_esort_output_file_name(const Filename& input_seq_x_fn,
 
 /**
  * @brief Generate a temporary filename prefix for saving the comparsion result
- *        between hash tables 
+ *        between hash tables
  *
- * @param input_seq_x_fn[in]  sequnece filename 
- * @param input_seq_y_fn[in]  sequnece filename 
+ * @param input_seq_x_fn[in]  sequnece filename
+ * @param input_seq_y_fn[in]  sequnece filename
  * @param output_prefix[out]  temporary filename prefix
  */
 void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
@@ -58,7 +58,7 @@ void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
 
 
 /*****************************************************************************/
-// Class prototype 
+// Class prototype
 /*****************************************************************************/
 class ComSubseq{
 public:
@@ -105,9 +105,9 @@ public:
         return (x_ == rhs.x_) && (y_ == rhs.y_) &&
                (x_loc_ == rhs.x_loc_) && (y_loc_ == rhs.y_loc_);
     }
-    
+
     inline bool operator>=(const ComSubseq& rhs) const {
-        return !(*this < rhs); 
+        return !(*this < rhs);
     }
     inline bool operator<=(const ComSubseq& rhs) const {
         return !(*this > rhs);
@@ -126,7 +126,7 @@ public:
     }
 
     inline bool isSameSeqeunce(const ComSubseq& rhs) const {
-        return (x_ == rhs.x_) && (y_ == rhs.y_); 
+        return (x_ == rhs.x_) && (y_ == rhs.y_);
     }
 
 #if defined(__DEBUG__)
@@ -142,7 +142,7 @@ protected:
     int y_;
     int x_loc_;
     int y_loc_;
-    int len_; 
+    int len_;
 };
 
 class ComSubseqFileReader{
@@ -153,8 +153,7 @@ class ComSubseqFileReader{
 #endif
 public:
     static void readFile(const Filename& fn,
-             std::vector<ComSubseq>& com_list,
-             std::size_t buffer_size=kInitalReadBufferSize);
+                         std::vector<ComSubseq>& com_list);
 
     static bool esortMergeCompare(const std::shared_ptr<ComSubseqFileReader> x,
                                   const std::shared_ptr<ComSubseqFileReader> y);
@@ -185,18 +184,18 @@ public:
 #if defined(__DEBUG__)
     const Filename& getFn() const { return fn_; };
 #endif
-    
+
     inline void close(){
         infile_.close();
     }
-    
-    inline bool is_open() const { 
+
+    inline bool is_open() const {
         return infile_.is_open() || read_buffer_idx_ < com_list_size_;
     }
 
     inline bool eof() const {
         if(is_open()) return false;
-        else return read_buffer_idx_ >= com_list_size_; 
+        else return read_buffer_idx_ >= com_list_size_;
     }
 
 
@@ -212,7 +211,7 @@ public:
 #endif
 
 protected:
-    void read_buffer(); 
+    void read_buffer();
 
     std::vector<ComSubseq> com_list_;
     std::size_t com_list_size_;
@@ -236,8 +235,7 @@ class ComSubseqFileWriter{
 #endif
 public:
     static void writeFile(const Filename& fn,
-                          std::vector<ComSubseq>& com_list,
-                          std::size_t buffer_size=kInitialWriteBufferSize);
+                          std::vector<ComSubseq>& com_list);
 
     ComSubseqFileWriter() = default;
     ComSubseqFileWriter(Filename fn,
@@ -275,9 +273,9 @@ public:
     }
 
     inline bool is_open() const { return outfile_.is_open(); }
-    
+
 protected:
-    void write_buffer(); 
+    void write_buffer();
 
     std::vector<ComSubseq> com_list_;
     std::size_t com_list_size_;

@@ -43,46 +43,24 @@ bool ComSubseqFileReader::esortMergeCompare(
  * @param[in]  buffer_size (optional)
  */
 void ComSubseqFileReader::readFile(const Filename& fn,
-                                   std::vector<ComSubseq>& com_list,
-                                   std::size_t buffer_size) {
+                                   std::vector<ComSubseq>& com_list) {
     std::ifstream infile(fn, std::ifstream::in | std::ifstream::binary);
 
-    std::vector<ComSubseq> buffer(buffer_size);
-    while (1) {
-        infile.read(reinterpret_cast<char*>(&buffer[0]),
-                    sizeof(ComSubseq) * buffer.size());
-        std::size_t read_size = infile.gcount();
+    std::filebuf* pbuf = infile.rdbuf();
+    std::size_t size = pbuf->pubseekoff(0, infile.end, infile.in);
+    pbuf->pubseekpos (0, infile.in);
 
-        if (infile.eof() && read_size == 0) {
-            break;
-        }
-
-        std::size_t buffer_size = read_size / sizeof(ComSubseq);
-        std::copy(buffer.begin(), buffer.begin() + buffer_size,
-                  std::back_inserter(com_list));
-    }
-    infile.close();
+    std::vector<ComSubseq> read_list(size / sizeof(ComSubseq));
+    pbuf->sgetn(reinterpret_cast<char*>(&read_list[0]),size);
+    std::copy(read_list.begin(), read_list.end(),
+	      std::back_inserter(com_list));
 }
 
 void ComSubseqFileWriter::writeFile(const Filename& fn,
-                                    std::vector<ComSubseq>& com_list,
-                                    std::size_t buffer_size) {
+                                    std::vector<ComSubseq>& com_list) {
     std::ofstream outfile(fn, std::ofstream::out | std::ofstream::binary);
-
-    std::vector<ComSubseq> buffer(buffer_size);
-    for (std::size_t write_size = 0; write_size < com_list.size();) {
-        auto write_begin = com_list.begin() + write_size;
-        auto write_end = (write_size + buffer.size() > com_list.size())
-                             ? com_list.end()
-                             : com_list.begin() + write_size + buffer.size();
-        auto current_write_size = write_end - write_begin;
-        write_size += current_write_size;
-
-        std::copy(write_begin, write_end, buffer.begin());
-        outfile.write(reinterpret_cast<char*>(&buffer[0]),
-                      sizeof(ComSubseq) * current_write_size);
-    }
-    outfile.flush();
+    outfile.write(reinterpret_cast<char*>(&com_list[0]),
+		  sizeof(ComSubseq) * com_list.size());
     outfile.close();
 }
 
@@ -185,7 +163,7 @@ void get_current_path(Filename& current_path){
     const std::size_t kPwdBufferSize = 1024;
     char p[kPwdBufferSize];
 
-    char* cwd; 
+    char* cwd;
     if((cwd = getcwd(p, kPwdBufferSize)) == NULL){
         std::cout << "Get current path error !" << std::endl;
         std::exit(1);
@@ -196,7 +174,7 @@ void get_current_path(Filename& current_path){
 
 
 void get_file_basename(const Filename& path, Filename& output_basename) {
-    const std::size_t kBaseNameBufferSize = 1024; 
+    const std::size_t kBaseNameBufferSize = 1024;
     char base_name[kBaseNameBufferSize];
     std::fill(base_name, base_name + path.size() + 1, 0);
     std::copy(path.begin(), path.end(), base_name);
@@ -215,7 +193,7 @@ void get_file_basename_without_sufix(const Filename& path, Filename& output_base
 
 
 /**
- * @brief  
+ * @brief
  *
  * @param input_seq_x_fn[in]
  * @param input_seq_y_fn[in]
@@ -238,7 +216,7 @@ void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
 
     std::ostringstream os;
     os << cwd << "/" << pid_prefix << "_" << basename_x << "_" << basename_y
-       << "_hash_"; 
+       << "_hash_";
 
     output_prefix = os.str();
 
@@ -246,7 +224,7 @@ void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
 }
 
 /**
- * @brief  
+ * @brief
  *
  * @param input_seq_x_fn[in]
  * @param input_seq_y_fn[in]
@@ -269,7 +247,7 @@ void get_esort_output_file_name(const Filename& input_seq_x_fn,
 
     std::ostringstream os;
     os << cwd << "/" << pid_prefix << "_" << basename_x << "_" << basename_y
-       << "_esort_result.bin"; 
+       << "_esort_result.bin";
 
     esort_fn = os.str();
 
