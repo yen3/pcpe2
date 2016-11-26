@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+err_report() {
+    echo "Error on line $1"
+}
+
+trap 'err_report $LINENO' ERR
+
 WORK_DIR=`pwd`
 
 # Build the project
