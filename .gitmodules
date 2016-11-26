@@ -1,0 +1,3 @@
+[submodule "src/main_compare/test/gtest"]
+	path = src/main_compare/test/gtest
+	url = https://github.com/google/googletest
