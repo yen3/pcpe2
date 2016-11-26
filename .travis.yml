@@ -10,7 +10,6 @@ install:
     - sudo apt-get install -qq build-essential cmake
 
 script:
-    - cd src/main_compare; make
-    - cd src/main_compare/test; ./init_test.sh make
+    - ./travis.sh
 
 dist: xenial
