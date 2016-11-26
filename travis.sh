@@ -18,7 +18,4 @@ cd ${WORK_DIR}
 cd src/main_compare/test
 ./init_test.sh
 make -j4
-
-
-
-
+make test
