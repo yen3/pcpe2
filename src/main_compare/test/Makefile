@@ -1,10 +1,9 @@
 VPATH = ../src
-CC = clang++
-#CFLAG = -std=c++11 -stdlib=libc++ -O3 -Wall
-CFLAG = -std=c++11 -O3 -Wall
+CXX = g++
+CXXFLAGS = -std=c++11 -O3 -Wall
 DEBUG = -ggdb -D__DEBUG__ -D__GTEST_PCPE__
-LIB = -L./gtest -lgtest
-INCLUDE = -I../inc -I./gtest/include
+LIB = -L./gtest/googletest -lgtest -lpthread
+INCLUDE = -I../inc -I./gtest/googletest/include
 
 OBJ_DIR=build
 OBJS=test_main.o test_hash_table.o test_esort.o test_pcpe_util.o \
@@ -12,15 +11,15 @@ OBJS=test_main.o test_hash_table.o test_esort.o test_pcpe_util.o \
 
 BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
 OUTPUT=test_main.out
-	  
+
 all: $(OBJS)
-	$(CC) $(DEBUG) $(CFLAG) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE)
+	$(CXX) $(DEBUG) $(CXXFLAGS) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE)
 
 $(OBJ_DIR):
 	@mkdir $(OBJ_DIR)
-			 
+
 $(OBJS): %.o: %.cpp | $(OBJ_DIR)
-	$(CC) -c $(DEBUG) $(CFLAG) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
+	$(CXX) -c $(DEBUG) $(CXXFLAGS) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
 
 run:
 	./build/test_main.out
@@ -28,7 +27,7 @@ run:
 test:
 	make -j4 && ./build/test_main.out
 
-					  
+
 clean:
 	-rm -rf ./testoutput/*
 	-rm -f $(BUILD_OBJS)
