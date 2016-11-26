@@ -1,35 +1,39 @@
-VPATH = ../src
+# gcc version >= 4.8
 CXX = g++
-CXXFLAGS = -std=c++11 -O3 -Wall
-DEBUG = -ggdb -D__DEBUG__ -D__GTEST_PCPE__
-LIB = -L./gtest/googletest -lgtest -lpthread
-INCLUDE = -I../inc -I./gtest/googletest/include
 
-OBJ_DIR=build
-OBJS=test_main.o test_hash_table.o test_esort.o test_pcpe_util.o \
-     test_max_comsubseq.o hash_table.o esort.o max_comsubseq.o pcpe_util.o
+SRC_DIRS ?= src \
+			../src
+INC_DIRS   = ../inc \
+			 ./gtest/googletest/include
+BUILD_DIR ?= ./build
 
-BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
-OUTPUT=test_main.out
+PCPE2_TEST=$(BUILD_DIR)/test_main.out
 
-all: $(OBJS)
-	$(CXX) $(DEBUG) $(CXXFLAGS) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE)
+SRCS := $(shell find $(SRC_DIRS) -name *.cpp)
+OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
+DEPS := $(OBJS:.o=.d)
 
-$(OBJ_DIR):
-	@mkdir $(OBJ_DIR)
+CPPFLAGS = $(addprefix -I,$(INC_DIRS))  -MMD -MP
+DEBUG_FLAGS = -g3 -O3
+CXXFLAGS = -std=c++11 -Wall -Wextra -D__DEBUG__ -D__GTEST_PCPE__ $(DEBUG_FLAGS)
+LDFLAGS = -L./gtest/googletest -lgtest -lpthread
 
-$(OBJS): %.o: %.cpp | $(OBJ_DIR)
-	$(CXX) -c $(DEBUG) $(CXXFLAGS) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
+$(PCPE2_TEST): $(OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $(PCPE2_TEST) $(LDFLAGS)
 
-run:
-	./build/test_main.out
+$(BUILD_DIR)/%.cpp.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@ $(LDFLAGS)
 
+.PHONY: test
 test:
 	make -j4 && ./build/test_main.out
 
 
+.PHONY: clean
 clean:
-	-rm -rf ./testoutput/*
-	-rm -f $(BUILD_OBJS)
-	-rm -f $(OBJ_DIR)/$(OUTPUT)
-	-rm -rf $(OBJ_DIR)
+	rm -rf $(OBJS)
+	rm -rf $(PCPE2_TEST)
+
+-include $(DEPS)

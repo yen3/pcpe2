@@ -40,6 +40,7 @@ void common_peptide_explorer(const Filename& input_seq_x_fn,
 } // namespace pcpe
 
 
+#ifndef __GTEST_PCPE__
 int main(int argc, char const* argv[])
 {
 
@@ -67,4 +68,4 @@ int main(int argc, char const* argv[])
 
     return 0;
 }
-
+#endif
