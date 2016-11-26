@@ -1,27 +1,38 @@
-VPATH = src
+# gcc version >= 4.8
 CXX = g++
-CXXFLAG = -std=c++11 -O2 -Wall -Wextra
-DEBUG = -g3 -D__DEBUG__
-LIB =
-INCLUDE = -I./inc
 
-OBJ_DIR=build
-OBJS=main.o hash_table.o esort.o max_comsubseq.o pcpe_util.o
+SRC_DIR   ?= ./src
+INC_DIRS   = ./inc
+BUILD_DIR ?= ./build
 
-BUILD_OBJS=$(addprefix $(OBJ_DIR)/, $(OBJS))
-OUTPUT=main.out
+PCPE2=$(BUILD_DIR)/main.out
 
-all: $(OBJS)
-	$(CXX) $(DEBUG) $(CXXFLAG) $(BUILD_OBJS) -o $(OBJ_DIR)/$(OUTPUT) $(LIB) $(INCLUDE) -lpthread
+SRCS := $(SRC_DIR)/esort.cpp \
+		$(SRC_DIR)/hash_table.cpp \
+		$(SRC_DIR)/main.cpp \
+		$(SRC_DIR)/max_comsubseq.cpp \
+		$(SRC_DIR)/pcpe_util.cpp
 
-$(OBJ_DIR):
-	@mkdir $(OBJ_DIR)
-
-$(OBJS): %.o: %.cpp | $(OBJ_DIR)
-	$(CXX) -c $(DEBUG) $(CXXFLAG) $< -o $(OBJ_DIR)/$@ $(INCLUDE)
+OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
+DEPS := $(OBJS:.o=.d)
 
 
+CPPFLAGS = $(addprefix -I,$(INC_DIRS))  -MMD -MP
+DEBUG_FLAGS = -g3 -D__DEBUG__ -O0
+CXXFLAGS = -std=c++11 -Wall -Wextra $(DEBUG_FLAGS)
+LDFLAGS  = -lpthread
+
+$(PCPE2): $(OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $(PCPE2) $(LDFLAGS)
+
+$(BUILD_DIR)/%.cpp.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+.PHONY: clean
 clean:
-	-rm -f $(BUILD_OBJS)
-	-rm -f $(OBJ_DIR)/$(OUTPUT)
-	-rm -rf $(OBJ_DIR)
+	rm -rf $(OBJS)
+	rm -rf $(PCPE2)
+
+-include $(DEPS)
