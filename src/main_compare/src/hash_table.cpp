@@ -127,7 +127,7 @@ inline void output_to_file(
         for (const auto& y : ly) {
             out_file.writeSeq(ComSubseq(x.first, y.first, x.second, y.second,
                                         SUBSTRING_SIZE));
-#if 0 
+#if 0
             std::cout << "(" << x.first << ", " << y.first << ", " << x.second << ", " << y.second << ")" << std::endl;
 #endif
         }
@@ -208,7 +208,7 @@ std::shared_ptr<std::vector<Filename>> common_subseq_files(
     // start to run the all tasks
     std::vector<std::thread> tasks(std::thread::hardware_concurrency());
 #if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
-    std::cout << "craete " << tasks.size() << " thread" << std::endl;
+    std::cout << "create " << tasks.size() << " thread" << std::endl;
 #endif
     for (auto& task : tasks) {
         task = std::thread(compare_hashtable_task, cstl, x, y);

@@ -44,20 +44,27 @@ bool ComSubseqFileReader::esortMergeCompare(
  */
 void ComSubseqFileReader::readFile(const Filename& fn,
                                    std::vector<ComSubseq>& com_list) {
+    std::cout << "read file: " << fn << std::endl;
     std::ifstream infile(fn, std::ifstream::in | std::ifstream::binary);
 
     std::filebuf* pbuf = infile.rdbuf();
     std::size_t size = pbuf->pubseekoff(0, infile.end, infile.in);
     pbuf->pubseekpos (0, infile.in);
 
-    std::vector<ComSubseq> read_list(size / sizeof(ComSubseq));
-    pbuf->sgetn(reinterpret_cast<char*>(&read_list[0]),size);
-    std::copy(read_list.begin(), read_list.end(),
-	      std::back_inserter(com_list));
+    std::size_t cur_com_list_size = com_list.size();
+    std::generate_n(std::back_inserter<std::vector<ComSubseq> >(com_list),
+		    size / sizeof(ComSubseq),
+		    []() -> ComSubseq { return ComSubseq(); });
+    pbuf->sgetn(reinterpret_cast<char*>(&com_list[cur_com_list_size]),size);
+
+    //std::vector<ComSubseq> read_list(size / sizeof(ComSubseq));
+    //std::copy(read_list.begin(), read_list.end(),
+	      //std::back_inserter(com_list));
 }
 
 void ComSubseqFileWriter::writeFile(const Filename& fn,
                                     std::vector<ComSubseq>& com_list) {
+    std::cout << "write file: " << fn << std::endl;
     std::ofstream outfile(fn, std::ofstream::out | std::ofstream::binary);
     outfile.write(reinterpret_cast<char*>(&com_list[0]),
 		  sizeof(ComSubseq) * com_list.size());
@@ -140,6 +147,9 @@ void ComSubseqFileReader::read_buffer() {
 
 void ComSubseqFileWriter::write_buffer() {
     if (!outfile_.is_open() || com_list_size_ == 0) {
+	if (!outfile_.is_open())
+	  std::cerr << "com_list_size_:" << com_list_size_ << std::endl
+	            << "open write file error" << std::endl;
         return;
     }
 

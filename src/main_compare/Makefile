@@ -22,6 +22,7 @@ DEBUG_FLAGS = -g3 -D__DEBUG__ -O0
 CXXFLAGS = -std=c++11 -Wall -Wextra $(DEBUG_FLAGS)
 LDFLAGS  = -lpthread
 
+
 $(PCPE2): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $(PCPE2) $(LDFLAGS)
@@ -29,6 +30,11 @@ $(PCPE2): $(OBJS)
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+.PHONY: release
+release:
+	make clean
+	make -j4 CXXFLAGS="-std=c++11 -Wall -Wextra -O2 -flto"
 
 .PHONY: clean
 clean:
