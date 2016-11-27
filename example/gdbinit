@@ -1,0 +1,3 @@
+file ../src/main_compare/build/main.out
+b main
+r ./influenza_seq_css.txt protein_seq_css.txt result.txt
