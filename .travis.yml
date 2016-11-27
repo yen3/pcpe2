@@ -10,6 +10,13 @@ install:
     - sudo apt-get install -qq build-essential cmake
 
 script:
-    - ./travis.sh
+    - make build
+    - make build_unit_test
+
+after_success:
+    - make unit_test
+
+after_script:
+    - make release
 
 dist: xenial

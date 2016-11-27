@@ -8,11 +8,11 @@ test:
 
 .PHONY: clean
 clean:
-	rm -rf input
-	rm influenza.faa
-	rm protein.fa
-	rm -f *.txt
-	rm -f subhash*
+	-rm -rf input
+	-rm influenza.faa
+	-rm protein.fa
+	-rm -f *.txt
+	-rm -f subhash*
 
 
 
