@@ -5,37 +5,37 @@
 * The original idea is from Assocaite Professor [Guang-Wu Chen](http://rcevi.cgu.edu.tw/files/14-1065-4045,r639-1.php).
 * The program is working for a stable version currently.
 
+## Recommanded Environment
+
+* RAM: 8 GB or more
+* OS: Ubuntu 14.04 or later
+* Compiler: gcc 4.8 or later
+
 ## How to run the project
 
-1. Clone the project
+* Clone the project
 
 ```sh
 git clone  --recursive https://github.com/yen3/pcpe2 pcpe2
 ```
 
-2. Build the project
+* Build the project
 ```
 make build
 ```
 
-3. Test the project
+* Test the project
 ```
 make unit_test
 ```
 
-4. Run an example
+* Run an example
 ```
 # Take a long while.
 make example
 ```
 
-5. Release the project
+* Release the project
 ```
 make release
 ```
-
-## Requirement
-
-* The compiler need support C++11
-    * gcc >= 4.8
-    * clang >= 3.4
