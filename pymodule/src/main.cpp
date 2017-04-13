@@ -8,7 +8,6 @@
 
 namespace pcpe {
 
-
 void common_peptide_explorer(const Filename& input_seq_x_fn,
                              const Filename& input_seq_y_fn,
                              const Filename& output_fn) {
