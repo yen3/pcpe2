@@ -27,10 +27,14 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@ $(LDFLAGS)
 
-.PHONY: test
-test:
+.PHONY: test_and_save_result
+test_and_save_result:
 	make -j4 && ./build/test_main.out
 
+.PHONY: test
+test:
+	make test_and_save_result
+	@cd testoutput && rm -rf *
 
 .PHONY: clean
 clean:
