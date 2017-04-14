@@ -236,7 +236,8 @@ std::shared_ptr<std::vector<Filename>> common_subseq_files(
 std::shared_ptr<std::vector<Filename>>
 common_subseq(const Filename& fn_seq_a,
               const Filename& fn_seq_b,
-              const Filename& temp_file_prefix) {
+              const Filename& temp_file_prefix)
+{
 
 #if defined(__DEBUG__)
     std::cout << fn_seq_a << std::endl << fn_seq_b << std::endl;
