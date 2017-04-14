@@ -14,7 +14,7 @@ const std::size_t HASH_TABLE_SIZE= 100003;
 const std::size_t SUBSTRING_SIZE = 6;
 
 /*****************************************************************************/
-// Typedef  
+// Typedef
 /*****************************************************************************/
 class CommonSubseqTask;
 
@@ -24,7 +24,7 @@ typedef std::vector<Seq> SeqList;
 typedef std::size_t SeqIndex;
 typedef std::size_t SubstrIndex;
 
-/* 
+/*
  * key:    hash value
  * value:  <substring (6 chars), <sequence index, substring location index> >
  * */
@@ -62,7 +62,7 @@ public:
   *           common subsequences, but not sorted. If you want to use these
   *           informatinos, you have to sort these files and merge sort them to
   *           locate the maximum subsequences.
-  * 
+  *
   */
 std::shared_ptr<std::vector<Filename> > common_subseq(const Filename& fn_seq_a,
                                                       const Filename& fn_seq_b,
