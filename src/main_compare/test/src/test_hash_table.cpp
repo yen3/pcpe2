@@ -311,7 +311,7 @@ TEST(hash_table, test_common_subseq) {
     Filename seq2_fn("./testdata/test_seq2.txt");
 
     std::shared_ptr<std::vector<Filename>> pout_fn_list =
-        common_subseq(seq1_fn, seq2_fn);
+        common_subseq(seq1_fn, seq2_fn, "testoutput/sub_hash");
 
     std::vector<Filename>& out_fn_list = *pout_fn_list;
 

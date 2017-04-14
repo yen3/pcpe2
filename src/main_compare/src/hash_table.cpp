@@ -233,24 +233,10 @@ std::shared_ptr<std::vector<Filename>> common_subseq_files(
   *           locate the maximum subsequences.
   *
   */
-std::shared_ptr<std::vector<Filename>> common_subseq(const Filename& fn_seq_a,
-      const Filename& fn_seq_b, const Filename& temp_file_prefix) {
-
-#if defined(__GTEST_PCPE__)
-
-    auto create_hta = std::async(create_hash_table, fn_seq_a);
-    auto create_htb = std::async(create_hash_table, fn_seq_b);
-
-    std::shared_ptr<HashTable> phta = create_hta.get();
-    std::shared_ptr<HashTable> phtb = create_htb.get();
-
-    auto out_fn_list = common_subseq_files(*phta, *phtb, "testoutput/sub_hash");
-
-    return out_fn_list;
-
-#else /* __GTEST_PCPE__ */
-
-    /* normal execution */
+std::shared_ptr<std::vector<Filename>>
+common_subseq(const Filename& fn_seq_a,
+              const Filename& fn_seq_b,
+              const Filename& temp_file_prefix) {
 
 #if defined(__DEBUG__)
     std::cout << fn_seq_a << std::endl << fn_seq_b << std::endl;
@@ -275,8 +261,6 @@ std::shared_ptr<std::vector<Filename>> common_subseq(const Filename& fn_seq_a,
 #endif
 
     return out_fn_list;
-
-#endif /* __GTEST_PCPE__ */
 }
 
 }
