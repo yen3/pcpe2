@@ -15,8 +15,6 @@ void common_peptide_explorer(const Filename& input_seq_x_fn,
     Filename subseq_prefix;
     Filename esort_result_fn;
 
-    get_common_subseq_output_prefix(input_seq_x_fn, input_seq_y_fn,
-                                    subseq_prefix);
     get_esort_output_file_name(input_seq_x_fn, input_seq_y_fn,
                                esort_result_fn);
 
