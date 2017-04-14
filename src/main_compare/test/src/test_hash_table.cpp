@@ -44,9 +44,12 @@ extern void compare_hashtable_part(const CommonSubseqTask& cst,
 extern void compare_hashtable_task(const CommonSubseqTaskList& cstl,
                                    const HashTable& x, const HashTable& y);
 
-extern std::shared_ptr<std::vector<Filename>> common_subseq_files(
-    const HashTable& x, const HashTable& y,
-    const Filename& out_fn_prefix = "sub_hash");
+// TODO: Test the function.
+extern void
+common_subseq_files(const HashTable& x,
+                    const HashTable& y,
+                    FilenameList output_fn_list,
+                    const Filename& out_fn_prefix);
 
 /*****************************************************************************/
 // Test functions

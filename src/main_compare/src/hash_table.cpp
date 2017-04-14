@@ -190,20 +190,21 @@ void compare_hashtable_task(const CommonSubseqTaskList& cstl,
     }
 }
 
-std::shared_ptr<std::vector<Filename>> common_subseq_files(
-    const HashTable& x, const HashTable& y,
-    const Filename& out_fn_prefix = "sub_hash") {
+void
+common_subseq_files(const HashTable& x,
+                    const HashTable& y,
+                    FilenameList output_fn_list,
+                    const Filename& out_fn_prefix)
+{
 
     if (x.size() != y.size()) {
-        return nullptr;
+        return;
     }
 
     // Get Task list and output filename list
-    std::shared_ptr<std::vector<Filename>> out_fn_list(
-        new std::vector<Filename>());
     CommonSubseqTaskList cstl;
-    create_compare_hashtable_task_list(*out_fn_list, cstl, TASK_SIZE, x.size(),
-                                       out_fn_prefix);
+    create_compare_hashtable_task_list(output_fn_list,
+            cstl, TASK_SIZE, x.size(), out_fn_prefix);
 
     // start to run the all tasks
     std::vector<std::thread> tasks(std::thread::hardware_concurrency());
@@ -217,8 +218,6 @@ std::shared_ptr<std::vector<Filename>> common_subseq_files(
     for (auto& task : tasks) {
         task.join();
     }
-
-    return out_fn_list;
 }
 
 void
@@ -242,13 +241,11 @@ common_subseq(const Filename& fn_seq_a,
     DEBUG_PRINT << "create hash table done" << std::endl;
 #endif
 
-    auto output_fns = common_subseq_files(*phta, *phtb, temp_file_prefix);
+    common_subseq_files(*phta, *phtb, output_fn_list, temp_file_prefix);
 
 #if defined(__DEBUG__)
     DEBUG_PRINT << cstl_index << std::endl;
 #endif
-
-    output_fn_list = *output_fns;
 }
 
 }
