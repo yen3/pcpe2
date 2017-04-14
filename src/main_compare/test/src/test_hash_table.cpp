@@ -48,7 +48,7 @@ extern void compare_hashtable_task(const CommonSubseqTaskList& cstl,
 extern void
 common_subseq_files(const HashTable& x,
                     const HashTable& y,
-                    FilenameList output_fn_list,
+                    FilenameList& output_fn_list,
                     const Filename& out_fn_prefix);
 
 /*****************************************************************************/
