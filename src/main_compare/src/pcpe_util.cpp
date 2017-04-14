@@ -44,7 +44,9 @@ bool ComSubseqFileReader::esortMergeCompare(
  */
 void ComSubseqFileReader::readFile(const Filename& fn,
                                    std::vector<ComSubseq>& com_list) {
+#if defined(__DEBUG__)
     std::cout << "read file: " << fn << std::endl;
+#endif
     std::ifstream infile(fn, std::ifstream::in | std::ifstream::binary);
 
     std::filebuf* pbuf = infile.rdbuf();
@@ -64,7 +66,9 @@ void ComSubseqFileReader::readFile(const Filename& fn,
 
 void ComSubseqFileWriter::writeFile(const Filename& fn,
                                     std::vector<ComSubseq>& com_list) {
+#if defined(__DEUBG__)
     std::cout << "write file: " << fn << std::endl;
+#endif
     std::ofstream outfile(fn, std::ofstream::out | std::ofstream::binary);
     outfile.write(reinterpret_cast<char*>(&com_list[0]),
 		  sizeof(ComSubseq) * com_list.size());
@@ -230,7 +234,9 @@ void get_common_subseq_output_prefix(const Filename& input_seq_x_fn,
 
     output_prefix = os.str();
 
+#if defined(__DEBUG__)
     std::cout << output_prefix << std::endl;
+#endif
 }
 
 /**
