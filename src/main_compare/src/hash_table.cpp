@@ -208,7 +208,7 @@ std::shared_ptr<std::vector<Filename>> common_subseq_files(
     // start to run the all tasks
     std::vector<std::thread> tasks(std::thread::hardware_concurrency());
 #if defined(__DEBUG__) && !defined(__GTEST_PCPE__)
-    std::cout << "create " << tasks.size() << " thread" << std::endl;
+    DEBUG_PRINT << "create " << tasks.size() << " thread" << std::endl;
 #endif
     for (auto& task : tasks) {
         task = std::thread(compare_hashtable_task, cstl, x, y);
@@ -238,9 +238,8 @@ common_subseq(const Filename& fn_seq_a,
               const Filename& fn_seq_b,
               const Filename& temp_file_prefix)
 {
-
 #if defined(__DEBUG__)
-    std::cout << fn_seq_a << std::endl << fn_seq_b << std::endl;
+    DEBUG_PRINT << fn_seq_a << std::endl << fn_seq_b << std::endl;
 #endif /* __DEBUG__ */
 
     auto create_hta = std::async(create_hash_table, fn_seq_a);
@@ -250,18 +249,45 @@ common_subseq(const Filename& fn_seq_a,
     std::shared_ptr<HashTable> phtb = create_htb.get();
 
 #if defined(__DEBUG__)
-    std::cout << __FILE__ << ": " << __LINE__ << ": create hash table done"
-              << std::endl;
+    DEBUG_PRINT << "create hash table done" << std::endl;
 #endif
 
     auto out_fn_list = common_subseq_files(*phta, *phtb, temp_file_prefix);
 
 #if defined(__DEBUG__)
-    std::cout << __FILE__ << ": " << __LINE__ << ": " << cstl_index
-              << std::endl;
+    DEBUG_PRINT << cstl_index << std::endl;
 #endif
 
     return out_fn_list;
+}
+
+void
+common_subseq(const Filename& fn_seq_a,
+              const Filename& fn_seq_b,
+              const Filename& temp_file_prefix,
+              std::vector<Filename>& output_fn_list)
+{
+#if defined(__DEBUG__)
+    DEBUG_PRINT << fn_seq_a << std::endl << fn_seq_b << std::endl;
+#endif /* __DEBUG__ */
+
+    auto create_hta = std::async(create_hash_table, fn_seq_a);
+    auto create_htb = std::async(create_hash_table, fn_seq_b);
+
+    std::shared_ptr<HashTable> phta = create_hta.get();
+    std::shared_ptr<HashTable> phtb = create_htb.get();
+
+#if defined(__DEBUG__)
+    DEBUG_PRINT << "create hash table done" << std::endl;
+#endif
+
+    auto output_fns = common_subseq_files(*phta, *phtb, temp_file_prefix);
+
+#if defined(__DEBUG__)
+    DEBUG_PRINT << cstl_index << std::endl;
+#endif
+
+    output_fn_list = *output_fns;
 }
 
 }

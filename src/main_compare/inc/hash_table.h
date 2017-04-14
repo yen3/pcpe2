@@ -68,6 +68,23 @@ std::shared_ptr<std::vector<Filename> > common_subseq(const Filename& fn_seq_a,
                                                       const Filename& fn_seq_b,
                                                       const Filename& temp_file_prefix="subhash");
 
+/**
+  * List all common subsequences whose length are 6.
+  *
+  * @param[in]  fn_seq_a  filename of sequence a
+  * @param[in]  fn_seq_b  filename of sequence b
+  * @param[out] output_fn_list a filename list.  Each file coantains part of
+  *          common subsequences, but not sorted. If you want to use these
+  *          informatinos, you have to sort these files and merge sort them to
+  *          locate the maximum subsequences.
+  *
+  * @return none
+  */
+void
+common_subseq(const Filename& fn_seq_a,
+              const Filename& fn_seq_b,
+              const Filename& temp_file_prefix,
+              std::vector<Filename>& output_fn_list);
 }
 
 #endif
