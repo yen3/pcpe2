@@ -221,51 +221,12 @@ std::shared_ptr<std::vector<Filename>> common_subseq_files(
     return out_fn_list;
 }
 
-/**
-  *  List all common subsequences whose length are 6.
-  *
-  *  @param[in]  fn_seq_a   filename of sequence a
-  *  @param[in]  fn_seq_b   filename of sequence b
-  *
-  *  @return  a share pointer to a filename list. Each file coantains part of
-  *           common subsequences, but not sorted. If you want to use these
-  *           informatinos, you have to sort these files and merge sort them to
-  *           locate the maximum subsequences.
-  *
-  */
-std::shared_ptr<std::vector<Filename>>
-common_subseq(const Filename& fn_seq_a,
-              const Filename& fn_seq_b,
-              const Filename& temp_file_prefix)
-{
-#if defined(__DEBUG__)
-    DEBUG_PRINT << fn_seq_a << std::endl << fn_seq_b << std::endl;
-#endif /* __DEBUG__ */
-
-    auto create_hta = std::async(create_hash_table, fn_seq_a);
-    auto create_htb = std::async(create_hash_table, fn_seq_b);
-
-    std::shared_ptr<HashTable> phta = create_hta.get();
-    std::shared_ptr<HashTable> phtb = create_htb.get();
-
-#if defined(__DEBUG__)
-    DEBUG_PRINT << "create hash table done" << std::endl;
-#endif
-
-    auto out_fn_list = common_subseq_files(*phta, *phtb, temp_file_prefix);
-
-#if defined(__DEBUG__)
-    DEBUG_PRINT << cstl_index << std::endl;
-#endif
-
-    return out_fn_list;
-}
-
 void
 common_subseq(const Filename& fn_seq_a,
               const Filename& fn_seq_b,
-              const Filename& temp_file_prefix,
-              std::vector<Filename>& output_fn_list)
+              FilenameList& output_fn_list,
+              const Filename& temp_file_prefix)
+
 {
 #if defined(__DEBUG__)
     DEBUG_PRINT << fn_seq_a << std::endl << fn_seq_b << std::endl;

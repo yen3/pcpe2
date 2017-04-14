@@ -148,10 +148,8 @@ TEST(esort, test_esort_sort_files_2) {
     Filename seq1_fn("./testdata/test_seq1.txt");
     Filename seq2_fn("./testdata/test_seq2.txt");
 
-    std::shared_ptr<std::vector<Filename> > pout_fn_list =
-        common_subseq(seq1_fn, seq2_fn);
-
-    std::vector<Filename>& out_fn_list = *pout_fn_list;
+    FilenameList out_fn_list;
+    common_subseq(seq1_fn, seq2_fn, out_fn_list, "./testoutput/subhash");
 
     esort_sort_files(out_fn_list);
 
