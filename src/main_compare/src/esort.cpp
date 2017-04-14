@@ -112,6 +112,7 @@ void esort_merge_sort_files(const FilenameList& fn_list,
     esort_out.close();
 }
 
+#if 0
 void esort(std::shared_ptr<FilenameList> fn_list, const Filename esort_fn) {
     // sort each file which contain partail subcommon subseqencs parallely.
     std::cout << "esrot parallel - start" << std::endl;
@@ -123,6 +124,20 @@ void esort(std::shared_ptr<FilenameList> fn_list, const Filename esort_fn) {
     esort_merge_sort_files(*fn_list, esort_fn);
     std::cout << "esrot merge files - end" << std::endl;
 }
+#endif
 
+
+void
+esort(const FilenameList& fn_list, const Filename esort_fn) {
+    // sort each file which contain partail subcommon subseqencs parallely.
+    std::cout << "esrot parallel - start" << std::endl;
+    esort_sort_files(fn_list);
+    std::cout << "esrot parallel - end" << std::endl;
+
+    // merge these sorted file into a file.
+    std::cout << "esrot merge files - start" << std::endl;
+    esort_merge_sort_files(fn_list, esort_fn);
+    std::cout << "esrot merge files - end" << std::endl;
+}
 
 }

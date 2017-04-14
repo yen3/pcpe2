@@ -20,8 +20,7 @@ extern void esort_sort_files(const FilenameList& fn_list);
 extern void esort_merge_sort_files(const FilenameList& fn_list,
                                    const Filename& esort_fn,
                                    const std::size_t kBufferSize);
-extern void esort(std::shared_ptr<FilenameList> fn_list,
-                  const Filename esort_fn);
+
 
 void copy_seq_file(const Filename& ifn, const Filename& ofn) {
     std::vector<ComSubseq> icsl;

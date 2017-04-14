@@ -25,7 +25,7 @@ void common_peptide_explorer(const Filename& input_seq_x_fn,
 
     std::cout << "esort subseqeunce files - start" << std::endl;
     //Filename esort_result = "esort_test.txt";
-    esort(commom_subseq_fn_list, esort_result_fn);
+    esort(*commom_subseq_fn_list, esort_result_fn);
     std::cout << "esort subseqeunce files - end" << std::endl;
 
     std::cout << "find all maximum subseqeunce - start" << std::endl;
