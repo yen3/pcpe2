@@ -5,3 +5,13 @@ src/main_compare/test/testoutput/
 .DS_Store
 example/sub_hash_*
 example/*.txt
+src/main_compare/test/src/esort.cpp.d
+src/main_compare/test/src/esort.cpp.o
+src/main_compare/test/src/hash_table.cpp.d
+src/main_compare/test/src/hash_table.cpp.o
+src/main_compare/test/src/main.cpp.d
+src/main_compare/test/src/main.cpp.o
+src/main_compare/test/src/max_comsubseq.cpp.d
+src/main_compare/test/src/max_comsubseq.cpp.o
+src/main_compare/test/src/pcpe_util.cpp.d
+src/main_compare/test/src/pcpe_util.cpp.o
