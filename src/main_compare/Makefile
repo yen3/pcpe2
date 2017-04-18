@@ -11,6 +11,7 @@ SRCS := $(SRC_DIR)/esort.cpp \
 		$(SRC_DIR)/hash_table.cpp \
 		$(SRC_DIR)/main.cpp \
 		$(SRC_DIR)/max_comsubseq.cpp \
+		$(SRC_DIR)/compare_subseq.cpp \
 		$(SRC_DIR)/pcpe_util.cpp
 
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
