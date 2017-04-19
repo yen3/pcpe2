@@ -1,3 +1,5 @@
+dist: xenial
+
 language: cpp
 
 compiler: g++
@@ -12,11 +14,8 @@ install:
 script:
     - make build
     - make build_unit_test
-
-after_success:
     - make unit_test
 
-after_script:
+after_success:
     - make release
 
-dist: xenial
