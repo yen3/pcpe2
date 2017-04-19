@@ -59,7 +59,7 @@ construct_smallseqs(const SeqList& seqs,
     std::size_t end_index = seqs[sidx].size() - SmallSeq::default_size();
     for (std::size_t i = 0; i <= end_index; ++i) {
         auto ss = SmallSeq(seqs[sidx].c_str() + i);
-        smallseqs[ss].push_back(std::make_pair(sidx, i));
+        smallseqs[ss].push_back(SeqLoc(sidx, i));
     }
   }
 }

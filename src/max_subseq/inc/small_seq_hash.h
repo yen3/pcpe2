@@ -9,13 +9,20 @@
 
 namespace pcpe {
 
+class SeqLoc;
 struct SmallSeqHashFun;
 
-typedef uint32_t SeqIndex;
-typedef uint32_t SeqLocation;
-
-typedef std::vector<std::pair<SeqIndex, SeqLocation> > Value;
+typedef std::vector<SeqLoc> Value;
 typedef std::unordered_map<SmallSeq, Value, SmallSeqHashFun> SmallSeqLocList;
+
+struct SeqLoc {
+  SeqLoc(): idx(0), loc(0) {}
+  SeqLoc(uint32_t pidx, uint32_t ploc):
+    idx(pidx), loc(ploc) {}
+
+  const uint32_t idx;
+  const uint32_t loc;
+};
 
 struct SmallSeqHashFun {
  public:

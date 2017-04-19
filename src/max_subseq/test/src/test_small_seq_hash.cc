@@ -28,7 +28,7 @@ TEST(compare_subseq, test_read_smallseqs_1) {
   ASSERT_NE(seqs.find(SmallSeq("CDEFGH")), seqs.end());
   ASSERT_NE(seqs.find(SmallSeq("DEFGHI")), seqs.end());
 
-  // Check all index& locations are saved
+  // Check all idx& locations are saved
   ASSERT_EQ(seqs[SmallSeq("ABCDEF")].size(), 3);
   ASSERT_EQ(seqs[SmallSeq("BCDEFG")].size(), 3);
   ASSERT_EQ(seqs[SmallSeq("CDEFGH")].size(), 2);
@@ -39,12 +39,12 @@ TEST(compare_subseq, test_read_smallseqs_1) {
 
     ASSERT_EQ(idxlocs.size(), 3);
 
-    ASSERT_EQ(idxlocs[0].first,  0);
-    ASSERT_EQ(idxlocs[0].second, 0);
-    ASSERT_EQ(idxlocs[1].first,  1);
-    ASSERT_EQ(idxlocs[1].second, 0);
-    ASSERT_EQ(idxlocs[2].first,  2);
-    ASSERT_EQ(idxlocs[2].second, 0);
+    ASSERT_EQ(idxlocs[0].idx, 0);
+    ASSERT_EQ(idxlocs[0].loc, 0);
+    ASSERT_EQ(idxlocs[1].idx, 1);
+    ASSERT_EQ(idxlocs[1].loc, 0);
+    ASSERT_EQ(idxlocs[2].idx, 2);
+    ASSERT_EQ(idxlocs[2].loc, 0);
   }
 
   {
@@ -52,12 +52,12 @@ TEST(compare_subseq, test_read_smallseqs_1) {
 
     ASSERT_EQ(idxlocs.size(), 3);
 
-    ASSERT_EQ(idxlocs[0].first,  0);
-    ASSERT_EQ(idxlocs[0].second, 1);
-    ASSERT_EQ(idxlocs[1].first,  1);
-    ASSERT_EQ(idxlocs[1].second, 1);
-    ASSERT_EQ(idxlocs[2].first,  2);
-    ASSERT_EQ(idxlocs[2].second, 1);
+    ASSERT_EQ(idxlocs[0].idx, 0);
+    ASSERT_EQ(idxlocs[0].loc, 1);
+    ASSERT_EQ(idxlocs[1].idx, 1);
+    ASSERT_EQ(idxlocs[1].loc, 1);
+    ASSERT_EQ(idxlocs[2].idx, 2);
+    ASSERT_EQ(idxlocs[2].loc, 1);
   }
 
   {
@@ -65,10 +65,10 @@ TEST(compare_subseq, test_read_smallseqs_1) {
 
     ASSERT_EQ(idxlocs.size(), 2);
 
-    ASSERT_EQ(idxlocs[0].first,  1);
-    ASSERT_EQ(idxlocs[0].second, 2);
-    ASSERT_EQ(idxlocs[1].first,  2);
-    ASSERT_EQ(idxlocs[1].second, 2);
+    ASSERT_EQ(idxlocs[0].idx, 1);
+    ASSERT_EQ(idxlocs[0].loc, 2);
+    ASSERT_EQ(idxlocs[1].idx, 2);
+    ASSERT_EQ(idxlocs[1].loc, 2);
   }
 
   {
@@ -76,13 +76,12 @@ TEST(compare_subseq, test_read_smallseqs_1) {
 
     ASSERT_EQ(idxlocs.size(), 1);
 
-    ASSERT_EQ(idxlocs[0].first,  2);
-    ASSERT_EQ(idxlocs[0].second, 3);
+    ASSERT_EQ(idxlocs[0].idx, 2);
+    ASSERT_EQ(idxlocs[0].loc, 3);
   }
 }
 
-TEST(compare_subseq, test_read_smallseqs_2)
-{
+TEST(compare_subseq, test_read_smallseqs_2) {
   const char* filename = "testdata/test_seq2.txt";
   SmallSeqLocList seqs;
 
@@ -96,7 +95,7 @@ TEST(compare_subseq, test_read_smallseqs_2)
   ASSERT_NE(seqs.find(SmallSeq("CDEFGH")), seqs.end());
   ASSERT_NE(seqs.find(SmallSeq("DEFGHI")), seqs.end());
 
-  // Check all index& locations are saved
+  // Check all idx& locations are saved
   ASSERT_EQ(seqs[SmallSeq("BCDEFG")].size(), 1);
   ASSERT_EQ(seqs[SmallSeq("CDEFGH")].size(), 1);
   ASSERT_EQ(seqs[SmallSeq("DEFGHI")].size(), 1);
@@ -106,8 +105,8 @@ TEST(compare_subseq, test_read_smallseqs_2)
 
     ASSERT_EQ(idxlocs.size(), 1);
 
-    ASSERT_EQ(idxlocs[0].first,  0);
-    ASSERT_EQ(idxlocs[0].second, 0);
+    ASSERT_EQ(idxlocs[0].idx, 0);
+    ASSERT_EQ(idxlocs[0].loc, 0);
   }
 
   {
@@ -115,8 +114,8 @@ TEST(compare_subseq, test_read_smallseqs_2)
 
     ASSERT_EQ(idxlocs.size(), 1);
 
-    ASSERT_EQ(idxlocs[0].first,  1);
-    ASSERT_EQ(idxlocs[0].second, 0);
+    ASSERT_EQ(idxlocs[0].idx, 1);
+    ASSERT_EQ(idxlocs[0].loc, 0);
   }
 
   {
@@ -124,8 +123,8 @@ TEST(compare_subseq, test_read_smallseqs_2)
 
     ASSERT_EQ(idxlocs.size(), 1);
 
-    ASSERT_EQ(idxlocs[0].first,  1);
-    ASSERT_EQ(idxlocs[0].second, 1);
+    ASSERT_EQ(idxlocs[0].idx, 1);
+    ASSERT_EQ(idxlocs[0].loc, 1);
   }
 }
 
