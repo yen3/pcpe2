@@ -6,10 +6,12 @@ build:
 unit_test:
 	make build_unit_test
 	cd ./src/main_compare/test; make test
+	cd ./src/max_subseq/test; make test
 
 .PHONY: build_unit_test
 build_unit_test:
 	cd ./src/main_compare/test; ./init_test.sh; make -j4;
+	cd ./src/max_subseq/test; ./init_test.sh; make -j4;
 
 .PHONY: release
 release:

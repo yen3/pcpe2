@@ -42,5 +42,6 @@ clean:
 	rm -rf $(OBJS)
 	rm -rf $(DEPS)
 	rm -rf $(MAX_SUBSEQ_TEST)
+	rm -rf ./build
 
 -include $(DEPS)
