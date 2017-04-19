@@ -14,6 +14,7 @@ class SmallSeq;
 class SmallSeq {
  public:
   // explicit operator const char* () const { return seq_; }
+  static std::size_t default_size() { return SEQ_SIZE; }
 
   SmallSeq() { std::memset(seq_, 0, sizeof(char)*MEM_SIZE); }
 
@@ -25,8 +26,8 @@ class SmallSeq {
 
   SmallSeq(const SmallSeq& rhs): SmallSeq(rhs.seq_) { }
 
-  const char* c_str() { return seq_; }
-  std::size_t size() { return SEQ_SIZE; }
+  const char* c_str() const { return seq_; }
+  std::size_t size() { return std::strlen(seq_); }
   std::size_t length() { return size(); }
 
   SmallSeq& operator=(const SmallSeq& rhs) {
