@@ -22,6 +22,14 @@ struct SmallSeqHashFun {
   uint32_t operator() (const SmallSeq& ss) const;
 };
 
+
+/**
+ * Construct a small-seq hash table from a file.
+ *
+ * @param[in] filename input filename
+ * @param[out] smallseqs the small-seq hash table.
+ *
+ * */
 void
 read_smallseqs(const char* filename,
                SmallSeqLocList& smallseqs);
