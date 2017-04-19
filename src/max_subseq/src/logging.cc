@@ -7,26 +7,26 @@
 namespace pcpe {
 
 class LogObject {
-public:
-    virtual ~LogObject(){}
+ public:
+    virtual ~LogObject() {}
     virtual std::ostream& stream() = 0;
     virtual void close() = 0;
 };
 
 class LogStdErrObject : public LogObject {
-public:
-    LogStdErrObject(): LogObject(){}
-    virtual ~LogStdErrObject(){}
-    virtual std::ostream& stream() {  return std::cerr; }
-    virtual void close() {}
+ public:
+     LogStdErrObject(): LogObject() {}
+     virtual ~LogStdErrObject() {}
+     virtual std::ostream& stream() {  return std::cerr; }
+     virtual void close() {}
 };
 
 class LogFileObject : public LogObject {
-public:
-    LogFileObject(const char* filename):
+ public:
+    explicit LogFileObject(const char* filename):
         LogObject(), out_(filename, std::ofstream::out), filename_(filename) {
     }
-    virtual ~LogFileObject(){
+    virtual ~LogFileObject() {
         close();
     }
     virtual std::ostream& stream() { return out_; }
@@ -35,13 +35,13 @@ public:
       out_.close();
     }
 
-private:
+ private:
     std::ofstream out_;
     const std::string filename_;
 };
 
 class LogRecorder {
-public:
+ public:
   LogRecorder():
     out_obj_(nullptr), filter_level_(LoggingLevel::kInfo), mutex_() {
   }
@@ -60,7 +60,7 @@ public:
     initInternal(nullptr, LoggingLevel::kNone);
   }
 
-  virtual ~LogRecorder(){
+  virtual ~LogRecorder() {
     if (out_obj_ != nullptr) {
       out_obj_->close();
       delete out_obj_;
@@ -70,7 +70,7 @@ public:
   virtual void record(LoggingLevel level, const char* filename,
                       uint32_t lineno, const char* msg);
 
-private:
+ private:
   void initInternal(LogObject* out_obj, LoggingLevel level) {
     if (out_obj_ != nullptr) {
         out_obj_->close();
@@ -129,8 +129,7 @@ std::ostringstream& LogMessage::stream() {
 void LogRecorder::record(LoggingLevel level,
                          const char* filename,
                          uint32_t lineno,
-                         const char* msg)
-{
+                         const char* msg) {
     if (level > filter_level_)
       return;
 

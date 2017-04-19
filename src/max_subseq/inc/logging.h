@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <fstream>
 #include <sstream>
 
@@ -13,14 +14,13 @@ enum class LoggingLevel {
   kDebug = 4,
 };
 
-class LogMessage
-{
-public:
+class LogMessage {
+ public:
   LogMessage(LoggingLevel level, const char* filename, uint32_t lineno);
   ~LogMessage();
   std::ostringstream& stream();
 
-private:
+ private:
   LoggingLevel level_;
   std::string filename_;
   uint32_t line_;
@@ -28,12 +28,8 @@ private:
 };
 
 void InitLogging(LoggingLevel default_level);
-
-void InitLogging(const std::string& filename,
-                 LoggingLevel default_level);
-
-void InitLogging(const char* filename,
-                 LoggingLevel default_level);
+void InitLogging(const std::string& filename, LoggingLevel default_level);
+void InitLogging(const char* filename, LoggingLevel default_level);
 
 #define LOG(level) LogMessage(level, __FILE__, __LINE__).stream()
 
