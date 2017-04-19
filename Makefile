@@ -1,16 +1,14 @@
 .PHONY: build
 build:
-	cd ./src/main_compare; make -j4
+	cd ./src/max_subseq; make -j4
 
 .PHONY: unit_test
 unit_test:
 	make build_unit_test
-	cd ./src/main_compare/test; make test
 	cd ./src/max_subseq/test; make test
 
 .PHONY: build_unit_test
 build_unit_test:
-	cd ./src/main_compare/test; ./init_test.sh; make -j4;
 	cd ./src/max_subseq/test; ./init_test.sh; make -j4;
 
 .PHONY: release
@@ -23,7 +21,7 @@ example:
 
 .PHONY: clean
 clean:
-	cd ./src/main_compare; make clean
-	cd ./src/main_compare/test; make clean
+	cd ./src/max_subseq; make clean
+	cd ./src/max_subseq/test; make clean
 	cd ./example; make clean
 
