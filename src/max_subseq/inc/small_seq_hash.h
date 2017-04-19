@@ -22,16 +22,28 @@ struct SmallSeqHashFun {
   uint32_t operator() (const SmallSeq& ss) const;
 };
 
-
 /**
  * Construct a small-seq hash table from a file.
  *
- * @param[in] filename input filename
+ * @param[in] filepath the path of input file
  * @param[out] smallseqs the small-seq hash table.
  *
  * */
 void
-read_smallseqs(const char* filename,
+read_smallseqs(const char* filepath,
                SmallSeqLocList& smallseqs);
+
+/**
+ * Find the fix-sized commom subseqences from the two sequence files.
+ *
+ * @param[in] filepath_x the small-seq hash table
+ * @param[in] filepath_y the compared small-seq hash table
+ * @param[out] result_filepaths the list of file paths to store the compared
+ *                              result.
+ *
+ * */
+void comsubseq_smallseqs(const char* filepath_x,
+                         const char* filepath_y,
+                         std::vector<std::string> result_filepaths);
 
 } // namespace pcpe

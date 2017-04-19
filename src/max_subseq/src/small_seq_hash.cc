@@ -1,5 +1,7 @@
 #include "small_seq_hash.h"
 
+#include <vector>
+#include <string>
 #include <fstream>
 
 namespace pcpe {
@@ -22,9 +24,9 @@ SmallSeqHashFun::operator() (const SmallSeq& ss) const {
 }
 
 static
-void read_seqence(const char* filename,
+void read_seqence(const char* filepath,
                   SeqList& seqs) {
-  std::ifstream in_file(filename, std::ifstream::in);
+  std::ifstream in_file(filepath, std::ifstream::in);
 
   std::size_t str_read_size = 0; // the number of seqences of the file.
   in_file >> str_read_size;
@@ -35,9 +37,9 @@ void read_seqence(const char* filename,
   // the first argument (`read_size`) and dynamic allocate an array to save
   // it. For convenient, the function uses `std::string` to save the seqence
   // rather than a fixed-size array.
-  std::size_t read_size = 0;     // useless, just for backward compatibility
+  std::size_t str_length = 0;     // useless, just for backward compatibility
   for (std::size_t i = 0; i < str_read_size; i++)
-    in_file >> read_size >> seqs[i];
+    in_file >> str_length >> seqs[i];
 
   in_file.close();
   in_file.clear();
@@ -63,14 +65,20 @@ construct_smallseqs(const SeqList& seqs,
 }
 
 void
-read_smallseqs(const char* filename,
+read_smallseqs(const char* filepath,
                SmallSeqLocList& smallseqs) {
   // read seq file to a list
   SeqList seqs;
-  read_seqence(filename, seqs);
+  read_seqence(filepath, seqs);
 
   // Add small seqence with index and location infor to small seqs.
   construct_smallseqs(seqs, smallseqs);
+}
+
+void comsubseq_smallseqs(const char* filepath_x,
+                         const char* filepath_y,
+                         std::vector<std::string> result_filepaths) {
+
 }
 
 } // namespace pcpe
