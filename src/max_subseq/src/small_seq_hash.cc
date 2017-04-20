@@ -4,6 +4,8 @@
 #include <string>
 #include <fstream>
 
+#include "pcpe_util.h"
+
 namespace pcpe {
 
 uint32_t
@@ -24,9 +26,9 @@ SmallSeqHashFun::operator() (const SmallSeq& ss) const {
 }
 
 static
-void read_seqence(const char* filepath,
+void read_seqence(const FilePath& filepath,
                   SeqList& seqs) {
-  std::ifstream in_file(filepath, std::ifstream::in);
+  std::ifstream in_file(filepath.c_str(), std::ifstream::in);
 
   std::size_t str_read_size = 0; // the number of seqences of the file.
   in_file >> str_read_size;
@@ -65,7 +67,7 @@ construct_smallseqs(const SeqList& seqs,
 }
 
 void
-read_smallseqs(const char* filepath,
+read_smallseqs(const FilePath& filepath,
                SmallSeqLocList& smallseqs) {
   // read seq file to a list
   SeqList seqs;
@@ -75,9 +77,9 @@ read_smallseqs(const char* filepath,
   construct_smallseqs(seqs, smallseqs);
 }
 
-void comsubseq_smallseqs(const char* filepath_x,
-                         const char* filepath_y,
-                         std::vector<std::string> result_filepaths) {
+void comsubseq_smallseqs(const FilePath& xfilepath,
+                         const FilePath& yfilepath,
+                         std::vector<FilePath> rfilepaths) {
 
 }
 

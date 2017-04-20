@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "seq.h"
+#include "pcpe_util.h"
 
 namespace pcpe {
 
@@ -38,7 +39,7 @@ struct SmallSeqHashFun {
  *
  * */
 void
-read_smallseqs(const char* filepath,
+read_smallseqs(const FilePath& filepath,
                SmallSeqLocList& smallseqs);
 
 /**
@@ -50,8 +51,8 @@ read_smallseqs(const char* filepath,
  *                              result.
  *
  * */
-void comsubseq_smallseqs(const char* filepath_x,
-                         const char* filepath_y,
-                         std::vector<std::string> result_filepaths);
+void comsubseq_smallseqs(const FilePath& filepath_x,
+                         const FilePath& filepath_y,
+                         std::vector<FilePath> result_filepaths);
 
 } // namespace pcpe

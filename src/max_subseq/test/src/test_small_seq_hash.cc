@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "small_seq_hash.h"
+#include "pcpe_util.h"
 
 namespace pcpe {
 
@@ -14,10 +15,10 @@ TEST(compare_subseq, test_hash_value) {
 }
 
 TEST(compare_subseq, test_read_smallseqs_1) {
-  const char* filename = "testdata/test_seq1.txt";
+  FilePath filepath = "testdata/test_seq1.txt";
   SmallSeqLocList seqs;
 
-  read_smallseqs(filename, seqs);
+  read_smallseqs(filepath, seqs);
 
   // Check the correct key size
   ASSERT_EQ(seqs.size(), 4);
@@ -82,10 +83,10 @@ TEST(compare_subseq, test_read_smallseqs_1) {
 }
 
 TEST(compare_subseq, test_read_smallseqs_2) {
-  const char* filename = "testdata/test_seq2.txt";
+  FilePath filepath = "testdata/test_seq2.txt";
   SmallSeqLocList seqs;
 
-  read_smallseqs(filename, seqs);
+  read_smallseqs(filepath, seqs);
 
   // Check the correct key size
   ASSERT_EQ(seqs.size(), 3);
