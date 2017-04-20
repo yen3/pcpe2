@@ -52,66 +52,114 @@ bool ComSubseq::operator>(const ComSubseq& rhs) const {
 
 
 ComSubseqFileReader::ComSubseqFileReader(
-    const Filepath& filepath, std::size_t buffer_size):
+    const FilePath& filepath, std::size_t buffer_size):
   filepath_(filepath),
   com_list_(buffer_size / sizeof(ComSubseq)),
   com_list_size_(0),
   infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
   read_buffer_idx_(0),
-  file_size_(GetFileSize(filepath_.c_str())),
+  file_size_(0),
   current_read_file_size_(0) {
+
+  if (fail()) {
+    LOG_ERROR() << "Open file error - " << filepath_ << std::endl;
+    return;
+  }
+
+  bool get_status = GetFileSize(filepath_.c_str(), file_size_);
+  if (!get_status) {
+    LOG_ERROR() << "Get file size error - " << filepath_ << std::endl;
+    return;
+  }
 
   read_buffer();
 }
 
 void ComSubseqFileReader::read_buffer() {
-    if (!infile_.is_open()) {
-      LOG_ERROR() << "Read file error. - " << filepath_ << std::endl;
-      return;
+  if (!infile_.is_open()) {
+    LOG_ERROR() << "Read file error. - " << filepath_ << std::endl;
+    return;
+  }
+
+  // move the remaining part to the begining of the buffer
+  std::size_t remaining_size = 0;
+  if (read_buffer_idx_ < com_list_size_) {
+    // fidx = from index, remaining_size = to index
+    for (std::size_t fidx = read_buffer_idx_; fidx < com_list_size_;
+        ++fidx, ++remaining_size) {
+      com_list_[remaining_size] = com_list_[fidx];
     }
+  }
 
-    // move the remaining part to the begining of the buffer
-    std::size_t remaining_size = 0;
-    if (read_buffer_idx_ < com_list_size_) {
-        // fidx = from index, remaining_size = to index
-        for (std::size_t fidx = read_buffer_idx_; fidx < com_list_size_;
-             ++fidx, ++remaining_size) {
-            com_list_[remaining_size] = com_list_[fidx];
-        }
-    }
+  // fill the buffer with new data
+  infile_.read(
+      reinterpret_cast<char*>(&com_list_[remaining_size]),
+      sizeof(ComSubseq) * (com_list_.size() - remaining_size));
 
-    // fill the buffer with new data
-    infile_.read(
-        reinterpret_cast<char*>(&com_list_[remaining_size]),
-        sizeof(ComSubseq) * (com_list_.size() - remaining_size));
+  infile_.fail();
+  std::size_t read_size = infile_.gcount();
 
-    infile_.fail();
-    std::size_t read_size = infile_.gcount();
+  com_list_size_ = remaining_size + read_size / sizeof(ComSubseq);
+  read_buffer_idx_ = 0;
 
-    com_list_size_ = remaining_size + read_size / sizeof(ComSubseq);
-    read_buffer_idx_ = 0;
+  current_read_file_size_ += read_size;
 
-    current_read_file_size_ += read_size;
-
-    if (current_read_file_size_ >= file_size_) {
-        close();
-    }
+  if (current_read_file_size_ >= file_size_) {
+    close();
+  }
 }
 
-void ReadComSubSeqFile(const Filepath& filepath,
+bool ComSubseqFileReader::readSeq(ComSubseq& seq) {
+  if (fail())
+    return false;
+
+  if (read_buffer_idx_ >= com_list_size_) {
+    LOG_ERROR() << "Read sequence error from file `" << filepath_ << "`! "
+      << " ridx: " << read_buffer_idx_
+      << ", buffer size: " << com_list_size_ << std::endl;
+    return false;
+  }
+
+  seq = com_list_[read_buffer_idx_];
+  ++read_buffer_idx_;
+
+  if (read_buffer_idx_ >= com_list_size_ && infile_.is_open())
+    read_buffer();
+
+  return true;
+}
+
+bool ReadComSubSeqFile(const FilePath& filepath,
                        std::vector<ComSubseq>& com_seqs) {
-    std::ifstream infile(filepath.c_str(),
-        std::ifstream::in | std::ifstream::binary);
+  FileSize file_size = 0;
+  if (!GetFileSize(filepath.c_str(), file_size)) {
+    LOG_ERROR() << "Chec the file size error - "  << filepath
+      << ". Check the file exists or not" << std::endl;
+    return false;
+  }
 
-    std::filebuf* pbuf = infile.rdbuf();
-    std::size_t size = pbuf->pubseekoff(0, infile.end, infile.in);
-    pbuf->pubseekpos(0, infile.in);
+  if (file_size % sizeof(ComSubseq) != 0) {
+    LOG_ERROR() << "File content error. Please check the file content."
+      << std::endl;
+    return false;
+  }
 
-    std::size_t cur_com_seqs_size = com_seqs.size();
-    std::generate_n(std::back_inserter<std::vector<ComSubseq> >(com_seqs),
-		    size / sizeof(ComSubseq),
-		    []() -> ComSubseq { return ComSubseq(); });
-    pbuf->sgetn(reinterpret_cast<char*>(&com_seqs[cur_com_seqs_size]), size);
+  std::size_t seq_size =
+    static_cast<std::size_t>(file_size / sizeof(ComSubseq));
+
+  // If the file is empty. Ignore the file
+  if (seq_size == 0)
+    return true;
+
+  com_seqs.resize(seq_size);
+
+  // read the file
+  std::ifstream infile(filepath.c_str(),
+      std::ifstream::in | std::ifstream::binary);
+  infile.read(reinterpret_cast<char*>(com_seqs.data()), file_size);
+  infile.close();
+
+  return true;
 }
 
 } // namespace pcpe

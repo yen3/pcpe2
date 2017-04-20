@@ -12,15 +12,15 @@ bool ChechFileExists(const char* path) {
   return (stat(path, &buffer) == 0);
 }
 
-int64_t GetFileSize(const char* path) {
+bool GetFileSize(const char* path, FileSize& size) {
   if (!ChechFileExists(path))
-    return -1;
+    return false;
 
   std::ifstream in(path, std::ifstream::ate | std::ifstream::binary);
-  int64_t fsize = in.tellg();
+  size = in.tellg();
   in.close();
 
-  return fsize;
+  return true;
 }
 
 } // namepspace pcpe

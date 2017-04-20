@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cstdint>
 #include <string>
+#include <fstream>
 
 namespace pcpe {
 
-typedef std::string Filepath;
+typedef std::string FilePath;
+typedef std::ifstream::pos_type FileSize;
 
 /**
  * Chech the file of the path exists or not
@@ -20,12 +21,13 @@ bool ChechFileExists(const char* filepath);
 /**
  * Get file size from a file path.
  *
- * @param filepath the path of the file
+ * @param[in] filepath the path of the file
+ * @param[out] size the size of the file (unit: byte(s))
  *
- * @return -1: present error
- *         otherwise: the size (unit: byte(s)) of the file
+ * @return false: present error
+ *         ture: the size (unit: byte(s)) of the file
  */
-int64_t GetFileSize(const char* filepath);
+bool GetFileSize(const char* filepath, FileSize& size);
 
 } // namespace pcpe
 

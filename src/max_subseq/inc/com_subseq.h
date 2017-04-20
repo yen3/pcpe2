@@ -51,16 +51,19 @@ class ComSubseq {
 class ComSubseqFileReader{
  public:
   /// Construct with filepath
-  ComSubseqFileReader(const Filepath& filepath,
+  ComSubseqFileReader(const FilePath& filepath,
                       std::size_t buffer_size = kIOBufferSize);
 
   void close() { infile_.close(); }
 
-  /// Read a seq and assign to the parameter.
-  void readSeq(ComSubseq& seq);
+  /// Return ture to present a valid read.
+  bool readSeq(ComSubseq& seq);
 
   /// Get the path of input file
   const char* filepath() const { return filepath_.c_str(); }
+
+  /// Check the open status
+  bool fail() const { return !infile_; }
 
   bool is_open() const {
     return infile_.is_open() || read_buffer_idx_ < com_list_size_;
@@ -80,7 +83,7 @@ class ComSubseqFileReader{
  private:
   void read_buffer();
 
-  Filepath filepath_;
+  FilePath filepath_;
 
   std::vector<ComSubseq> com_list_;
   std::size_t com_list_size_;
@@ -88,8 +91,8 @@ class ComSubseqFileReader{
   std::ifstream infile_;
   std::size_t read_buffer_idx_;
 
-  uint64_t file_size_;               // unit: byte
-  std::size_t current_read_file_size_;  // unit: byte
+  FileSize file_size_;               // unit: byte
+  FileSize current_read_file_size_;  // unit: byte
 };
 
 /**
@@ -98,8 +101,11 @@ class ComSubseqFileReader{
  * @param[in] filepath the path of input file
  * @param[out] com_seqs the list of ComSubseqs
  *
+ * @return true: read file successfully.
+ *         false: error happened.
+ *
  * */
-void ReadComSubSeqFile(const Filepath& filepath,
+bool ReadComSubSeqFile(const FilePath& filepath,
                        std::vector<ComSubseq>& com_seqs);
 
 } // namespace pcpe

@@ -13,15 +13,42 @@ TEST(pcpe_util, ChechFileExists) {
 }
 
 TEST(pcpe_util, GetFileSize) {
-  ASSERT_EQ(GetFileSize("./testdata/test_seq1.txt"),      35);
-  ASSERT_EQ(GetFileSize("./testdata/test_seq2.txt"),      21);
-  ASSERT_EQ(GetFileSize("./testdata/test_esort_file.in"), 120);
-  ASSERT_EQ(GetFileSize("./testdata/esort_input_1.in"),   40);
-  ASSERT_EQ(GetFileSize("./testdata/esort_input_2.in"),   60);
-  ASSERT_EQ(GetFileSize("./testdata/esort_input_3.in"),   20);
+  bool get_status;
+  FileSize filesize;
 
-  ASSERT_EQ(GetFileSize("./does_not_exists"),             -1);
-  ASSERT_EQ(GetFileSize("./testdata/does_not_exists"),    -1);
+  get_status = GetFileSize("./testdata/test_seq1.txt", filesize);
+  ASSERT_TRUE(get_status);
+  ASSERT_EQ(filesize, 35);
+
+  get_status = GetFileSize("./testdata/test_seq2.txt", filesize);
+  ASSERT_TRUE(get_status);
+  ASSERT_EQ(filesize, 21);
+
+  get_status = GetFileSize("./testdata/test_esort_file.in", filesize);
+  ASSERT_TRUE(get_status);
+  ASSERT_EQ(filesize, 120);
+
+  get_status = GetFileSize("./testdata/esort_input_1.in", filesize);
+  ASSERT_TRUE(get_status);
+  ASSERT_EQ(filesize, 40);
+
+  get_status = GetFileSize("./testdata/esort_input_2.in", filesize);
+  ASSERT_TRUE(get_status);
+  ASSERT_EQ(filesize, 60);
+
+  get_status = GetFileSize("./testdata/esort_input_3.in", filesize);
+  ASSERT_TRUE(get_status);
+  ASSERT_EQ(filesize, 20);
+
+  filesize = 0;
+
+  get_status = GetFileSize("./does_not_exists", filesize);
+  ASSERT_FALSE(get_status);
+  ASSERT_EQ(filesize, 0);
+
+  get_status = GetFileSize("./testdata/does_not_exists", filesize);
+  ASSERT_FALSE(get_status);
+  ASSERT_EQ(filesize, 0);
 }
 
 } // namespace pcpe
