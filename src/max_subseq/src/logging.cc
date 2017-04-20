@@ -88,15 +88,17 @@ class LogRecorder {
 };
 
 namespace {
-    LogRecorder gLogRecorder;
-}
 
-static void WriteLog(LoggingLevel level,
+LogRecorder gLogRecorder;
+
+void WriteLog(LoggingLevel level,
                      const char* filename,
                      uint32_t lineno,
                      const char* msg) {
     gLogRecorder.record(level, filename, lineno, msg);
 }
+
+} // namespace
 
 void InitLogging(LoggingLevel default_level) {
     gLogRecorder.initStdErr(default_level);
