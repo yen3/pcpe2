@@ -5,6 +5,8 @@ src/main_compare/test/testoutput/
 .DS_Store
 example/sub_hash_*
 example/*.txt
+*.d
+*.o
 src/main_compare/test/src/esort.cpp.d
 src/main_compare/test/src/esort.cpp.o
 src/main_compare/test/src/hash_table.cpp.d
