@@ -162,5 +162,65 @@ bool ReadComSubSeqFile(const FilePath& filepath,
   return true;
 }
 
+ComSubseqFileWriter::ComSubseqFileWriter(FilePath filepath,
+      std::size_t buffer_size):
+  filepath_(filepath),
+  outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
+  com_list_(buffer_size / sizeof(ComSubseq)),
+  com_list_size_(0) {
+}
+
+ComSubseqFileWriter::~ComSubseqFileWriter() {
+  if (is_open()) {
+    close();
+  }
+}
+
+bool ComSubseqFileWriter::writeSeq(const ComSubseq& seq) {
+  if (com_list_size_ >= com_list_.size())
+    write_buffer();
+
+  if (com_list_size_ >= com_list_.size()) {
+    LOG_ERROR() << "write sequence error - " << filepath_ << std::endl;
+    return false;
+  }
+
+  com_list_[com_list_size_] = seq;
+  ++com_list_size_;
+
+  return true;
+}
+
+void ComSubseqFileWriter::write_buffer() {
+  if (!outfile_.is_open() || com_list_size_ == 0) {
+    if (!outfile_.is_open()) {
+      LOG_ERROR() << "com_list_size_:" << com_list_size_ << std::endl
+                  << "open write file error" << std::endl;
+    }
+
+    return;
+  }
+
+  outfile_.write(reinterpret_cast<char*>(com_list_.data()),
+      sizeof(ComSubseq) * com_list_size_);
+  com_list_size_ = 0;
+}
+
+
+bool WriteComSubSeqFile(const std::vector<ComSubseq>& com_list,
+                        const FilePath& filepath) {
+  std::ofstream outfile(filepath, std::ofstream::out | std::ofstream::binary);
+  if (!outfile) {
+    LOG_ERROR() << "Open a file error - " << filepath << std::endl;
+    return false;
+  }
+
+  outfile.write(reinterpret_cast<const char*>(com_list.data()),
+                sizeof(ComSubseq) * com_list.size());
+  outfile.close();
+
+  return true;
+}
+
 } // namespace pcpe
 

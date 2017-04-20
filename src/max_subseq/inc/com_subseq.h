@@ -59,7 +59,7 @@ class ComSubseqFileReader{
   bool readSeq(ComSubseq& seq);
 
   /// Get the path of input file
-  const char* filepath() const { return filepath_.c_str(); }
+  const char* getFilePath() const { return filepath_.c_str(); }
 
   /// Check the open status
   bool fail() const { return !infile_; }
@@ -94,6 +94,41 @@ class ComSubseqFileReader{
   FileSize current_read_file_size_;  // unit: byte
 };
 
+class ComSubseqFileWriter {
+ public:
+  /// Construct with filepath
+  ComSubseqFileWriter(FilePath filepath,
+                      std::size_t buffer_size = kIOBufferSize);
+  ~ComSubseqFileWriter();
+
+  /// Return true to present a valid write.
+  bool writeSeq(const ComSubseq& seq);
+
+  /// Get the path of output file
+  const FilePath& getFilePath() const { return filepath_; }
+
+  void close() {
+    write_buffer();
+    outfile_.flush();
+    outfile_.close();
+  }
+
+  bool is_open() const { return outfile_.is_open(); }
+
+  ComSubseqFileWriter(const ComSubseqFileWriter&) = delete;
+  ComSubseqFileWriter(const ComSubseqFileWriter&&) = delete;
+  ComSubseqFileWriter& operator=(const ComSubseqFileWriter&) = delete;
+
+ private:
+  void write_buffer();
+
+  FilePath filepath_;
+  std::ofstream outfile_;
+
+  std::vector<ComSubseq> com_list_;
+  std::size_t com_list_size_;
+};
+
 /**
  * Read lists of ComSubseq from a file.
  *
@@ -106,6 +141,19 @@ class ComSubseqFileReader{
  * */
 bool ReadComSubSeqFile(const FilePath& filepath,
                        std::vector<ComSubseq>& com_seqs);
+
+/**
+ * Write lists of ComSubseq to a file.
+ *
+ * @param[in] com_seqs the list of ComSubseqs
+ * @param[out] filepath the path of output file
+ *
+ * @return true: read file successfully.
+ *         false: error happened.
+ *
+ * */
+bool WriteComSubSeqFile(const std::vector<ComSubseq>& com_list,
+                        const FilePath& filepath);
 
 } // namespace pcpe
 

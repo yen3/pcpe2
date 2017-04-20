@@ -101,7 +101,7 @@ TEST(com_subseq, ComSubseqFileReader) {
 
   ComSubseqFileReader csfr(ifn, sizeof(ComSubseq) * 2);
 
-  ASSERT_STREQ(csfr.filepath(), ifn.c_str());
+  ASSERT_STREQ(csfr.getFilePath(), ifn.c_str());
 
   ASSERT_TRUE(csfr.is_open());
   ASSERT_FALSE(csfr.fail());
@@ -139,8 +139,101 @@ TEST(com_subseq, ComSubseqFileReader) {
   ASSERT_TRUE(csfr.eof());
 }
 
-TEST(com_subseq, ComSubseqFileReader_fail) {
+TEST(com_subseq, WriteComSubSeqFile) {
+  FilePath ifilepath("./testdata/test_esort_file.in");
+  FilePath ofilepath(
+      "./testoutput/test_ComSubseqFileWriter_writeFile.out");
+
+  {
+    std::vector<ComSubseq> com_subseqs;
+    ASSERT_TRUE(ReadComSubSeqFile(ifilepath, com_subseqs));
+    ASSERT_TRUE(WriteComSubSeqFile(com_subseqs, ofilepath));
+  }
+
+  std::vector<ComSubseq> com_subseqs;
+  ReadComSubSeqFile(ofilepath, com_subseqs);
+
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(1, 1, 2, 0));
+  ans.push_back(ComSubseq(2, 1, 2, 0));
+  ans.push_back(ComSubseq(0, 0, 1, 0));
+  ans.push_back(ComSubseq(1, 0, 1, 0));
+  ans.push_back(ComSubseq(2, 0, 1, 0));
+  ans.push_back(ComSubseq(2, 1, 3, 1));
+
+  CheckComSubseqsSame(com_subseqs, ans);
 }
 
+TEST(com_subseq, ComSubseqFileWriter) {
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(1, 1, 2, 0));
+  ans.push_back(ComSubseq(2, 1, 2, 0));
+  ans.push_back(ComSubseq(0, 0, 1, 0));
+  ans.push_back(ComSubseq(1, 0, 1, 0));
+  ans.push_back(ComSubseq(2, 0, 1, 0));
+  ans.push_back(ComSubseq(2, 1, 3, 1));
+
+  FilePath ofilepath("./testoutput/test_ComSubseqFileWriter.out");
+
+  {
+    ComSubseqFileWriter csfw(ofilepath, sizeof(ComSubseq)*2);
+    ASSERT_TRUE(csfw.is_open());
+
+    for (const auto& cs: ans) {
+      bool write_status = csfw.writeSeq(cs);
+
+      ASSERT_TRUE(write_status);
+      ASSERT_TRUE(csfw.is_open());
+    }
+
+    csfw.close();
+    ASSERT_FALSE(csfw.is_open());
+  }
+
+  std::vector<ComSubseq> com_subseqs;
+  ASSERT_TRUE(ReadComSubSeqFile(ofilepath, com_subseqs));
+
+  CheckComSubseqsSame(com_subseqs, ans);
+}
+
+TEST(com_subseq, ComSubseqFileWriter2) {
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(1, 1, 2, 0));
+  ans.push_back(ComSubseq(2, 1, 2, 0));
+  ans.push_back(ComSubseq(0, 0, 1, 0));
+  ans.push_back(ComSubseq(1, 0, 1, 0));
+  ans.push_back(ComSubseq(2, 0, 1, 0));
+  ans.push_back(ComSubseq(2, 1, 3, 1));
+
+  FilePath ofilepath("./testoutput/test_ComSubseqFileWriter2.out");
+
+  {
+    ComSubseqFileWriter csfw(ofilepath, sizeof(ComSubseq) * 2);
+    ASSERT_TRUE(csfw.is_open());
+
+    for (const auto& cs: ans) {
+      bool write_status = csfw.writeSeq(cs);
+
+      ASSERT_TRUE(write_status);
+      ASSERT_TRUE(csfw.is_open());
+    }
+
+    csfw.close();
+    ASSERT_FALSE(csfw.is_open());
+  }
+
+  std::vector<ComSubseq> com_subseqs;
+  ComSubseqFileReader csfr(ofilepath, sizeof(ComSubseq) * 2);
+  while (!csfr.eof()) {
+    ComSubseq seq;
+
+    bool read_status = csfr.readSeq(seq);
+    ASSERT_TRUE(read_status);
+
+    com_subseqs.push_back(seq);
+  }
+
+  CheckComSubseqsSame(com_subseqs, ans);
+}
 
 } // namespace pcpe
