@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 
+#include "logging.h"
 #include "pcpe_util.h"
 
 namespace pcpe {
@@ -28,6 +29,12 @@ SmallSeqHashFun::operator() (const SmallSeq& ss) const {
 static
 void read_seqence(const FilePath& filepath,
                   SeqList& seqs) {
+
+  if (!ChechFileExists(filepath.c_str())) {
+    LOG_ERROR() << "The file does not exist - " << filepath << std::endl;
+    return;
+  }
+
   std::ifstream in_file(filepath.c_str(), std::ifstream::in);
 
   std::size_t str_read_size = 0; // the number of seqences of the file.
@@ -80,6 +87,14 @@ read_smallseqs(const FilePath& filepath,
 void comsubseq_smallseqs(const FilePath& xfilepath,
                          const FilePath& yfilepath,
                          std::vector<FilePath> rfilepaths) {
+  SmallSeqLocList xs;
+  read_smallseqs(xfilepath, xs);
+
+  SmallSeqLocList ys;
+  read_smallseqs(yfilepath, ys);
+
+  LOG_INFO() << xs.size() << std::endl;
+  LOG_INFO() << ys.size() << std::endl;
 
 }
 
