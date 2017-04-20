@@ -47,7 +47,6 @@ class ComSubseq {
     uint32_t len_;
 };
 
-
 class ComSubseqFileReader{
  public:
   /// Construct with filepath
