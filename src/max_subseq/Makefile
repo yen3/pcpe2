@@ -10,6 +10,7 @@ MAX_SUBSEQ=$(BUILD_DIR)/max_subseq.out
 SRCS := $(SRC_DIR)/seq.cc \
         $(SRC_DIR)/com_subseq.cc \
         $(SRC_DIR)/small_seq_hash.cc \
+        $(SRC_DIR)/pcpe_util.cc \
     		$(SRC_DIR)/main.cc
 
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)

@@ -13,7 +13,9 @@ SRCS := $(SRC_DIR)/test_main.cc \
 	    $(SRC_DIR)/test_seq.cc \
 	    $(SRC_DIR)/test_com_subseq.cc \
 	    $(SRC_DIR)/test_small_seq_hash.cc \
+	    $(SRC_DIR)/test_util.cc \
 	    $(SRC_DIR)/../../src/seq.cc \
+	    $(SRC_DIR)/../../src/pcpe_util.cc \
 	    $(SRC_DIR)/../../src/com_subseq.cc \
 	    $(SRC_DIR)/../../src/small_seq_hash.cc \
 	    $(SRC_DIR)/../../src/logging.cc
