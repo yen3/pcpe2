@@ -10,8 +10,9 @@ enum class LoggingLevel {
   kNone = 0,
   kFatal = 1,
   kError = 2,
-  kInfo = 3,
-  kDebug = 4,
+  kWarning = 3,
+  kInfo = 4,
+  kDebug = 5,
 };
 
 class LogMessage {
@@ -35,6 +36,7 @@ void InitLogging(const char* filename, LoggingLevel default_level);
 
 #define LOG_FATAL() LOG(LoggingLevel::kFatal)
 #define LOG_ERROR() LOG(LoggingLevel::kError)
+#define LOG_WARNING() LOG(LoggingLevel::kWarning)
 #define LOG_INFO() LOG(LoggingLevel::kInfo)
 #define LOG_DEBUG() LOG(LoggingLevel::kDebug)
 
