@@ -12,6 +12,7 @@ SRCS := $(SRC_DIR)/seq.cc \
         $(SRC_DIR)/small_seq_hash.cc \
         $(SRC_DIR)/pcpe_util.cc \
         $(SRC_DIR)/logging.cc \
+        $(SRC_DIR)/simple_task.cc \
     		$(SRC_DIR)/main.cc
 
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
