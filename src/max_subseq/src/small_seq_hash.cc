@@ -3,8 +3,12 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <atomic>
+#include <sstream>
 
 #include "logging.h"
+#include "com_subseq.h"
+#include "simple_task.h"
 #include "pcpe_util.h"
 
 namespace pcpe {
@@ -55,9 +59,9 @@ void read_seqence(const FilePath& filepath,
 }
 
 static void
-construct_smallseqs(const SeqList& seqs,
-                    SmallSeqLocList& smallseqs) {
-  for (std::size_t sidx = 0; sidx < seqs.size(); ++sidx) {
+ConstructSmallSeqs(const SeqList& seqs,
+    std::size_t seqs_begin, std::size_t seqs_end, SmallSeqLocList& smallseqs) {
+  for (std::size_t sidx = seqs_begin; sidx < seqs_end; ++sidx) {
     // Ignore when the string is less the default size since the value of
     // tiny string is unused in bio research.
     if (seqs[sidx].size() < SmallSeq::default_size())
@@ -73,29 +77,143 @@ construct_smallseqs(const SeqList& seqs,
   }
 }
 
-void
-read_smallseqs(const FilePath& filepath,
-               SmallSeqLocList& smallseqs) {
-  // read seq file to a list
-  SeqList seqs;
-  read_seqence(filepath, seqs);
+static
+void CompareComSubseqs(const SmallSeqLocList& xs,
+                       const SmallSeqLocList& ys,
+                       const FilePath& ofilepath) {
 
-  // Add small seqence with index and location infor to small seqs.
-  construct_smallseqs(seqs, smallseqs);
+  ComSubseqFileWriter writer(ofilepath);
+
+  for (auto xi = xs.cbegin(); xi != xs.cend(); ++xi) {
+    const SmallSeq& s = xi->first;
+    auto find_y = ys.find(s);
+    if (find_y == ys.end())
+      continue;
+
+    const Value& xlocs = xi->second;
+    const Value& ylocs = find_y->second;
+
+    for (std::size_t xl = 0; xl < xlocs.size(); ++xl) {
+      for (std::size_t yl = 0; yl < ylocs.size(); ++yl) {
+        ComSubseq css(xlocs[xl].idx, xlocs[xl].loc,
+                      ylocs[yl].idx, ylocs[yl].loc);
+        writer.writeSeq(css);
+      }
+    }
+  }
+  writer.close();
+
+  LOG_INFO() << "Write file done - " << ofilepath << " "
+    << xs.size() << " " << ys.size() << std::endl;
+}
+
+class CompareSmallSeqTask {
+ public:
+  CompareSmallSeqTask(const SeqList& xs, const SeqList& ys,
+                      std::size_t xs_begin, std::size_t xs_end,
+                      std::size_t ys_begin, std::size_t ys_end,
+                      const FilePath& output):
+    xs_(xs), ys_(ys),
+    xs_begin_(xs_begin), xs_end_(xs_end),
+    ys_begin_(ys_begin), ys_end_(ys_end),
+    output_(output) {}
+
+  void exec();
+
+  const FilePath& output() { return output_; }
+
+ private:
+  const SeqList& xs_;
+  const SeqList& ys_;
+
+  const std::size_t xs_begin_;
+  const std::size_t xs_end_;
+
+  const std::size_t ys_begin_;
+  const std::size_t ys_end_;
+
+  const FilePath output_;
+};
+
+void CompareSmallSeqTask::exec() {
+  // Construct SmallSeqLocList
+  SmallSeqLocList x_smallseqs;
+  ConstructSmallSeqs(xs_, xs_begin_, xs_end_, x_smallseqs);
+
+  SmallSeqLocList y_smallseqs;
+  ConstructSmallSeqs(ys_, ys_begin_, ys_end_, y_smallseqs);
+
+  // Compare the two lists and save to file.
+  CompareComSubseqs(x_smallseqs, y_smallseqs, output_);
+}
+
+static void ConstructCompareSmallSeqTasks(
+    const SeqList& xs,
+    const SeqList& ys,
+    std::vector<CompareSmallSeqTask*>& tasks,
+    const FilePath& temp_folder_prefix) {
+
+  static const std::size_t kStepSize = 10;
+
+  std::vector<std::size_t> x_steps;
+  GetNumberSteps(xs.size(), kStepSize, x_steps);
+
+  std::vector<std::size_t> y_steps;
+  GetNumberSteps(ys.size(), kStepSize, y_steps);
+
+  std::size_t curr_index = 0;
+  for (std::size_t x = 0; x < x_steps.size() - 1; ++x) {
+    for (std::size_t y = 0; y < y_steps.size() - 1; ++y) {
+      // Generate result filename
+      std::ostringstream oss;
+      oss << temp_folder_prefix << "/compare_hash_" << curr_index++;
+      FilePath output = oss.str();
+
+      CompareSmallSeqTask* new_task = new CompareSmallSeqTask(
+          xs, ys,
+          x_steps[x], x_steps[x+1],
+          y_steps[y], y_steps[y+1],
+          output);
+
+      tasks.push_back(new_task);
+    }
+  }
 }
 
 void comsubseq_smallseqs(const FilePath& xfilepath,
                          const FilePath& yfilepath,
-                         std::vector<FilePath> rfilepaths) {
-  SmallSeqLocList xs;
-  read_smallseqs(xfilepath, xs);
+                         std::vector<FilePath>& rfilepaths,
+                         const FilePath& temp_folder_prefix) {
 
-  SmallSeqLocList ys;
-  read_smallseqs(yfilepath, ys);
+  // Read sequence from the two files
+  SeqList xs;
+  read_seqence(xfilepath, xs);
 
-  LOG_INFO() << xs.size() << std::endl;
-  LOG_INFO() << ys.size() << std::endl;
+  SeqList ys;
+  read_seqence(yfilepath, ys);
 
+  LOG_INFO() << "Read sequence done. "
+             << xs.size() << " " << ys.size() << std::endl;
+
+  // Construct a task list
+  std::vector<CompareSmallSeqTask*> tasks;
+  ConstructCompareSmallSeqTasks(xs, ys, tasks, temp_folder_prefix);
+
+  // Run all compare tasks
+  RunSimpleTasks(tasks);
+
+  // Return the output files
+  for (auto task : tasks)
+    if (task != nullptr)
+      rfilepaths.push_back(task->output());
+
+  // Destory all tasks
+  for (auto& task : tasks) {
+    if (task != nullptr) {
+      delete task;
+      task = nullptr;
+    }
+  }
 }
 
 } // namespace pcpe

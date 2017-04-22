@@ -54,6 +54,7 @@ read_smallseqs(const FilePath& filepath,
  * */
 void comsubseq_smallseqs(const FilePath& filepath_x,
                          const FilePath& filepath_y,
-                         std::vector<FilePath>& result_filepaths);
+                         std::vector<FilePath>& result_filepaths,
+                         const FilePath& result_folder_prefix);
 
 } // namespace pcpe
