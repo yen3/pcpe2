@@ -7,11 +7,12 @@
 #include <unordered_map>
 
 #include "seq.h"
+#include "com_subseq.h"
 #include "pcpe_util.h"
 
 namespace pcpe {
 
-class SeqLoc;
+struct SeqLoc;
 struct SmallSeqHashFun;
 
 typedef std::vector<SeqLoc> Value;
@@ -53,6 +54,6 @@ read_smallseqs(const FilePath& filepath,
  * */
 void comsubseq_smallseqs(const FilePath& filepath_x,
                          const FilePath& filepath_y,
-                         std::vector<FilePath> result_filepaths);
+                         std::vector<FilePath>& result_filepaths);
 
 } // namespace pcpe
