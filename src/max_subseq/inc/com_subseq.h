@@ -59,9 +59,6 @@ class ComSubseqFileReader{
   /// Get the path of input file
   const char* getFilePath() const { return filepath_.c_str(); }
 
-  /// Check the open status
-  bool fail() const { return !infile_; }
-
   bool is_open() const {
     return infile_.is_open() || read_buffer_idx_ < com_list_size_;
   }

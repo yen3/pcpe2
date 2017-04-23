@@ -61,7 +61,7 @@ ComSubseqFileReader::ComSubseqFileReader(const FilePath& filepath):
   file_size_(0),
   current_read_file_size_(0) {
 
-  if (fail()) {
+  if (!infile_) {
     LOG_ERROR() << "Open file error - " << filepath_ << std::endl;
     return;
   }
@@ -110,9 +110,6 @@ void ComSubseqFileReader::read_buffer() {
 }
 
 bool ComSubseqFileReader::readSeq(ComSubseq& seq) {
-  if (fail())
-    return false;
-
   if (read_buffer_idx_ >= com_list_size_) {
     LOG_ERROR() << "Read sequence error from file `" << filepath_ << "`! "
       << " ridx: " << read_buffer_idx_
