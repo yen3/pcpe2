@@ -14,6 +14,8 @@
 
 namespace pcpe {
 
+static const uint32_t kSmallSeqLength = 6;
+
 struct SeqLoc;
 
 typedef uint32_t SmallSeqHashIndex;
@@ -28,8 +30,6 @@ struct SeqLoc {
   const uint32_t idx;
   const uint32_t loc;
 };
-
-static const uint32_t kSmallSeqLength = 6;
 
 /**
  * Get the hash value of the small seqeuence.
