@@ -150,13 +150,13 @@ static void ConstructCompareSmallSeqTasks(
     std::vector<CompareSmallSeqTask*>& tasks,
     const FilePath& temp_folder_prefix) {
 
-  static const std::size_t kStepSize = 10;
+  static const std::size_t kSeqSize = 10000;
 
   std::vector<std::size_t> x_steps;
-  GetNumberSteps(xs.size(), kStepSize, x_steps);
+  GetStepsToNumber(xs.size(), kSeqSize, x_steps);
 
   std::vector<std::size_t> y_steps;
-  GetNumberSteps(ys.size(), kStepSize, y_steps);
+  GetStepsToNumber(ys.size(), kSeqSize, y_steps);
 
   std::size_t curr_index = 0;
   for (std::size_t x = 0; x < x_steps.size() - 1; ++x) {
