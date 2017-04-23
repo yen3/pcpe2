@@ -16,7 +16,7 @@ class ComSubseq {
             uint32_t y = 0,
             uint32_t x_loc = 0,
             uint32_t y_loc = 0,
-            uint32_t len = 6):
+            uint32_t len = 6): // TODO: Remove the magic number.
                 x_(x), y_(y),
                 x_loc_(x_loc), y_loc_(y_loc),
                 len_(len) { }
