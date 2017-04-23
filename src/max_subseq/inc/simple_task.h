@@ -41,6 +41,22 @@ void GetNumberSteps(const std::size_t n,
                     const std::size_t step_size,
                     std::vector<std::size_t>& steps);
 
+/**
+ * Generate all steps to the number.
+ *
+ * Example:
+ *  Given n = 100, step = 10. The output is
+ *  {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100}
+ *
+ * @param[in] n The end of the number
+ * @param[in] step The difference of each step
+ * @param[out] steps The steps from 0 to n
+ *
+ * */
+void GetStepsToNumber(const std::size_t n,
+                      const std::size_t step,
+                      std::vector<std::size_t>& steps);
+
 
 template<typename Task>
 void RunSimpleTasksInternal(
