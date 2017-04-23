@@ -13,15 +13,12 @@
 
 namespace pcpe {
 
-uint32_t
-SmallSeqHashFun::operator() (const SmallSeq& ss) const {
+SmallSeqHashIndex HashSmallSeq(const char* s) {
   // The concent of the hash is to consider the seqeucne as a 26-based number.
   // The chars of ithe bio-seqence has 26 variant (A .. Z) so the hash encodes
   // it to a 10-based number. In the concept, each seqsence has an unique
   // hash value. The disadvatance of the hash function is that the size of
   // string can not over than 6 otherwise it would cause overflow of uint32_t.
-  const char* s = ss.c_str();
-
   return (s[0] - 'A') * 1 +         /* 26 ** 0 == 1        */
          (s[1] - 'A') * 26 +        /* 26 ** 1 == 26       */
          (s[2] - 'A') * 676 +       /* 26 ** 2 == 676      */
@@ -30,8 +27,7 @@ SmallSeqHashFun::operator() (const SmallSeq& ss) const {
          (s[5] - 'A') * 11881376;   /* 26 ** 5 == 11881376 */
 }
 
-static
-void read_seqence(const FilePath& filepath,
+void ReadSequences(const FilePath& filepath,
                   SeqList& seqs) {
 
   if (!ChechFileExists(filepath.c_str())) {
@@ -58,21 +54,22 @@ void read_seqence(const FilePath& filepath,
   in_file.clear();
 }
 
-static void
-ConstructSmallSeqs(const SeqList& seqs,
-    std::size_t seqs_begin, std::size_t seqs_end, SmallSeqLocList& smallseqs) {
+void ConstructSmallSeqs(const SeqList& seqs,
+                        std::size_t seqs_begin,
+                        std::size_t seqs_end,
+                        SmallSeqLocList& smallseqs) {
   for (std::size_t sidx = seqs_begin; sidx < seqs_end; ++sidx) {
     // Ignore when the string is less the default size since the value of
     // tiny string is unused in bio research.
-    if (seqs[sidx].size() < SmallSeq::default_size())
+    if (seqs[sidx].size() < kSmallSeqLength)
         continue;
 
     // Put all fixed-size subseqence with seqeunce index infor to the hash
     // table
-    std::size_t end_index = seqs[sidx].size() - SmallSeq::default_size();
+    std::size_t end_index = seqs[sidx].size() - kSmallSeqLength;
     for (std::size_t i = 0; i <= end_index; ++i) {
-        auto ss = SmallSeq(seqs[sidx].c_str() + i);
-        smallseqs[ss].push_back(SeqLoc(sidx, i));
+      SmallSeqHashIndex index = HashSmallSeq(seqs[sidx].c_str() + i);
+      smallseqs[index].push_back(SeqLoc(sidx, i));
     }
   }
 }
@@ -85,7 +82,7 @@ void CompareComSubseqs(const SmallSeqLocList& xs,
   ComSubseqFileWriter writer(ofilepath);
 
   for (auto xi = xs.cbegin(); xi != xs.cend(); ++xi) {
-    const SmallSeq& s = xi->first;
+    auto& s = xi->first;
     auto find_y = ys.find(s);
     if (find_y == ys.end())
       continue;
@@ -180,17 +177,17 @@ static void ConstructCompareSmallSeqTasks(
   }
 }
 
-void comsubseq_smallseqs(const FilePath& xfilepath,
-                         const FilePath& yfilepath,
-                         std::vector<FilePath>& rfilepaths,
-                         const FilePath& temp_folder_prefix) {
+void CompareSmallSeqs(const FilePath& xfilepath,
+                      const FilePath& yfilepath,
+                      std::vector<FilePath>& rfilepaths,
+                      const FilePath& temp_folder_prefix) {
 
   // Read sequence from the two files
   SeqList xs;
-  read_seqence(xfilepath, xs);
+  ReadSequences(xfilepath, xs);
 
   SeqList ys;
-  read_seqence(yfilepath, ys);
+  ReadSequences(yfilepath, ys);
 
   LOG_INFO() << "Read sequence done. "
              << xs.size() << " " << ys.size() << std::endl;

@@ -7,8 +7,7 @@ BUILD_DIR ?= ./build
 
 MAX_SUBSEQ=$(BUILD_DIR)/max_subseq.out
 
-SRCS := $(SRC_DIR)/seq.cc \
-        $(SRC_DIR)/com_subseq.cc \
+SRCS := $(SRC_DIR)/com_subseq.cc \
         $(SRC_DIR)/small_seq_hash.cc \
         $(SRC_DIR)/pcpe_util.cc \
         $(SRC_DIR)/logging.cc \

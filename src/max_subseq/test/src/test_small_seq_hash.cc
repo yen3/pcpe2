@@ -5,38 +5,47 @@
 
 namespace pcpe {
 
-TEST(compare_subseq, test_hash_value) {
-    SmallSeqHashFun hash_fun;
+extern uint32_t HashSmallSeq(const char* s);
+extern void ReadSequences(const FilePath& filepath,
+                          SeqList& seqs);
+extern void ConstructSmallSeqs(const SeqList& seqs,
+                               std::size_t seqs_begin,
+                               std::size_t seqs_end,
+                               SmallSeqLocList& smallseqs);
 
-    EXPECT_EQ(0,   hash_fun(SmallSeq("AAAAAA")));
-    EXPECT_EQ(1,   hash_fun(SmallSeq("BAAAAA")));
-    EXPECT_EQ(27,  hash_fun(SmallSeq("BBAAAA")));
-    EXPECT_EQ(703, hash_fun(SmallSeq("BBBAAA")));
+
+TEST(compare_subseq, test_hash_value) {
+    EXPECT_EQ(0,   HashSmallSeq("AAAAAA"));
+    EXPECT_EQ(1,   HashSmallSeq("BAAAAA"));
+    EXPECT_EQ(27,  HashSmallSeq("BBAAAA"));
+    EXPECT_EQ(703, HashSmallSeq("BBBAAA"));
 }
 
 TEST(compare_subseq, test_read_smallseqs_1) {
   FilePath filepath = "testdata/test_seq1.txt";
-  SmallSeqLocList seqs;
+  SeqList seq_list;
+  ReadSequences(filepath, seq_list);
 
-  read_smallseqs(filepath, seqs);
+  SmallSeqLocList seqs;
+  ConstructSmallSeqs(seq_list, 0, seq_list.size(), seqs);
 
   // Check the correct key size
   ASSERT_EQ(seqs.size(), 4);
 
   // Chech keys exist
-  ASSERT_NE(seqs.find(SmallSeq("ABCDEF")), seqs.end());
-  ASSERT_NE(seqs.find(SmallSeq("BCDEFG")), seqs.end());
-  ASSERT_NE(seqs.find(SmallSeq("CDEFGH")), seqs.end());
-  ASSERT_NE(seqs.find(SmallSeq("DEFGHI")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("ABCDEF")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("BCDEFG")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("CDEFGH")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("DEFGHI")), seqs.end());
 
   // Check all idx& locations are saved
-  ASSERT_EQ(seqs[SmallSeq("ABCDEF")].size(), 3);
-  ASSERT_EQ(seqs[SmallSeq("BCDEFG")].size(), 3);
-  ASSERT_EQ(seqs[SmallSeq("CDEFGH")].size(), 2);
-  ASSERT_EQ(seqs[SmallSeq("DEFGHI")].size(), 1);
+  ASSERT_EQ(seqs[HashSmallSeq("ABCDEF")].size(), 3);
+  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 3);
+  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 2);
+  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1);
 
   {
-    Value& idxlocs = seqs[SmallSeq("ABCDEF")];
+    Value& idxlocs = seqs[HashSmallSeq("ABCDEF")];
 
     ASSERT_EQ(idxlocs.size(), 3);
 
@@ -49,7 +58,7 @@ TEST(compare_subseq, test_read_smallseqs_1) {
   }
 
   {
-    Value& idxlocs = seqs[SmallSeq("BCDEFG")];
+    Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
 
     ASSERT_EQ(idxlocs.size(), 3);
 
@@ -62,7 +71,7 @@ TEST(compare_subseq, test_read_smallseqs_1) {
   }
 
   {
-    Value& idxlocs = seqs[SmallSeq("CDEFGH")];
+    Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
 
     ASSERT_EQ(idxlocs.size(), 2);
 
@@ -73,7 +82,7 @@ TEST(compare_subseq, test_read_smallseqs_1) {
   }
 
   {
-    Value& idxlocs = seqs[SmallSeq("DEFGHI")];
+    Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
 
     ASSERT_EQ(idxlocs.size(), 1);
 
@@ -84,25 +93,28 @@ TEST(compare_subseq, test_read_smallseqs_1) {
 
 TEST(compare_subseq, test_read_smallseqs_2) {
   FilePath filepath = "testdata/test_seq2.txt";
-  SmallSeqLocList seqs;
 
-  read_smallseqs(filepath, seqs);
+  SeqList seq_list;
+  ReadSequences(filepath, seq_list);
+
+  SmallSeqLocList seqs;
+  ConstructSmallSeqs(seq_list, 0, seq_list.size(), seqs);
 
   // Check the correct key size
   ASSERT_EQ(seqs.size(), 3);
 
   // Chech keys exist
-  ASSERT_NE(seqs.find(SmallSeq("BCDEFG")), seqs.end());
-  ASSERT_NE(seqs.find(SmallSeq("CDEFGH")), seqs.end());
-  ASSERT_NE(seqs.find(SmallSeq("DEFGHI")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("BCDEFG")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("CDEFGH")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("DEFGHI")), seqs.end());
 
   // Check all idx& locations are saved
-  ASSERT_EQ(seqs[SmallSeq("BCDEFG")].size(), 1);
-  ASSERT_EQ(seqs[SmallSeq("CDEFGH")].size(), 1);
-  ASSERT_EQ(seqs[SmallSeq("DEFGHI")].size(), 1);
+  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 1);
+  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 1);
+  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1);
 
   {
-    Value& idxlocs = seqs[SmallSeq("BCDEFG")];
+    Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
 
     ASSERT_EQ(idxlocs.size(), 1);
 
@@ -111,7 +123,7 @@ TEST(compare_subseq, test_read_smallseqs_2) {
   }
 
   {
-    Value& idxlocs = seqs[SmallSeq("CDEFGH")];
+    Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
 
     ASSERT_EQ(idxlocs.size(), 1);
 
@@ -120,7 +132,7 @@ TEST(compare_subseq, test_read_smallseqs_2) {
   }
 
   {
-    Value& idxlocs = seqs[SmallSeq("DEFGHI")];
+    Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
 
     ASSERT_EQ(idxlocs.size(), 1);
 

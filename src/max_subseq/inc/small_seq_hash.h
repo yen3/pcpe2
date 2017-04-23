@@ -10,13 +10,15 @@
 #include "com_subseq.h"
 #include "pcpe_util.h"
 
+#include <cstdint>
+
 namespace pcpe {
 
 struct SeqLoc;
-struct SmallSeqHashFun;
 
+typedef uint32_t SmallSeqHashIndex;
 typedef std::vector<SeqLoc> Value;
-typedef std::unordered_map<SmallSeq, Value, SmallSeqHashFun> SmallSeqLocList;
+typedef std::unordered_map<SmallSeqHashIndex, Value> SmallSeqLocList;
 
 struct SeqLoc {
   SeqLoc(): idx(0), loc(0) {}
@@ -27,21 +29,20 @@ struct SeqLoc {
   const uint32_t loc;
 };
 
-struct SmallSeqHashFun {
- public:
-  uint32_t operator() (const SmallSeq& ss) const;
-};
+static const uint32_t kSmallSeqLength = 6;
 
 /**
- * Construct a small-seq hash table from a file.
+ * Get the hash value of the small seqeuence.
  *
- * @param[in] filepath the path of input file
- * @param[out] smallseqs the small-seq hash table.
+ * The small sequence is protein seqence with 6 chars.  If the length of input
+ * is over than 6, it would take the first 6 chars to calculate hash value.
  *
+ * @param[in] s The protein seqence.
+ *
+ * @return an unsigned interger to present hash value.
  * */
-void
-read_smallseqs(const FilePath& filepath,
-               SmallSeqLocList& smallseqs);
+SmallSeqHashIndex HashSmallSeq(const char* s);
+
 
 /**
  * Find the fix-sized commom subseqences from the two sequence files.
@@ -52,9 +53,9 @@ read_smallseqs(const FilePath& filepath,
  *                              result.
  *
  * */
-void comsubseq_smallseqs(const FilePath& filepath_x,
-                         const FilePath& filepath_y,
-                         std::vector<FilePath>& result_filepaths,
-                         const FilePath& result_folder_prefix);
+void CompareSmallSeqs(const FilePath& filepath_x,
+                      const FilePath& filepath_y,
+                      std::vector<FilePath>& result_filepaths,
+                      const FilePath& result_folder_prefix);
 
 } // namespace pcpe

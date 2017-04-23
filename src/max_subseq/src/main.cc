@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
   pcpe::FilePath xfilepath("../../example/influenza_seq_css.txt");
   pcpe::FilePath yfilepath("../../example/protein_seq_css.txt");
 
-  pcpe::comsubseq_smallseqs(xfilepath, yfilepath, cs_filepaths, "temp");
+  pcpe::CompareSmallSeqs(xfilepath, yfilepath, cs_filepaths, "temp");
 
   return 0;
 }
