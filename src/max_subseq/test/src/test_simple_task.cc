@@ -52,8 +52,6 @@ TEST(simple_task, GetNumberSteps_regular) {
     GetNumberSteps(100, 10, steps);
 
     std::vector<std::size_t> ans{0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-    for (auto s : steps)
-      LOG_INFO() << s << std::endl;
 
     ASSERT_EQ(steps.size(), ans.size());
 
@@ -118,8 +116,6 @@ TEST(simple_task, GetStepsToNumberRegular) {
     GetStepsToNumber(100, 10, steps);
 
     std::vector<std::size_t> ans{0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-    for (auto s : steps)
-      LOG_INFO() << s << std::endl;
 
     ASSERT_EQ(steps.size(), ans.size());
 
@@ -131,8 +127,6 @@ TEST(simple_task, GetStepsToNumberRegular) {
     GetStepsToNumber(10, 1, steps);
 
     std::vector<std::size_t> ans{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    for (auto s : steps)
-      LOG_INFO() << s << std::endl;
 
     ASSERT_EQ(steps.size(), ans.size());
 
