@@ -18,6 +18,7 @@ SRCS := $(SRC_DIR)/test_main.cc \
 	    $(SRC_DIR)/../../src/com_subseq.cc \
 	    $(SRC_DIR)/../../src/small_seq_hash.cc \
 	    $(SRC_DIR)/../../src/simple_task.cc \
+	    $(SRC_DIR)/../../src/env.cc \
 	    $(SRC_DIR)/../../src/logging.cc
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)

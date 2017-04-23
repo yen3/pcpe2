@@ -6,6 +6,7 @@
 
 #include "logging.h"
 #include "pcpe_util.h"
+#include "env.h"
 
 namespace pcpe {
 
@@ -51,10 +52,9 @@ bool ComSubseq::operator>(const ComSubseq& rhs) const {
 }
 
 
-ComSubseqFileReader::ComSubseqFileReader(
-    const FilePath& filepath, std::size_t buffer_size):
+ComSubseqFileReader::ComSubseqFileReader(const FilePath& filepath):
   filepath_(filepath),
-  com_list_(buffer_size / sizeof(ComSubseq)),
+  com_list_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
   com_list_size_(0),
   infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
   read_buffer_idx_(0),
@@ -162,11 +162,10 @@ bool ReadComSubSeqFile(const FilePath& filepath,
   return true;
 }
 
-ComSubseqFileWriter::ComSubseqFileWriter(FilePath filepath,
-      std::size_t buffer_size):
+ComSubseqFileWriter::ComSubseqFileWriter(FilePath filepath):
   filepath_(filepath),
   outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
-  com_list_(buffer_size / sizeof(ComSubseq)),
+  com_list_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
   com_list_size_(0) {
 }
 

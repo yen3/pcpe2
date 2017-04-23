@@ -55,7 +55,6 @@ SmallSeqHashIndex HashSmallSeq(const char* s);
  * */
 void CompareSmallSeqs(const FilePath& filepath_x,
                       const FilePath& filepath_y,
-                      std::vector<FilePath>& result_filepaths,
-                      const FilePath& result_folder_prefix);
+                      std::vector<FilePath>& result_filepaths);
 
 } // namespace pcpe

@@ -10,6 +10,7 @@
 #include "com_subseq.h"
 #include "simple_task.h"
 #include "pcpe_util.h"
+#include "env.h"
 
 namespace pcpe {
 
@@ -61,12 +62,12 @@ void ConstructSmallSeqs(const SeqList& seqs,
   for (std::size_t sidx = seqs_begin; sidx < seqs_end; ++sidx) {
     // Ignore when the string is less the default size since the value of
     // tiny string is unused in bio research.
-    if (seqs[sidx].size() < kSmallSeqLength)
+    if (seqs[sidx].size() < gEnv.getSmallSeqLength())
         continue;
 
     // Put all fixed-size subseqence with seqeunce index infor to the hash
     // table
-    std::size_t end_index = seqs[sidx].size() - kSmallSeqLength;
+    std::size_t end_index = seqs[sidx].size() - gEnv.getSmallSeqLength();
     for (std::size_t i = 0; i <= end_index; ++i) {
       SmallSeqHashIndex index = HashSmallSeq(seqs[sidx].c_str() + i);
       smallseqs[index].push_back(SeqLoc(sidx, i));
@@ -93,7 +94,8 @@ void CompareComSubseqs(const SmallSeqLocList& xs,
     for (std::size_t xl = 0; xl < xlocs.size(); ++xl) {
       for (std::size_t yl = 0; yl < ylocs.size(); ++yl) {
         ComSubseq css(xlocs[xl].idx, xlocs[xl].loc,
-                      ylocs[yl].idx, ylocs[yl].loc);
+                      ylocs[yl].idx, ylocs[yl].loc,
+                      gEnv.getSmallSeqLength());
         writer.writeSeq(css);
       }
     }
@@ -101,7 +103,7 @@ void CompareComSubseqs(const SmallSeqLocList& xs,
   writer.close();
 
   LOG_INFO() << "Write file done - " << ofilepath << " "
-    << xs.size() << " " << ys.size() << std::endl;
+             << xs.size() << " " << ys.size() << std::endl;
 }
 
 class CompareSmallSeqTask {
@@ -147,8 +149,7 @@ void CompareSmallSeqTask::exec() {
 static void ConstructCompareSmallSeqTasks(
     const SeqList& xs,
     const SeqList& ys,
-    std::vector<CompareSmallSeqTask*>& tasks,
-    const FilePath& temp_folder_prefix) {
+    std::vector<CompareSmallSeqTask*>& tasks) {
 
   static const std::size_t kSeqSize = 10000;
 
@@ -159,12 +160,13 @@ static void ConstructCompareSmallSeqTasks(
   GetStepsToNumber(ys.size(), kSeqSize, y_steps);
 
   std::size_t curr_index = 0;
+  const FilePath& kTempFolderPrefix = gEnv.getTempFolerPath();
   for (std::size_t x = 0; x < x_steps.size() - 1; ++x) {
     for (std::size_t y = 0; y < y_steps.size() - 1; ++y) {
       // Generate result filename
       std::ostringstream oss;
-      oss << temp_folder_prefix << "/compare_hash_" << curr_index++;
-      FilePath output = oss.str();
+      oss << kTempFolderPrefix << "/compare_hash_" << curr_index++;
+      FilePath output(oss.str());
 
       CompareSmallSeqTask* new_task = new CompareSmallSeqTask(
           xs, ys,
@@ -179,8 +181,7 @@ static void ConstructCompareSmallSeqTasks(
 
 void CompareSmallSeqs(const FilePath& xfilepath,
                       const FilePath& yfilepath,
-                      std::vector<FilePath>& rfilepaths,
-                      const FilePath& temp_folder_prefix) {
+                      std::vector<FilePath>& rfilepaths) {
 
   // Read sequence from the two files
   SeqList xs;
@@ -194,7 +195,7 @@ void CompareSmallSeqs(const FilePath& xfilepath,
 
   // Construct a task list
   std::vector<CompareSmallSeqTask*> tasks;
-  ConstructCompareSmallSeqTasks(xs, ys, tasks, temp_folder_prefix);
+  ConstructCompareSmallSeqTasks(xs, ys, tasks);
 
   // Run all compare tasks
   RunSimpleTasks(tasks);

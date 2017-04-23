@@ -12,14 +12,13 @@ static const std::size_t kIOBufferSize = 16 * 1024 * 1024; // 16 MBytes
 
 class ComSubseq {
  public:
-  ComSubseq(uint32_t x = 0,
-            uint32_t y = 0,
-            uint32_t x_loc = 0,
-            uint32_t y_loc = 0,
-            uint32_t len = 6): // TODO: Remove the magic number.
-                x_(x), y_(y),
-                x_loc_(x_loc), y_loc_(y_loc),
-                len_(len) { }
+  ComSubseq() = default;
+
+  ComSubseq(uint32_t x, uint32_t y,
+            uint32_t x_loc, uint32_t y_loc,
+            uint32_t len):
+                x_(x), y_(y), x_loc_(x_loc), y_loc_(y_loc), len_(len) {
+  }
 
   ComSubseq(const ComSubseq&) = default;
   ComSubseq& operator=(const ComSubseq&) = default;
@@ -50,8 +49,7 @@ class ComSubseq {
 class ComSubseqFileReader{
  public:
   /// Construct with filepath
-  ComSubseqFileReader(const FilePath& filepath,
-                      std::size_t buffer_size = kIOBufferSize);
+  explicit ComSubseqFileReader(const FilePath& filepath);
 
   void close() { infile_.close(); }
 
@@ -97,8 +95,7 @@ class ComSubseqFileReader{
 class ComSubseqFileWriter {
  public:
   /// Construct with filepath
-  ComSubseqFileWriter(FilePath filepath,
-                      std::size_t buffer_size = kIOBufferSize);
+  explicit ComSubseqFileWriter(FilePath filepath);
   ~ComSubseqFileWriter();
 
   /// Return true to present a valid write.

@@ -12,6 +12,7 @@ SRCS := $(SRC_DIR)/com_subseq.cc \
         $(SRC_DIR)/pcpe_util.cc \
         $(SRC_DIR)/logging.cc \
         $(SRC_DIR)/simple_task.cc \
+        $(SRC_DIR)/env.cc \
     		$(SRC_DIR)/main.cc
 
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
@@ -19,7 +20,7 @@ DEPS := $(OBJS:.o=.d)
 
 
 CPPFLAGS = $(addprefix -I,$(INC_DIRS))  -MMD -MP
-DEBUG_FLAGS = -g3 -D__DEBUG__ -O0
+DEBUG_FLAGS = -g3 -O0
 CXXFLAGS = -std=c++11 -Wall -Wextra $(DEBUG_FLAGS)
 LDFLAGS  = -lpthread
 
