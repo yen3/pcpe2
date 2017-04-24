@@ -76,11 +76,11 @@ TEST(com_subseq, continue_fun) {
   ASSERT_FALSE(y.isContinued(x));
 }
 
-TEST(com_subseq, ReadComSubSeqFile) {
+TEST(com_subseq, ReadComSubseqFile) {
   FilePath input_filename("./testdata/test_esort_file.in");
 
   std::vector<ComSubseq> com_subseqs;
-  bool read_status = ReadComSubSeqFile(input_filename, com_subseqs);
+  bool read_status = ReadComSubseqFile(input_filename, com_subseqs);
   ASSERT_TRUE(read_status);
 
 
@@ -95,11 +95,11 @@ TEST(com_subseq, ReadComSubSeqFile) {
   CheckComSubseqsSame(com_subseqs, ans);
 }
 
-TEST(com_subseq, ReadComSubSeqFile2) {
+TEST(com_subseq, ReadComSubseqFile2) {
   FilePath input_filename("./testdata/not_existed");
 
   std::vector<ComSubseq> com_subseqs;
-  bool read_status = ReadComSubSeqFile(input_filename, com_subseqs);
+  bool read_status = ReadComSubseqFile(input_filename, com_subseqs);
   ASSERT_FALSE(read_status);
   ASSERT_TRUE(com_subseqs.empty());
 }
@@ -143,19 +143,19 @@ TEST(com_subseq, ComSubseqFileReader) {
   ASSERT_TRUE(csfr.eof());
 }
 
-TEST(com_subseq, WriteComSubSeqFile) {
+TEST(com_subseq, WriteComSubseqFile) {
   FilePath ifilepath("./testdata/test_esort_file.in");
   FilePath ofilepath(
       "./testoutput/test_ComSubseqFileWriter_writeFile.out");
 
   {
     std::vector<ComSubseq> com_subseqs;
-    ASSERT_TRUE(ReadComSubSeqFile(ifilepath, com_subseqs));
-    ASSERT_TRUE(WriteComSubSeqFile(com_subseqs, ofilepath));
+    ASSERT_TRUE(ReadComSubseqFile(ifilepath, com_subseqs));
+    ASSERT_TRUE(WriteComSubseqFile(com_subseqs, ofilepath));
   }
 
   std::vector<ComSubseq> com_subseqs;
-  ReadComSubSeqFile(ofilepath, com_subseqs);
+  ReadComSubseqFile(ofilepath, com_subseqs);
 
   std::vector<ComSubseq> ans;
   ans.push_back(ComSubseq(1, 1, 2, 0, 6));
@@ -195,7 +195,7 @@ TEST(com_subseq, ComSubseqFileWriter) {
   }
 
   std::vector<ComSubseq> com_subseqs;
-  ASSERT_TRUE(ReadComSubSeqFile(ofilepath, com_subseqs));
+  ASSERT_TRUE(ReadComSubseqFile(ofilepath, com_subseqs));
 
   CheckComSubseqsSame(com_subseqs, ans);
 }

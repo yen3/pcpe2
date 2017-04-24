@@ -12,6 +12,7 @@ SRCS := $(SRC_DIR)/com_subseq.cc \
         $(SRC_DIR)/pcpe_util.cc \
         $(SRC_DIR)/logging.cc \
         $(SRC_DIR)/simple_task.cc \
+        $(SRC_DIR)/com_subseq_sort.cc \
         $(SRC_DIR)/env.cc \
     		$(SRC_DIR)/main.cc
 

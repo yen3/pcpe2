@@ -51,6 +51,9 @@ class ComSubseq {
 };
 
 class ComSubseqFileReader{
+  friend bool CompareComSubseqFileReaderFirstEntry(
+      const ComSubseqFileReader& x,
+      const ComSubseqFileReader& y);
  public:
   /// Construct with filepath
   explicit ComSubseqFileReader(const FilePath& filepath);
@@ -137,7 +140,7 @@ class ComSubseqFileWriter {
  *         false: error happened.
  *
  * */
-bool ReadComSubSeqFile(const FilePath& filepath,
+bool ReadComSubseqFile(const FilePath& filepath,
                        std::vector<ComSubseq>& com_seqs);
 
 /**
@@ -150,7 +153,7 @@ bool ReadComSubSeqFile(const FilePath& filepath,
  *         false: error happened.
  *
  * */
-bool WriteComSubSeqFile(const std::vector<ComSubseq>& com_list,
+bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
                         const FilePath& filepath);
 
 } // namespace pcpe

@@ -180,7 +180,7 @@ TEST(compare_subseq, CompareHashSmallSeqs) {
   ans.push_back(ComSubseq(2, 1, 3, 1, 6));
 
   std::vector<ComSubseq> com_seqs;
-  ReadComSubSeqFile(out_filepath, com_seqs);
+  ReadComSubseqFile(out_filepath, com_seqs);
   std::sort(com_seqs.begin(), com_seqs.end());
 
   ASSERT_EQ(ans.size(), com_seqs.size());
@@ -209,7 +209,7 @@ TEST(compare_subseq, CompareSmallSeqs) {
   ASSERT_EQ(files.size(), 1);
 
   std::vector<ComSubseq> com_seqs;
-  ReadComSubSeqFile(files[0], com_seqs);
+  ReadComSubseqFile(files[0], com_seqs);
   std::sort(com_seqs.begin(), com_seqs.end());
 
   ASSERT_EQ(ans.size(), com_seqs.size());
@@ -238,7 +238,7 @@ TEST(compare_subseq, CompareSmallSeqs_2) {
   std::vector<ComSubseq> com_seqs;
   for (const auto& f : files) {
     std::vector<ComSubseq> read_seqs;
-    ReadComSubSeqFile(f, read_seqs);
+    ReadComSubseqFile(f, read_seqs);
     com_seqs.insert(com_seqs.end(), read_seqs.begin(), read_seqs.end());
   }
   std::sort(com_seqs.begin(), com_seqs.end());

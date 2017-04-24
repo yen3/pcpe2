@@ -3,8 +3,8 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <atomic>
 #include <sstream>
+#include <memory>
 
 #include "logging.h"
 #include "com_subseq.h"
@@ -148,7 +148,7 @@ void CompareSmallSeqTask::exec() {
 void ConstructCompareSmallSeqTasks(
     const SeqList& xs,
     const SeqList& ys,
-    std::vector<CompareSmallSeqTask*>& tasks) {
+    std::vector<std::unique_ptr<CompareSmallSeqTask>>& tasks) {
 
   const std::size_t kSeqSize = gEnv.getCompareSeqenceSize();
 
@@ -167,13 +167,11 @@ void ConstructCompareSmallSeqTasks(
       oss << kTempFolderPrefix << "/compare_hash_" << curr_index++;
       FilePath output(oss.str());
 
-      CompareSmallSeqTask* new_task = new CompareSmallSeqTask(
-          xs, ys,
-          x_steps[x], x_steps[x+1],
-          y_steps[y], y_steps[y+1],
-          output);
-
-      tasks.push_back(new_task);
+      tasks.push_back(std::unique_ptr<CompareSmallSeqTask>(
+            new CompareSmallSeqTask(xs, ys,
+                x_steps[x], x_steps[x+1],
+                y_steps[y], y_steps[y+1],
+                output)));
     }
   }
 }
@@ -193,24 +191,16 @@ void CompareSmallSeqs(const FilePath& xfilepath,
              << xs.size() << " " << ys.size() << std::endl;
 
   // Construct a task list
-  std::vector<CompareSmallSeqTask*> tasks;
+  std::vector<std::unique_ptr<CompareSmallSeqTask>> tasks;
   ConstructCompareSmallSeqTasks(xs, ys, tasks);
 
   // Run all compare tasks
   RunSimpleTasks(tasks);
 
   // Return the output files
-  for (auto task : tasks)
-    if (task != nullptr)
+  for (const auto& task : tasks)
+    if (task != nullptr && ChechFileExists(task->output().c_str()))
       rfilepaths.push_back(task->output());
-
-  // Destory all tasks
-  for (auto& task : tasks) {
-    if (task != nullptr) {
-      delete task;
-      task = nullptr;
-    }
-  }
 }
 
 } // namespace pcpe

@@ -133,7 +133,7 @@ bool ComSubseqFileReader::readSeq(ComSubseq& seq) {
   return true;
 }
 
-bool ReadComSubSeqFile(const FilePath& filepath,
+bool ReadComSubseqFile(const FilePath& filepath,
                        std::vector<ComSubseq>& com_seqs) {
   FileSize file_size = 0;
   if (!GetFileSize(filepath.c_str(), file_size)) {
@@ -210,7 +210,7 @@ void ComSubseqFileWriter::write_buffer() {
 }
 
 
-bool WriteComSubSeqFile(const std::vector<ComSubseq>& com_list,
+bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
                         const FilePath& filepath) {
   std::ofstream outfile(filepath, std::ofstream::out | std::ofstream::binary);
   if (!outfile) {
