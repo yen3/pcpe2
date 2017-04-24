@@ -11,7 +11,8 @@
 #include <mutex>
 #include <atomic>
 
-#include <logging.h>
+#include "logging.h"
+#include "env.h"
 
 namespace pcpe {
 
@@ -86,7 +87,7 @@ void RunSimpleTasksInternal(
 
 template<typename Task>
 void RunSimpleTasks(std::vector<Task*>& tasks) {
-  std::vector<std::thread> ts(std::thread::hardware_concurrency());
+  std::vector<std::thread> ts(gEnv.getThreadsSize());
   std::atomic_uint task_index(0);
 
   for (auto& t: ts)
