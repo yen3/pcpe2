@@ -57,6 +57,8 @@ void SortComSubseqsFileTask::exec() {
     // comsubseqs and write to the output file.
     SortSingleComSubseqFile(split_files[0], ofilepath_);
 
+    LOG_INFO() << "Sort the file without esort - "
+               << ifilepath_ << std::endl;
   } else {
     // The size of input file is more than buffer size. It would do
     // 1. Sort each files.
@@ -102,6 +104,9 @@ void SortComSubseqsFileTask::exec() {
       }
     }
     writer.close();
+
+    LOG_INFO() << "Sort the file with esort - "
+               << ifilepath_ << " " << split_files.size() << std::endl;
   }
 }
 
