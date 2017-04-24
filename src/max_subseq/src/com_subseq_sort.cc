@@ -31,13 +31,13 @@ class SortComSubseqsFileTask {
   const FilePath& getOutput() const { return ofilepath_; }
 
  private:
-  void sortSingleFile(const FilePath& ifilepath, const FilePath& ofilepath);
   const FilePath& ifilepath_;
   FilePath ofilepath_;
 };
 
-void SortComSubseqsFileTask::sortSingleFile(
-    const FilePath& ifilepath, const FilePath& ofilepath) {
+static
+void SortSingleComSubseqFile(const FilePath& ifilepath,
+                             const FilePath& ofilepath) {
   std::vector<ComSubseq> seqs;
   ReadComSubseqFile(ifilepath, seqs);
   sort(seqs.begin(), seqs.end());
@@ -55,7 +55,7 @@ void SortComSubseqsFileTask::exec() {
   if (split_files.size() == 1) {
     // The size of input file is less than or equal buffer size, just sort these
     // comsubseqs and write to the output file.
-    sortSingleFile(split_files[0], ofilepath_);
+    SortSingleComSubseqFile(split_files[0], ofilepath_);
 
   } else {
     // The size of input file is more than buffer size. It would do
@@ -64,7 +64,7 @@ void SortComSubseqsFileTask::exec() {
 
     // 1. Sort the split files
     for (const auto& filepath : split_files)
-      sortSingleFile(filepath, filepath);
+      SortSingleComSubseqFile(filepath, filepath);
 
     // 2. External sort for the split files
 
