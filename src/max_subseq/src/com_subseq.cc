@@ -209,7 +209,6 @@ void ComSubseqFileWriter::write_buffer() {
   com_list_size_ = 0;
 }
 
-
 bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
                         const FilePath& filepath) {
   std::ofstream outfile(filepath, std::ofstream::out | std::ofstream::binary);
@@ -273,4 +272,3 @@ void SplitComSubseqFile(const FilePath& ifilepath,
 }
 
 } // namespace pcpe
-
