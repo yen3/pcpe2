@@ -17,7 +17,7 @@ namespace pcpe {
 bool CompareComSubseqFileReaderFirstEntry(
       const ComSubseqFileReader& x,
       const ComSubseqFileReader& y) {
-  return x.com_list_[x.read_buffer_idx_] > y.com_list_[y.read_buffer_idx_];
+  return x.buffer_[x.buffer_idx] > y.buffer_[y.buffer_idx];
 }
 
 class SortComSubseqsFileTask {
