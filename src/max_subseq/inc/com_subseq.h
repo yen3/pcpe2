@@ -125,9 +125,9 @@ class ComSubseqFileWriter {
   FilePath filepath_;
   std::ofstream outfile_;
 
-  std::unique_ptr<ComSubseq[]> com_list_;
-  std::size_t com_list_size_;
-  std::size_t curr_com_list_idx_;
+  std::unique_ptr<ComSubseq[]> buffer_;
+  std::size_t buffer_size_;
+  std::size_t buffer_idx_;
 };
 
 /**
