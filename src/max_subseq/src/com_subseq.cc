@@ -169,8 +169,9 @@ bool ReadComSubseqFile(const FilePath& filepath,
 ComSubseqFileWriter::ComSubseqFileWriter(FilePath filepath):
   filepath_(filepath),
   outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
-  com_list_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
-  com_list_size_(0) {
+  com_list_(new ComSubseq[gEnv.getIOBufferSize() / sizeof(ComSubseq)]),
+  com_list_size_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
+  curr_com_list_idx_(0) {
 }
 
 ComSubseqFileWriter::~ComSubseqFileWriter() {
@@ -180,33 +181,33 @@ ComSubseqFileWriter::~ComSubseqFileWriter() {
 }
 
 bool ComSubseqFileWriter::writeSeq(const ComSubseq& seq) {
-  if (com_list_size_ >= com_list_.size())
+  if (curr_com_list_idx_ >= com_list_size_)
     write_buffer();
 
-  if (com_list_size_ >= com_list_.size()) {
+  if (curr_com_list_idx_ >= com_list_size_) {
     LOG_ERROR() << "write sequence error - " << filepath_ << std::endl;
     return false;
   }
 
-  com_list_[com_list_size_] = seq;
-  ++com_list_size_;
+  com_list_[curr_com_list_idx_] = seq;
+  ++curr_com_list_idx_;
 
   return true;
 }
 
 void ComSubseqFileWriter::write_buffer() {
-  if (!outfile_.is_open() || com_list_size_ == 0) {
-    if (!outfile_.is_open()) {
-      LOG_ERROR() << "com_list_size_:" << com_list_size_ << std::endl
-                  << "open write file error" << std::endl;
-    }
-
+  if (!outfile_.is_open()) {
+    LOG_ERROR() << "com_list_size_:" << com_list_size_ << std::endl
+                << "open write file error" << std::endl;
     return;
   }
 
-  outfile_.write(reinterpret_cast<char*>(com_list_.data()),
-      sizeof(ComSubseq) * com_list_size_);
-  com_list_size_ = 0;
+  if (curr_com_list_idx_ == 0)
+    return;
+
+  outfile_.write(reinterpret_cast<char*>(com_list_.get()),
+      sizeof(ComSubseq) * curr_com_list_idx_);
+  curr_com_list_idx_ = 0;
 }
 
 bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,

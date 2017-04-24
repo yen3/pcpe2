@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <memory>
 #include <vector>
 
 #include "pcpe_util.h"
@@ -124,8 +125,9 @@ class ComSubseqFileWriter {
   FilePath filepath_;
   std::ofstream outfile_;
 
-  std::vector<ComSubseq> com_list_;
+  std::unique_ptr<ComSubseq[]> com_list_;
   std::size_t com_list_size_;
+  std::size_t curr_com_list_idx_;
 };
 
 /**
