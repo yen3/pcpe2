@@ -10,7 +10,11 @@ namespace pcpe {
 
 static const std::size_t kIOBufferSize = 16 * 1024 * 1024; // 16 MBytes
 
+class ComSubseq;
+std::ostream& operator<<(std::ostream& out, const ComSubseq& s);
+
 class ComSubseq {
+  friend std::ostream& operator<<(std::ostream& out, const ComSubseq& s);
  public:
   ComSubseq() = default;
 

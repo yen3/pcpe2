@@ -10,6 +10,13 @@
 
 namespace pcpe {
 
+std::ostream& operator<<(std::ostream& out, const ComSubseq& s) {
+  out << s.x_ << " " << s.y_ << " "
+      << s.x_loc_ << " " << s.y_loc_ << " "
+      << s.len_;
+  return out;
+}
+
 bool ComSubseq::isContinued(const ComSubseq& rhs) const {
   return (x_ == rhs.x_) && (y_ == rhs.y_) &&
     ((rhs.x_loc_ - x_loc_ == 1)  || (x_loc_ - rhs.x_loc_ == 1)) &&
