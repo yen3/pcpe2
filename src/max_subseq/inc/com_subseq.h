@@ -156,6 +156,16 @@ bool ReadComSubseqFile(const FilePath& filepath,
 bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
                         const FilePath& filepath);
 
+/**
+ * Split a sequence files to several files. The size of splited files is
+ * smaller than or equal the buffer size.
+ *
+ * @param[in] com_seqs the list of ComSubseqs
+ * @param[out] filepath the path of output files
+ *
+ * */
+void SplitComSubseqFile(const FilePath& ifilepath,
+                        std::vector<FilePath>& ofilepaths);
 } // namespace pcpe
 
 

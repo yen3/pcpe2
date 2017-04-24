@@ -225,5 +225,52 @@ bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
   return true;
 }
 
+void SplitComSubseqFile(const FilePath& ifilepath,
+                        std::vector<FilePath>& ofilepaths) {
+  FileSize file_size = 0;
+  bool check = GetFileSize(ifilepath.c_str(), file_size);
+
+  if (check == false) {
+    LOG_ERROR() << "Get file error. Please check the file exists or not."
+                << std::endl;
+    return;
+  }
+
+  if (file_size == 0)
+    return;
+
+  const FileSize buffer_size = gEnv.getBufferSize() /
+    sizeof(ComSubseq) * sizeof(ComSubseq);
+  if (file_size <= buffer_size) {
+    ofilepaths.push_back(ifilepath);
+    return;
+  }
+
+  std::size_t split_files_size = file_size / buffer_size;
+  if (file_size % buffer_size != 0)
+    split_files_size++;
+
+  // Split a file to several files
+  std::ifstream infile(ifilepath, std::ifstream::in | std::ifstream::binary);
+  std::unique_ptr<ComSubseq[]> buffer(new ComSubseq[
+      buffer_size / sizeof(ComSubseq)]);
+  for (std::size_t i = 0; i < split_files_size; ++i) {
+    std::size_t read_size =
+      infile.read(reinterpret_cast<char*>(buffer.get()), buffer_size).gcount();
+
+    std::ostringstream oss;
+    oss << ifilepath << "_" << i;
+    const FilePath ofilepath(oss.str());
+    std::ofstream ofile(ofilepath.c_str(),
+        std::ofstream::out | std::ofstream::binary);
+    ofile.write(reinterpret_cast<const char*>(buffer.get()), read_size);
+    ofile.close();
+
+    ofilepaths.push_back(ofilepath);
+  }
+
+  infile.close();
+}
+
 } // namespace pcpe
 
