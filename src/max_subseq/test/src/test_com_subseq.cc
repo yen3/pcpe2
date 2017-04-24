@@ -122,7 +122,7 @@ TEST(com_subseq, ComSubseqFileReader) {
     ComSubseq read_seq;
     bool read_status = csfr.readSeq(read_seq);
 
-    ASSERT_TRUE(read_status);
+    ASSERT_TRUE(read_status) << "read times: "<< i << std::endl;
     ASSERT_EQ(read_seq, ans[i]) << i << std::endl;
 
     // Check the open status

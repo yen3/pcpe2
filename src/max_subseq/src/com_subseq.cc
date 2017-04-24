@@ -64,9 +64,10 @@ ComSubseqFileReader::ComSubseqFileReader(const FilePath& filepath):
   infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
   file_size_(0),
   curr_read_size_(0),
-  buffer_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
+  max_buffer_size_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
+  buffer_(new ComSubseq[max_buffer_size_]),
   buffer_size_(0),
-  buffer_idx(0) {
+  buffer_idx_(max_buffer_size_) {
 
   if (!infile_) {
     LOG_ERROR() << "Open file error - " << filepath_ << std::endl;
@@ -88,46 +89,47 @@ void ComSubseqFileReader::readBuffer() {
     return;
   }
 
-  // move the remaining part to the begining of the buffer
-  std::size_t remaining_size = 0;
-  if (buffer_idx < buffer_size_) {
-    // fidx = from index, remaining_size = to index
-    for (std::size_t fidx = buffer_idx; fidx < buffer_size_;
-        ++fidx, ++remaining_size) {
-      buffer_[remaining_size] = buffer_[fidx];
-    }
+  if (buffer_idx_ < buffer_size_) {
+    LOG_WARNING() << "Try to refill the buffer when the buffer has data."
+                  << std::endl;
+    return;
   }
 
   // fill the buffer with new data
-  infile_.read(
-      reinterpret_cast<char*>(&buffer_[remaining_size]),
-      sizeof(ComSubseq) * (buffer_.size() - remaining_size));
+  infile_.read(reinterpret_cast<char*>(buffer_.get()),
+      sizeof(ComSubseq) * max_buffer_size_);
 
   infile_.fail();
   std::size_t read_size = infile_.gcount();
 
-  buffer_size_ = remaining_size + read_size / sizeof(ComSubseq);
-  buffer_idx = 0;
+  buffer_size_ = read_size / sizeof(ComSubseq);
+  buffer_idx_ = 0;
 
   curr_read_size_ += read_size;
 
-  if (curr_read_size_ >= file_size_) {
+  if (curr_read_size_ > file_size_) {
+    LOG_ERROR() << "Read file error. The read bytes (" << curr_read_size_
+                << " byte(s)) is over the file size (" << file_size_
+                << " byte(s))." << std::endl;
     close();
   }
+
+  if (curr_read_size_ == file_size_)
+    close();
 }
 
 bool ComSubseqFileReader::readSeq(ComSubseq& seq) {
-  if (buffer_idx >= buffer_size_) {
+  if (buffer_idx_ >= buffer_size_) {
     LOG_ERROR() << "Read sequence error from file `" << filepath_ << "`! "
-      << " ridx: " << buffer_idx
+      << " ridx: " << buffer_idx_
       << ", buffer size: " << buffer_size_ << std::endl;
     return false;
   }
 
-  seq = buffer_[buffer_idx];
-  ++buffer_idx;
+  seq = buffer_[buffer_idx_];
+  ++buffer_idx_;
 
-  if (buffer_idx >= buffer_size_ && infile_.is_open())
+  if (buffer_idx_ >= buffer_size_ && infile_.is_open())
     readBuffer();
 
   return true;
