@@ -18,12 +18,6 @@ void CheckComSubseqsSame(const std::vector<ComSubseq>& cslx,
     }
 }
 
-static std::size_t gSavedIOBufferSize;
-
-TEST(com_subseq, SetTheTestEnvironment) {
-  gSavedIOBufferSize = gEnv.getIOBufferSize();
-  gEnv.setIOBufferSize(sizeof(ComSubseq) * 2);
-}
 
 TEST(com_subseq, length_fun) {
   ComSubseq x(1, 2, 3, 4, 6);
@@ -83,7 +77,6 @@ TEST(com_subseq, ReadComSubseqFile) {
   bool read_status = ReadComSubseqFile(input_filename, com_subseqs);
   ASSERT_TRUE(read_status);
 
-
   std::vector<ComSubseq> ans;
   ans.push_back(ComSubseq(1, 1, 2, 0, 6));
   ans.push_back(ComSubseq(2, 1, 2, 0, 6));
@@ -106,6 +99,9 @@ TEST(com_subseq, ReadComSubseqFile2) {
 
 TEST(com_subseq, ComSubseqFileReader) {
   FilePath ifn("./testdata/test_esort_file.in");  // input filename
+
+  std::size_t savedIOBufferSize = gEnv.getIOBufferSize();
+  gEnv.setIOBufferSize(sizeof(ComSubseq) * 2);
 
   ComSubseqFileReader csfr(ifn);
 
@@ -141,6 +137,8 @@ TEST(com_subseq, ComSubseqFileReader) {
 
   ASSERT_FALSE(csfr.is_open());
   ASSERT_TRUE(csfr.eof());
+
+  gEnv.setIOBufferSize(savedIOBufferSize);
 }
 
 TEST(com_subseq, WriteComSubseqFile) {
@@ -180,6 +178,9 @@ TEST(com_subseq, ComSubseqFileWriter) {
   FilePath ofilepath("./testoutput/test_ComSubseqFileWriter.out");
 
   {
+    std::size_t savedIOBufferSize = gEnv.getIOBufferSize();
+    gEnv.setIOBufferSize(sizeof(ComSubseq) * 2);
+
     ComSubseqFileWriter csfw(ofilepath);
     ASSERT_TRUE(csfw.is_open());
 
@@ -192,6 +193,8 @@ TEST(com_subseq, ComSubseqFileWriter) {
 
     csfw.close();
     ASSERT_FALSE(csfw.is_open());
+
+    gEnv.setIOBufferSize(savedIOBufferSize);
   }
 
   std::vector<ComSubseq> com_subseqs;
@@ -212,6 +215,9 @@ TEST(com_subseq, ComSubseqFileWriter2) {
   FilePath ofilepath("./testoutput/test_ComSubseqFileWriter2.out");
 
   {
+    std::size_t savedIOBufferSize = gEnv.getIOBufferSize();
+    gEnv.setIOBufferSize(sizeof(ComSubseq) * 2);
+
     ComSubseqFileWriter csfw(ofilepath);
     ASSERT_TRUE(csfw.is_open());
 
@@ -224,6 +230,8 @@ TEST(com_subseq, ComSubseqFileWriter2) {
 
     csfw.close();
     ASSERT_FALSE(csfw.is_open());
+
+    gEnv.setIOBufferSize(savedIOBufferSize);
   }
 
   std::vector<ComSubseq> com_subseqs;
@@ -238,10 +246,6 @@ TEST(com_subseq, ComSubseqFileWriter2) {
   }
 
   CheckComSubseqsSame(com_subseqs, ans);
-}
-
-TEST(com_subseq, RestoreTestEnvironment) {
-  gEnv.setIOBufferSize(gSavedIOBufferSize);
 }
 
 } // namespace pcpe
