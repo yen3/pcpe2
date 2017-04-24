@@ -2,8 +2,6 @@
 
 #include <cstdint>
 #include <vector>
-#include <string>
-#include <utility>
 #include <unordered_map>
 
 #include "seq.h"
