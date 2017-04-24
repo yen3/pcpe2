@@ -81,7 +81,7 @@ class ComSubseqFileReader{
   ComSubseqFileReader& operator=(const ComSubseqFileReader&) = delete;
 
  private:
-  void read_buffer();
+  void readBuffer();
 
   FilePath filepath_;
   std::ifstream infile_;
@@ -107,7 +107,7 @@ class ComSubseqFileWriter {
   const FilePath& getFilePath() const { return filepath_; }
 
   void close() {
-    write_buffer();
+    writeBuffer();
     outfile_.flush();
     outfile_.close();
   }
@@ -119,7 +119,7 @@ class ComSubseqFileWriter {
   ComSubseqFileWriter& operator=(const ComSubseqFileWriter&) = delete;
 
  private:
-  void write_buffer();
+  void writeBuffer();
 
   FilePath filepath_;
   std::ofstream outfile_;

@@ -79,10 +79,10 @@ ComSubseqFileReader::ComSubseqFileReader(const FilePath& filepath):
     return;
   }
 
-  read_buffer();
+  readBuffer();
 }
 
-void ComSubseqFileReader::read_buffer() {
+void ComSubseqFileReader::readBuffer() {
   if (!infile_.is_open()) {
     LOG_ERROR() << "Read file error. - " << filepath_ << std::endl;
     return;
@@ -128,7 +128,7 @@ bool ComSubseqFileReader::readSeq(ComSubseq& seq) {
   ++buffer_idx;
 
   if (buffer_idx >= buffer_size_ && infile_.is_open())
-    read_buffer();
+    readBuffer();
 
   return true;
 }
@@ -182,7 +182,7 @@ ComSubseqFileWriter::~ComSubseqFileWriter() {
 
 bool ComSubseqFileWriter::writeSeq(const ComSubseq& seq) {
   if (buffer_idx_ >= buffer_size_)
-    write_buffer();
+    writeBuffer();
 
   if (buffer_idx_ >= buffer_size_) {
     LOG_ERROR() << "write sequence error - " << filepath_ << std::endl;
@@ -195,7 +195,7 @@ bool ComSubseqFileWriter::writeSeq(const ComSubseq& seq) {
   return true;
 }
 
-void ComSubseqFileWriter::write_buffer() {
+void ComSubseqFileWriter::writeBuffer() {
   if (!outfile_.is_open()) {
     LOG_ERROR() << "buffer_size_:" << buffer_size_ << std::endl
                 << "open write file error" << std::endl;
