@@ -248,4 +248,124 @@ TEST(com_subseq, ComSubseqFileWriter2) {
   CheckComSubseqsSame(com_subseqs, ans);
 }
 
+TEST(com_subseq, SplitComSubseqFile) {
+  FilePath ifilepath("./testdata/test_esort_file.in");
+  FilePath ofilepath("./testoutput/test_esort_file.in");
+
+  std::vector<ComSubseq> com_subseqs;
+  ASSERT_TRUE(ReadComSubseqFile(ifilepath, com_subseqs));
+  ASSERT_TRUE(WriteComSubseqFile(com_subseqs, ofilepath));
+
+  std::vector<FilePath> split_filepaths;
+  SplitComSubseqFile(ofilepath, split_filepaths);
+
+  ASSERT_EQ(split_filepaths.size(), 1);
+  ASSERT_EQ(split_filepaths[0], ofilepath);
+}
+
+TEST(com_subseq, SplitComSubseqFile_small_buffer) {
+
+  FilePath ifilepath("./testdata/test_esort_file.in");
+  FilePath ofilepath("./testoutput/test_esort_file.in");
+
+  {
+    std::vector<ComSubseq> com_subseqs;
+    ASSERT_TRUE(ReadComSubseqFile(ifilepath, com_subseqs));
+    ASSERT_TRUE(WriteComSubseqFile(com_subseqs, ofilepath));
+  }
+
+  FileSize file_size;
+  ASSERT_TRUE(GetFileSize(ofilepath.c_str(), file_size));
+  ASSERT_EQ(file_size, sizeof(ComSubseq) * 6);
+
+  std::vector<FilePath> split_filepaths;
+
+  {
+    std::size_t savedBufferSize = gEnv.getBufferSize();
+    gEnv.setBufferSize(sizeof(ComSubseq) * 5);
+
+    SplitComSubseqFile(ofilepath, split_filepaths);
+
+    gEnv.setBufferSize(savedBufferSize);
+  }
+
+  ASSERT_EQ(split_filepaths.size(), 2);
+
+  ASSERT_TRUE(GetFileSize(split_filepaths[0].c_str(), file_size));
+  ASSERT_EQ(file_size, sizeof(ComSubseq) * 5);
+
+  ASSERT_TRUE(GetFileSize(split_filepaths[1].c_str(), file_size));
+  ASSERT_EQ(file_size, sizeof(ComSubseq) * 1);
+
+  std::vector<ComSubseq> seqs;
+  for (const auto& filepath : split_filepaths) {
+    ComSubseqFileReader reader(filepath);
+
+    while (!reader.eof()) {
+      ComSubseq seq;
+      ASSERT_TRUE(reader.readSeq(seq));
+      seqs.push_back(seq);
+    }
+
+    reader.close();
+  }
+
+  std::vector<ComSubseq> ans;
+  ReadComSubseqFile(ofilepath, ans);
+
+  CheckComSubseqsSame(seqs, ans);
+}
+
+TEST(com_subseq, SplitComSubseqFile_small_buffer_2) {
+
+  FilePath ifilepath("./testdata/test_esort_file.in");
+  FilePath ofilepath("./testoutput/test_esort_file.in");
+
+  {
+    std::vector<ComSubseq> com_subseqs;
+    ASSERT_TRUE(ReadComSubseqFile(ifilepath, com_subseqs));
+    ASSERT_TRUE(WriteComSubseqFile(com_subseqs, ofilepath));
+  }
+
+  FileSize file_size;
+  ASSERT_TRUE(GetFileSize(ofilepath.c_str(), file_size));
+  ASSERT_EQ(file_size, sizeof(ComSubseq) * 6);
+
+  std::vector<FilePath> split_filepaths;
+
+  {
+    std::size_t savedBufferSize = gEnv.getBufferSize();
+    gEnv.setBufferSize(sizeof(ComSubseq) * 2);
+
+    SplitComSubseqFile(ofilepath, split_filepaths);
+
+    gEnv.setBufferSize(savedBufferSize);
+  }
+
+  ASSERT_EQ(split_filepaths.size(), 3);
+
+  for (const auto& filepath : split_filepaths) {
+    ASSERT_TRUE(GetFileSize(filepath.c_str(), file_size));
+    ASSERT_EQ(file_size, sizeof(ComSubseq) * 2);
+  }
+
+  std::vector<ComSubseq> seqs;
+  for (const auto& filepath : split_filepaths) {
+    ComSubseqFileReader reader(filepath);
+
+    while (!reader.eof()) {
+      ComSubseq seq;
+      ASSERT_TRUE(reader.readSeq(seq));
+      seqs.push_back(seq);
+    }
+
+    reader.close();
+  }
+
+  std::vector<ComSubseq> ans;
+  ReadComSubseqFile(ofilepath, ans);
+
+  CheckComSubseqsSame(seqs, ans);
+}
+
 } // namespace pcpe
