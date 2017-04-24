@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <memory>
 
 #include "logging.h"
 #include "env.h"
@@ -19,11 +20,13 @@ namespace pcpe {
 /**
  * Run all tasks `exec()` function in parallel.
  *
- * @param[in] tasks The list of tasks
+ * @param[in] tasks The list of tasks. The `Type` is pointer type. It could be
+ *                  raw pointer, shared pointer or unique pointer.
  *
  * */
-template<typename Task>
-void RunSimpleTasks(std::vector<Task*>& tasks);
+template<typename Type, typename AllocType,
+  template <typename, typename> class ContainerType>
+void RunSimpleTasks(ContainerType<Type, AllocType>& tasks);
 
 /**
  * Generate all steps to the number.
@@ -42,21 +45,19 @@ void GetStepsToNumber(const std::size_t n,
                       std::vector<std::size_t>& steps);
 
 
-template<typename Task>
-void RunSimpleTasksInternal(
-    std::vector<Task*>& tasks,
-    std::atomic_uint& curr_max_index);
-
-template<typename Task>
-void RunSimpleTasksInternal(
-    std::vector<Task*>& tasks,
+template<typename Type, typename AllocType,
+  template <typename, typename> class ContainerType>
+void RunSimpleTasksInternal(ContainerType<Type, AllocType>& tasks,
     std::atomic_uint& curr_max_index) {
 
-  std::size_t tasks_size = tasks.size();
-  std::size_t curr_index = 0;
+  using SizeType = typename ContainerType<Type, AllocType>::size_type;
+  using PointerType = typename std::pointer_traits<Type>::pointer;
+
+  SizeType tasks_size = tasks.size();
+  SizeType curr_index = 0;
 
   while ((curr_index = curr_max_index.fetch_add(1)) < tasks_size) {
-    Task* task = tasks[curr_index];
+    PointerType& task = tasks[curr_index];
 
     if (task == nullptr) {
       LOG_WARNING() << "The job " << curr_index << " is empty."
@@ -68,13 +69,14 @@ void RunSimpleTasksInternal(
   }
 }
 
-template<typename Task>
-void RunSimpleTasks(std::vector<Task*>& tasks) {
+template<typename Type, typename AllocType,
+  template <typename, typename> class ContainerType>
+void RunSimpleTasks(ContainerType<Type, AllocType>& tasks) {
   std::vector<std::thread> ts(gEnv.getThreadsSize());
   std::atomic_uint task_index(0);
 
   for (auto& t: ts)
-    t = std::thread(RunSimpleTasksInternal<Task>,
+    t = std::thread(RunSimpleTasksInternal<Type, AllocType, ContainerType>,
                     std::ref(tasks),
                     std::ref(task_index));
 
