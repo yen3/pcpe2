@@ -107,21 +107,6 @@ void SortComSubseqsFileTask::exec() {
 
 void ConstructSortComSubseqFileTasks(
     const std::vector<FilePath>& ifilepaths,
-    std::vector<SortComSubseqsFileTask*>& tasks) {
-
-  std::size_t curr_index = 0;
-  for (const auto& input : ifilepaths) {
-    std::ostringstream oss;
-    oss << gEnv.getTempFolerPath() << "/sorted_compare_hash_" << curr_index;
-    curr_index++;
-
-    SortComSubseqsFileTask* task = new SortComSubseqsFileTask(input, oss.str());
-    tasks.push_back(task);
-  }
-}
-
-void ConstructSortComSubseqFileTasks(
-    const std::vector<FilePath>& ifilepaths,
     std::vector<std::unique_ptr<SortComSubseqsFileTask>>& tasks) {
 
   std::size_t curr_index = 0;
@@ -134,7 +119,6 @@ void ConstructSortComSubseqFileTasks(
             new SortComSubseqsFileTask(input, oss.str())));
   }
 }
-
 
 void SortComSubseqsFiles(const std::vector<FilePath>& ifilepaths,
                          std::vector<FilePath>& ofilepaths) {
