@@ -3,6 +3,8 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <algorithm>
+#include <memory>
 #include <cstdint>
 
 #include "simple_task.h"
@@ -38,6 +40,30 @@ TEST(simple_task, basic_usage) {
     delete task;
     task = nullptr;
   }
+}
+
+TEST(simple_task, basic_useage_unique_ptr) {
+  std::vector<std::unique_ptr<AssignIntTask>> tasks;
+
+  for (uint32_t i = 0; i < 100; ++i)
+    tasks.push_back(std::unique_ptr<AssignIntTask>(new AssignIntTask(i+1)));
+
+  RunSimpleTasks(tasks);
+
+  for (const auto& task : tasks)
+    ASSERT_EQ(task->task_id, task->result_id);
+}
+
+TEST(simple_task, basic_useage_shared_ptr) {
+  std::vector<std::shared_ptr<AssignIntTask>> tasks;
+
+  for (uint32_t i = 0; i < 100; ++i)
+    tasks.push_back(std::make_shared<AssignIntTask>(i+1));
+
+  RunSimpleTasks(tasks);
+
+  for (const auto& task : tasks)
+    ASSERT_EQ(task->task_id, task->result_id);
 }
 
 TEST(simple_task, GetStepsToNumberRegular_less_than) {
