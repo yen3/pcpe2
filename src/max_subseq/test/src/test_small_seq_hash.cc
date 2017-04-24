@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
+
 #include "small_seq_hash.h"
 #include "pcpe_util.h"
+#include "env.h"
 
 namespace pcpe {
 
@@ -12,6 +15,9 @@ extern void ConstructSmallSeqs(const SeqList& seqs,
                                std::size_t seqs_begin,
                                std::size_t seqs_end,
                                SmallSeqLocList& smallseqs);
+extern void ComapreHashSmallSeqs(const SmallSeqLocList& xs,
+                                 const SmallSeqLocList& ys,
+                                 const FilePath& ofilepath);
 
 
 TEST(compare_subseq, test_hash_value) {
@@ -139,6 +145,115 @@ TEST(compare_subseq, test_read_smallseqs_2) {
     ASSERT_EQ(idxlocs[0].idx, 1);
     ASSERT_EQ(idxlocs[0].loc, 1);
   }
+}
+
+TEST(compare_subseq, CompareHashSmallSeqs) {
+  SmallSeqLocList x_seqs;
+  SmallSeqLocList y_seqs;
+
+  {
+    FilePath filepath = "testdata/test_seq1.txt";
+    SeqList seq_list;
+    ReadSequences(filepath, seq_list);
+
+    SmallSeqLocList seqs;
+    ConstructSmallSeqs(seq_list, 0, seq_list.size(), x_seqs);
+  }
+  {
+    FilePath filepath = "testdata/test_seq2.txt";
+    SeqList seq_list;
+    ReadSequences(filepath, seq_list);
+
+    SmallSeqLocList seqs;
+    ConstructSmallSeqs(seq_list, 0, seq_list.size(), y_seqs);
+  }
+
+  FilePath out_filepath = "testoutput/compare_com_subseqs.bin";
+  ComapreHashSmallSeqs(x_seqs, y_seqs, out_filepath);
+
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(0, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 3, 1, 6));
+
+  std::vector<ComSubseq> com_seqs;
+  ReadComSubSeqFile(out_filepath, com_seqs);
+  std::sort(com_seqs.begin(), com_seqs.end());
+
+  ASSERT_EQ(ans.size(), com_seqs.size());
+  for (std::size_t i = 0; i < ans.size(); ++i)
+    ASSERT_EQ(ans[i], com_seqs[i]);
+}
+
+TEST(compare_subseq, CompareSmallSeqs) {
+  std::vector<FilePath> files;
+
+  {
+    FilePath saved_temp = gEnv.getTempFolerPath();
+    gEnv.setTempFolderPath("testoutput/");
+    CompareSmallSeqs("testdata/test_seq1.txt", "testdata/test_seq2.txt", files);
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(0, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 3, 1, 6));
+
+  ASSERT_EQ(files.size(), 1);
+
+  std::vector<ComSubseq> com_seqs;
+  ReadComSubSeqFile(files[0], com_seqs);
+  std::sort(com_seqs.begin(), com_seqs.end());
+
+  ASSERT_EQ(ans.size(), com_seqs.size());
+  for (std::size_t i = 0; i < ans.size(); ++i)
+    ASSERT_EQ(ans[i], com_seqs[i]);
+}
+
+TEST(compare_subseq, CompareSmallSeqs_2) {
+  std::vector<FilePath> files;
+
+  {
+    FilePath saved_temp = gEnv.getTempFolerPath();
+    std::size_t saved_compare_seq_size = gEnv.getCompareSeqenceSize();
+
+    gEnv.setTempFolderPath("testoutput/");
+    gEnv.setCompareSeqenceSize(1);
+
+    CompareSmallSeqs("testdata/test_seq1.txt", "testdata/test_seq2.txt", files);
+
+    gEnv.setTempFolderPath(saved_temp);
+    gEnv.setCompareSeqenceSize(saved_compare_seq_size);
+  }
+
+  ASSERT_EQ(files.size(), 6);
+
+  std::vector<ComSubseq> com_seqs;
+  for (const auto& f : files) {
+    std::vector<ComSubseq> read_seqs;
+    ReadComSubSeqFile(f, read_seqs);
+    com_seqs.insert(com_seqs.end(), read_seqs.begin(), read_seqs.end());
+  }
+  std::sort(com_seqs.begin(), com_seqs.end());
+
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(0, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 3, 1, 6));
+
+  ASSERT_EQ(ans.size(), com_seqs.size());
+  for (std::size_t i = 0; i < ans.size(); ++i)
+    ASSERT_EQ(ans[i], com_seqs[i]);
 }
 
 } // namespace pcpe

@@ -75,10 +75,9 @@ void ConstructSmallSeqs(const SeqList& seqs,
   }
 }
 
-static
-void CompareComSubseqs(const SmallSeqLocList& xs,
-                       const SmallSeqLocList& ys,
-                       const FilePath& ofilepath) {
+void ComapreHashSmallSeqs(const SmallSeqLocList& xs,
+                          const SmallSeqLocList& ys,
+                          const FilePath& ofilepath) {
 
   ComSubseqFileWriter writer(ofilepath);
 
@@ -93,8 +92,8 @@ void CompareComSubseqs(const SmallSeqLocList& xs,
 
     for (std::size_t xl = 0; xl < xlocs.size(); ++xl) {
       for (std::size_t yl = 0; yl < ylocs.size(); ++yl) {
-        ComSubseq css(xlocs[xl].idx, xlocs[xl].loc,
-                      ylocs[yl].idx, ylocs[yl].loc,
+        ComSubseq css(xlocs[xl].idx, ylocs[yl].idx,
+                      xlocs[xl].loc, ylocs[yl].loc,
                       gEnv.getSmallSeqLength());
         writer.writeSeq(css);
       }
@@ -143,15 +142,15 @@ void CompareSmallSeqTask::exec() {
   ConstructSmallSeqs(ys_, ys_begin_, ys_end_, y_smallseqs);
 
   // Compare the two lists and save to file.
-  CompareComSubseqs(x_smallseqs, y_smallseqs, output_);
+  ComapreHashSmallSeqs(x_smallseqs, y_smallseqs, output_);
 }
 
-static void ConstructCompareSmallSeqTasks(
+void ConstructCompareSmallSeqTasks(
     const SeqList& xs,
     const SeqList& ys,
     std::vector<CompareSmallSeqTask*>& tasks) {
 
-  static const std::size_t kSeqSize = 10000;
+  const std::size_t kSeqSize = gEnv.getCompareSeqenceSize();
 
   std::vector<std::size_t> x_steps;
   GetStepsToNumber(xs.size(), kSeqSize, x_steps);
