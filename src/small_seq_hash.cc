@@ -119,7 +119,7 @@ class CompareSmallSeqTask {
 
   void exec();
 
-  const FilePath& output() { return output_; }
+  const FilePath& getOutput() { return output_; }
 
  private:
   const SeqList& xs_;
@@ -200,8 +200,8 @@ void CompareSmallSeqs(const FilePath& xfilepath,
 
   // Return the output files
   for (const auto& task : tasks)
-    if (task != nullptr && ChechFileExists(task->output().c_str()))
-      rfilepaths.push_back(task->output());
+    if (task != nullptr && ChechFileExists(task->getOutput().c_str()))
+      rfilepaths.push_back(task->getOutput());
 }
 
 } // namespace pcpe
