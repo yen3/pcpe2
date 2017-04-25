@@ -66,14 +66,14 @@ class ComSubseqFileReader{
   const char* getFilePath() const { return filepath_.c_str(); }
 
   bool is_open() const {
-    return infile_.is_open() || buffer_idx_ < buffer_size_;
+    return infile_.is_open() || (std::size_t)buffer_idx_ < (std::size_t)buffer_size_;
   }
 
   bool eof() const {
     if (is_open())
       return false;
     else
-      return buffer_idx_ >= buffer_size_;
+      return (std::size_t)buffer_idx_ >= (std::size_t)buffer_size_;
   }
 
   ComSubseqFileReader(const ComSubseqFileReader&) = delete;
@@ -89,9 +89,9 @@ class ComSubseqFileReader{
   FileSize file_size_;       // unit: byte
   FileSize curr_read_size_;  // unit: byte
 
-  const std::size_t max_buffer_size_;
+  const std::streamsize max_buffer_size_;
   std::unique_ptr<ComSubseq[]> buffer_;
-  std::size_t buffer_size_;
+  std::streamsize buffer_size_;
   std::size_t buffer_idx_;
 };
 
@@ -126,7 +126,7 @@ class ComSubseqFileWriter {
   std::ofstream outfile_;
 
   std::unique_ptr<ComSubseq[]> buffer_;
-  std::size_t buffer_size_;
+  std::streamsize buffer_size_;
   std::size_t buffer_idx_;
 };
 

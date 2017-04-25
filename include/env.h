@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "pcpe_util.h"
 
 #include <thread>
@@ -21,36 +23,36 @@ class Env {
          temp_folder_("./temp") {
   }
 
-  std::size_t getIOBufferSize() const { return io_buffer_size_; }
-  std::size_t getSmallSeqLength() const { return small_seq_length_; }
-  std::size_t getCompareSeqenceSize() const { return compare_seq_unit_size_; }
-  std::size_t getBufferSize() const { return buffer_size_; }
-  std::size_t getThreadsSize() const { return thread_size; }
+  uint32_t getIOBufferSize() const { return io_buffer_size_; }
+  uint32_t getSmallSeqLength() const { return small_seq_length_; }
+  uint32_t getCompareSeqenceSize() const { return compare_seq_unit_size_; }
+  uint32_t getBufferSize() const { return buffer_size_; }
+  uint32_t getThreadsSize() const { return thread_size; }
   const FilePath& getTempFolerPath() const { return temp_folder_; }
 
-  void setIOBufferSize(std::size_t size) { io_buffer_size_ = size; }
-  void setBufferSize(std::size_t size) { buffer_size_ = size; }
+  void setIOBufferSize(uint32_t size) { io_buffer_size_ = size; }
+  void setBufferSize(uint32_t size) { buffer_size_ = size; }
   void setTempFolderPath(const FilePath& path) { temp_folder_ = path; }
-  void setCompareSeqenceSize(std::size_t size) {
+  void setCompareSeqenceSize(uint32_t size) {
     compare_seq_unit_size_ = size; }
-  void setThreadSize(std::size_t size) { thread_size = size; }
+  void setThreadSize(uint32_t size) { thread_size = size; }
 
  private:
   /// The IO buffer size. The paramemter is used by ComSubseqFileReader/
   /// ComSubseqFileWriter.
-  std::size_t io_buffer_size_;
+  uint32_t io_buffer_size_;
 
   /// The number of sequences for each comparison and builing hash table.
-  std::size_t compare_seq_unit_size_;
+  uint32_t compare_seq_unit_size_;
 
   /// The maximum buffer size.
-  std::size_t buffer_size_;
+  uint32_t buffer_size_;
 
   /// The the length of small seq. Don't modify the parameter.
-  const std::size_t small_seq_length_;
+  const uint16_t small_seq_length_;
 
   /// The number of threads to execute in parallel.
-  std::size_t thread_size;
+  uint32_t thread_size;
 
   /// The path to save all temps generated during the programing exectuion.
   FilePath temp_folder_;
