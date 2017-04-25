@@ -14,7 +14,7 @@ TEST(com_subseq_sort, SortComSubseqsFiles) {
   std::vector<FilePath> ofilepaths;
 
   {
-    FilePath saved_temp = gEnv.getTempFolerPath();
+    FilePath saved_temp = gEnv.getTempFolderPath();
     gEnv.setTempFolderPath("testoutput/");
 
     SortComSubseqsFiles(ifilepaths, ofilepaths);
@@ -48,7 +48,7 @@ TEST(com_subseq_sort, SortComSubseqsFiles_small_buffer) {
   std::vector<FilePath> ofilepaths;
 
   {
-    FilePath saved_temp = gEnv.getTempFolerPath();
+    FilePath saved_temp = gEnv.getTempFolderPath();
     std::size_t saved_buffer_size = gEnv.getBufferSize();
     gEnv.setTempFolderPath("testoutput/");
     gEnv.setBufferSize(sizeof(ComSubseq) * 2);

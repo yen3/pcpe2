@@ -9,12 +9,12 @@
 
 namespace pcpe {
 
-bool ChechFileExists(const char* path) {
+bool CheckFileExists(const char* path) {
   struct stat buffer;
   return (stat(path, &buffer) == 0);
 }
 
-bool ChechFolderExists(const char* filepath) {
+bool CheckFolderExists(const char* filepath) {
   struct stat file_stat;
 
   if (stat(filepath, &file_stat) != 0)
@@ -45,7 +45,7 @@ bool CreateFolder(const char* path) {
     }
   }
 
-	if (!ChechFolderExists(tmp.get())) {
+	if (!CheckFolderExists(tmp.get())) {
 		int mk_status = mkdir(tmp.get(), S_IRWXU);
 		return mk_status == 0;
   }
@@ -53,12 +53,23 @@ bool CreateFolder(const char* path) {
 }
 
 bool GetFileSize(const char* path, FileSize& size) {
-  if (!ChechFileExists(path))
+  if (!CheckFileExists(path))
     return false;
 
   std::ifstream in(path, std::ifstream::ate | std::ifstream::binary);
   size = in.tellg();
   in.close();
+
+  return true;
+}
+
+bool CheckFileNotEmpty(const char* path) {
+  FileSize file_size;
+  if (!GetFileSize(path, file_size))
+    return false;
+
+  if (file_size == 0)
+    return false;
 
   return true;
 }

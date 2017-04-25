@@ -28,7 +28,7 @@ class Env {
   uint32_t getCompareSeqenceSize() const { return compare_seq_unit_size_; }
   uint32_t getBufferSize() const { return buffer_size_; }
   uint32_t getThreadsSize() const { return thread_size; }
-  const FilePath& getTempFolerPath() const { return temp_folder_; }
+  const FilePath& getTempFolderPath() const { return temp_folder_; }
 
   void setIOBufferSize(uint32_t size) { io_buffer_size_ = size; }
   void setBufferSize(uint32_t size) { buffer_size_ = size; }

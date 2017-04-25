@@ -38,7 +38,7 @@ TEST(compare_subseq, test_read_smallseqs_1) {
   // Check the correct key size
   ASSERT_EQ(seqs.size(), 4UL);
 
-  // Chech keys exist
+  // Check keys exist
   ASSERT_NE(seqs.find(HashSmallSeq("ABCDEF")), seqs.end());
   ASSERT_NE(seqs.find(HashSmallSeq("BCDEFG")), seqs.end());
   ASSERT_NE(seqs.find(HashSmallSeq("CDEFGH")), seqs.end());
@@ -109,7 +109,7 @@ TEST(compare_subseq, test_read_smallseqs_2) {
   // Check the correct key size
   ASSERT_EQ(seqs.size(), 3UL);
 
-  // Chech keys exist
+  // Check keys exist
   ASSERT_NE(seqs.find(HashSmallSeq("BCDEFG")), seqs.end());
   ASSERT_NE(seqs.find(HashSmallSeq("CDEFGH")), seqs.end());
   ASSERT_NE(seqs.find(HashSmallSeq("DEFGHI")), seqs.end());
@@ -192,7 +192,7 @@ TEST(compare_subseq, CompareSmallSeqs) {
   std::vector<FilePath> files;
 
   {
-    FilePath saved_temp = gEnv.getTempFolerPath();
+    FilePath saved_temp = gEnv.getTempFolderPath();
     gEnv.setTempFolderPath("testoutput/");
     CompareSmallSeqs("testdata/test_seq1.txt", "testdata/test_seq2.txt", files);
     gEnv.setTempFolderPath(saved_temp);
@@ -221,7 +221,7 @@ TEST(compare_subseq, CompareSmallSeqs_2) {
   std::vector<FilePath> files;
 
   {
-    FilePath saved_temp = gEnv.getTempFolerPath();
+    FilePath saved_temp = gEnv.getTempFolderPath();
     std::size_t saved_compare_seq_size = gEnv.getCompareSeqenceSize();
 
     gEnv.setTempFolderPath("testoutput/");

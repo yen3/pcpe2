@@ -32,7 +32,7 @@ SmallSeqHashIndex HashSmallSeq(const char* s) {
 void ReadSequences(const FilePath& filepath,
                   SeqList& seqs) {
 
-  if (!ChechFileExists(filepath.c_str())) {
+  if (!CheckFileExists(filepath.c_str())) {
     LOG_ERROR() << "The file does not exist - " << filepath << std::endl;
     return;
   }
@@ -160,7 +160,7 @@ void ConstructCompareSmallSeqTasks(
   GetStepsToNumber(ys.size(), kSeqSize, y_steps);
 
   std::size_t curr_index = 0;
-  const FilePath& kTempFolderPrefix = gEnv.getTempFolerPath();
+  const FilePath& kTempFolderPrefix = gEnv.getTempFolderPath();
   for (std::size_t x = 0; x < x_steps.size() - 1; ++x) {
     for (std::size_t y = 0; y < y_steps.size() - 1; ++y) {
       // Generate result filename
@@ -200,7 +200,7 @@ void CompareSmallSeqs(const FilePath& xfilepath,
 
   // Return the output files
   for (const auto& task : tasks)
-    if (task != nullptr && ChechFileExists(task->getOutput().c_str()))
+    if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
       rfilepaths.push_back(task->getOutput());
 }
 

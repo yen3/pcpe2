@@ -7,21 +7,21 @@
 
 namespace pcpe {
 
-TEST(pcpe_util, ChechFileExists) {
-  ASSERT_TRUE(ChechFileExists("./testdata/test_seq1.txt"));
-  ASSERT_TRUE(ChechFileExists("./testdata/test_seq2.txt"));
+TEST(pcpe_util, CheckFileExists) {
+  ASSERT_TRUE(CheckFileExists("./testdata/test_seq1.txt"));
+  ASSERT_TRUE(CheckFileExists("./testdata/test_seq2.txt"));
 
-  ASSERT_FALSE(ChechFileExists("./does_not_exist"));
-  ASSERT_FALSE(ChechFileExists("./testdata/does_not_exist"));
+  ASSERT_FALSE(CheckFileExists("./does_not_exist"));
+  ASSERT_FALSE(CheckFileExists("./testdata/does_not_exist"));
 }
 
-TEST(pcpe_util, ChechFolderExists) {
-  ASSERT_TRUE(ChechFolderExists("."));
-  ASSERT_TRUE(ChechFolderExists("./"));
-  ASSERT_TRUE(ChechFolderExists("../"));
+TEST(pcpe_util, CheckFolderExists) {
+  ASSERT_TRUE(CheckFolderExists("."));
+  ASSERT_TRUE(CheckFolderExists("./"));
+  ASSERT_TRUE(CheckFolderExists("../"));
 
-  ASSERT_FALSE(ChechFolderExists("./does_not_exist"));
-  ASSERT_FALSE(ChechFolderExists("./does_not_exist/does_not_exist"));
+  ASSERT_FALSE(CheckFolderExists("./does_not_exist"));
+  ASSERT_FALSE(CheckFolderExists("./does_not_exist/does_not_exist"));
 }
 
 TEST(pcpe_util, GetFileSize) {
@@ -66,15 +66,15 @@ TEST(pcpe_util, GetFileSize) {
 TEST(pcpe_util, CreateFolder_single_level) {
   InitLogging(LoggingLevel::kDebug);
 
-	ASSERT_FALSE(ChechFolderExists("./testoutput/test_create_folder_single"));
+	ASSERT_FALSE(CheckFolderExists("./testoutput/test_create_folder_single"));
   ASSERT_TRUE(CreateFolder("testoutput/test_create_folder_single"));
-	ASSERT_TRUE(ChechFolderExists("./testoutput/test_create_folder_single"));
+	ASSERT_TRUE(CheckFolderExists("./testoutput/test_create_folder_single"));
 
 	rmdir("./testoutput/test_create_folder_single");
 
-	ASSERT_FALSE(ChechFolderExists("temptemptemp"));
+	ASSERT_FALSE(CheckFolderExists("temptemptemp"));
 	ASSERT_TRUE(CreateFolder("temptemptemp"));
-	EXPECT_TRUE(ChechFolderExists("temptemptemp"));
+	EXPECT_TRUE(CheckFolderExists("temptemptemp"));
 
   rmdir("temptemptemp");
 }
@@ -82,13 +82,13 @@ TEST(pcpe_util, CreateFolder_single_level) {
 TEST(pcpe_util, CreateFolder_multi_level) {
   InitLogging(LoggingLevel::kDebug);
 
-	ASSERT_FALSE(ChechFolderExists("./testoutput/test_create_folder"));
-	ASSERT_FALSE(ChechFolderExists("./testoutput/test_create_folder/test1"));
+	ASSERT_FALSE(CheckFolderExists("./testoutput/test_create_folder"));
+	ASSERT_FALSE(CheckFolderExists("./testoutput/test_create_folder/test1"));
 
   ASSERT_TRUE(CreateFolder("testoutput/test_create_folder/test1"));
 
-	EXPECT_TRUE(ChechFolderExists("./testoutput/test_create_folder"));
-	EXPECT_TRUE(ChechFolderExists("./testoutput/test_create_folder/test1"));
+	EXPECT_TRUE(CheckFolderExists("./testoutput/test_create_folder"));
+	EXPECT_TRUE(CheckFolderExists("./testoutput/test_create_folder/test1"));
 
 	rmdir("./testoutput/test_create_folder/test1");
 	rmdir("./testoutput/test_create_folder");
