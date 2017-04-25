@@ -31,6 +31,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -Werror")
 FILE(GLOB_RECURSE PROJECT_SRCS ${MAINFOLDER}/src/*.cc ${MAINFOLDER}/src/*.h)
 FILE(GLOB_RECURSE TEST_SRCS ${MAINFOLDER}/test/*.cc ${MAINFOLDER}/test/*.h)
 
+## Check project dependence
+FIND_PACKAGE (Threads)
+
 ## Add Build Targets
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(thirdparty)
