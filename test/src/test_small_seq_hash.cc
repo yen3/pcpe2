@@ -21,10 +21,10 @@ extern void ComapreHashSmallSeqs(const SmallSeqLocList& xs,
 
 
 TEST(compare_subseq, test_hash_value) {
-    EXPECT_EQ(0,   HashSmallSeq("AAAAAA"));
-    EXPECT_EQ(1,   HashSmallSeq("BAAAAA"));
-    EXPECT_EQ(27,  HashSmallSeq("BBAAAA"));
-    EXPECT_EQ(703, HashSmallSeq("BBBAAA"));
+    EXPECT_EQ(0UL,   HashSmallSeq("AAAAAA"));
+    EXPECT_EQ(1UL,   HashSmallSeq("BAAAAA"));
+    EXPECT_EQ(27UL,  HashSmallSeq("BBAAAA"));
+    EXPECT_EQ(703UL, HashSmallSeq("BBBAAA"));
 }
 
 TEST(compare_subseq, test_read_smallseqs_1) {
@@ -36,7 +36,7 @@ TEST(compare_subseq, test_read_smallseqs_1) {
   ConstructSmallSeqs(seq_list, 0, seq_list.size(), seqs);
 
   // Check the correct key size
-  ASSERT_EQ(seqs.size(), 4);
+  ASSERT_EQ(seqs.size(), 4UL);
 
   // Chech keys exist
   ASSERT_NE(seqs.find(HashSmallSeq("ABCDEF")), seqs.end());
@@ -45,55 +45,55 @@ TEST(compare_subseq, test_read_smallseqs_1) {
   ASSERT_NE(seqs.find(HashSmallSeq("DEFGHI")), seqs.end());
 
   // Check all idx& locations are saved
-  ASSERT_EQ(seqs[HashSmallSeq("ABCDEF")].size(), 3);
-  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 3);
-  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 2);
-  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1);
+  ASSERT_EQ(seqs[HashSmallSeq("ABCDEF")].size(), 3UL);
+  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 3UL);
+  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 2UL);
+  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1UL);
 
   {
     Value& idxlocs = seqs[HashSmallSeq("ABCDEF")];
 
-    ASSERT_EQ(idxlocs.size(), 3);
+    ASSERT_EQ(idxlocs.size(), 3UL);
 
-    ASSERT_EQ(idxlocs[0].idx, 0);
-    ASSERT_EQ(idxlocs[0].loc, 0);
-    ASSERT_EQ(idxlocs[1].idx, 1);
-    ASSERT_EQ(idxlocs[1].loc, 0);
-    ASSERT_EQ(idxlocs[2].idx, 2);
-    ASSERT_EQ(idxlocs[2].loc, 0);
+    ASSERT_EQ(idxlocs[0].idx, 0U);
+    ASSERT_EQ(idxlocs[0].loc, 0U);
+    ASSERT_EQ(idxlocs[1].idx, 1U);
+    ASSERT_EQ(idxlocs[1].loc, 0U);
+    ASSERT_EQ(idxlocs[2].idx, 2U);
+    ASSERT_EQ(idxlocs[2].loc, 0U);
   }
 
   {
     Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
 
-    ASSERT_EQ(idxlocs.size(), 3);
+    ASSERT_EQ(idxlocs.size(), 3UL);
 
-    ASSERT_EQ(idxlocs[0].idx, 0);
-    ASSERT_EQ(idxlocs[0].loc, 1);
-    ASSERT_EQ(idxlocs[1].idx, 1);
-    ASSERT_EQ(idxlocs[1].loc, 1);
-    ASSERT_EQ(idxlocs[2].idx, 2);
-    ASSERT_EQ(idxlocs[2].loc, 1);
+    ASSERT_EQ(idxlocs[0].idx, 0U);
+    ASSERT_EQ(idxlocs[0].loc, 1U);
+    ASSERT_EQ(idxlocs[1].idx, 1U);
+    ASSERT_EQ(idxlocs[1].loc, 1U);
+    ASSERT_EQ(idxlocs[2].idx, 2U);
+    ASSERT_EQ(idxlocs[2].loc, 1U);
   }
 
   {
     Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
 
-    ASSERT_EQ(idxlocs.size(), 2);
+    ASSERT_EQ(idxlocs.size(), 2UL);
 
-    ASSERT_EQ(idxlocs[0].idx, 1);
-    ASSERT_EQ(idxlocs[0].loc, 2);
-    ASSERT_EQ(idxlocs[1].idx, 2);
-    ASSERT_EQ(idxlocs[1].loc, 2);
+    ASSERT_EQ(idxlocs[0].idx, 1U);
+    ASSERT_EQ(idxlocs[0].loc, 2U);
+    ASSERT_EQ(idxlocs[1].idx, 2U);
+    ASSERT_EQ(idxlocs[1].loc, 2U);
   }
 
   {
     Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
 
-    ASSERT_EQ(idxlocs.size(), 1);
+    ASSERT_EQ(idxlocs.size(), 1UL);
 
-    ASSERT_EQ(idxlocs[0].idx, 2);
-    ASSERT_EQ(idxlocs[0].loc, 3);
+    ASSERT_EQ(idxlocs[0].idx, 2U);
+    ASSERT_EQ(idxlocs[0].loc, 3U);
   }
 }
 
@@ -107,7 +107,7 @@ TEST(compare_subseq, test_read_smallseqs_2) {
   ConstructSmallSeqs(seq_list, 0, seq_list.size(), seqs);
 
   // Check the correct key size
-  ASSERT_EQ(seqs.size(), 3);
+  ASSERT_EQ(seqs.size(), 3UL);
 
   // Chech keys exist
   ASSERT_NE(seqs.find(HashSmallSeq("BCDEFG")), seqs.end());
@@ -115,35 +115,35 @@ TEST(compare_subseq, test_read_smallseqs_2) {
   ASSERT_NE(seqs.find(HashSmallSeq("DEFGHI")), seqs.end());
 
   // Check all idx& locations are saved
-  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 1);
-  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 1);
-  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1);
+  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 1UL);
+  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 1UL);
+  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1UL);
 
   {
     Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
 
-    ASSERT_EQ(idxlocs.size(), 1);
+    ASSERT_EQ(idxlocs.size(), 1UL);
 
-    ASSERT_EQ(idxlocs[0].idx, 0);
-    ASSERT_EQ(idxlocs[0].loc, 0);
+    ASSERT_EQ(idxlocs[0].idx, 0U);
+    ASSERT_EQ(idxlocs[0].loc, 0U);
   }
 
   {
     Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
 
-    ASSERT_EQ(idxlocs.size(), 1);
+    ASSERT_EQ(idxlocs.size(), 1UL);
 
-    ASSERT_EQ(idxlocs[0].idx, 1);
-    ASSERT_EQ(idxlocs[0].loc, 0);
+    ASSERT_EQ(idxlocs[0].idx, 1U);
+    ASSERT_EQ(idxlocs[0].loc, 0U);
   }
 
   {
     Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
 
-    ASSERT_EQ(idxlocs.size(), 1);
+    ASSERT_EQ(idxlocs.size(), 1UL);
 
-    ASSERT_EQ(idxlocs[0].idx, 1);
-    ASSERT_EQ(idxlocs[0].loc, 1);
+    ASSERT_EQ(idxlocs[0].idx, 1U);
+    ASSERT_EQ(idxlocs[0].loc, 1U);
   }
 }
 
@@ -206,7 +206,7 @@ TEST(compare_subseq, CompareSmallSeqs) {
   ans.push_back(ComSubseq(2, 1, 2, 0, 6));
   ans.push_back(ComSubseq(2, 1, 3, 1, 6));
 
-  ASSERT_EQ(files.size(), 1);
+  ASSERT_EQ(files.size(), 1UL);
 
   std::vector<ComSubseq> com_seqs;
   ReadComSubseqFile(files[0], com_seqs);
@@ -233,7 +233,7 @@ TEST(compare_subseq, CompareSmallSeqs_2) {
     gEnv.setCompareSeqenceSize(saved_compare_seq_size);
   }
 
-  ASSERT_EQ(files.size(), 6);
+  ASSERT_EQ(files.size(), 6UL);
 
   std::vector<ComSubseq> com_seqs;
   for (const auto& f : files) {

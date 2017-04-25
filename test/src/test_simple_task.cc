@@ -71,9 +71,9 @@ TEST(simple_task, GetStepsToNumberRegular_less_than) {
     std::vector<std::size_t> steps;
     GetStepsToNumber(10, 10, steps);
 
-    ASSERT_EQ(steps.size(), 2);
-    ASSERT_EQ(steps[0], 0);
-    ASSERT_EQ(steps[1], 10);
+    ASSERT_EQ(steps.size(), 2UL);
+    ASSERT_EQ(steps[0], 0UL);
+    ASSERT_EQ(steps[1], 10UL);
 
   }
 
@@ -81,9 +81,9 @@ TEST(simple_task, GetStepsToNumberRegular_less_than) {
     std::vector<std::size_t> steps;
     GetStepsToNumber(7, 10, steps);
 
-    ASSERT_EQ(steps.size(), 2);
-    ASSERT_EQ(steps[0], 0);
-    ASSERT_EQ(steps[1], 7);
+    ASSERT_EQ(steps.size(), 2UL);
+    ASSERT_EQ(steps[0], 0UL);
+    ASSERT_EQ(steps[1], 7UL);
   }
 }
 

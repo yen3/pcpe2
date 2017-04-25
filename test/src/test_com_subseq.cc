@@ -21,10 +21,10 @@ void CheckComSubseqsSame(const std::vector<ComSubseq>& cslx,
 
 TEST(com_subseq, length_fun) {
   ComSubseq x(1, 2, 3, 4, 6);
-  ASSERT_EQ(x.getLength(), 6);
+  ASSERT_EQ(x.getLength(), 6UL);
 
   x.setLength(7);
-  ASSERT_EQ(x.getLength(), 7);
+  ASSERT_EQ(x.getLength(), 7UL);
 }
 
 TEST(com_subseq, compare_operator) {
@@ -259,7 +259,7 @@ TEST(com_subseq, SplitComSubseqFile) {
   std::vector<FilePath> split_filepaths;
   SplitComSubseqFile(ofilepath, split_filepaths);
 
-  ASSERT_EQ(split_filepaths.size(), 1);
+  ASSERT_EQ(split_filepaths.size(), 1UL);
   ASSERT_EQ(split_filepaths[0], ofilepath);
 }
 
@@ -276,7 +276,7 @@ TEST(com_subseq, SplitComSubseqFile_small_buffer) {
 
   FileSize file_size;
   ASSERT_TRUE(GetFileSize(ofilepath.c_str(), file_size));
-  ASSERT_EQ(file_size, sizeof(ComSubseq) * 6);
+  ASSERT_EQ(file_size, (FileSize)(sizeof(ComSubseq) * 6));
 
   std::vector<FilePath> split_filepaths;
 
@@ -289,13 +289,13 @@ TEST(com_subseq, SplitComSubseqFile_small_buffer) {
     gEnv.setBufferSize(savedBufferSize);
   }
 
-  ASSERT_EQ(split_filepaths.size(), 2);
+  ASSERT_EQ(split_filepaths.size(), (std::size_t) 2);
 
   ASSERT_TRUE(GetFileSize(split_filepaths[0].c_str(), file_size));
-  ASSERT_EQ(file_size, sizeof(ComSubseq) * 5);
+  ASSERT_EQ(file_size, FileSize(sizeof(ComSubseq) * 5));
 
   ASSERT_TRUE(GetFileSize(split_filepaths[1].c_str(), file_size));
-  ASSERT_EQ(file_size, sizeof(ComSubseq) * 1);
+  ASSERT_EQ(file_size, FileSize(sizeof(ComSubseq) * 1));
 
   std::vector<ComSubseq> seqs;
   for (const auto& filepath : split_filepaths) {
@@ -329,7 +329,7 @@ TEST(com_subseq, SplitComSubseqFile_small_buffer_2) {
 
   FileSize file_size;
   ASSERT_TRUE(GetFileSize(ofilepath.c_str(), file_size));
-  ASSERT_EQ(file_size, sizeof(ComSubseq) * 6);
+  ASSERT_EQ(file_size, (FileSize)(sizeof(ComSubseq) * 6));
 
   std::vector<FilePath> split_filepaths;
 
@@ -342,11 +342,11 @@ TEST(com_subseq, SplitComSubseqFile_small_buffer_2) {
     gEnv.setBufferSize(savedBufferSize);
   }
 
-  ASSERT_EQ(split_filepaths.size(), 3);
+  ASSERT_EQ(split_filepaths.size(), (std::size_t) 3);
 
   for (const auto& filepath : split_filepaths) {
     ASSERT_TRUE(GetFileSize(filepath.c_str(), file_size));
-    ASSERT_EQ(file_size, sizeof(ComSubseq) * 2);
+    ASSERT_EQ(file_size, FileSize(sizeof(ComSubseq) * 2));
   }
 
   std::vector<ComSubseq> seqs;
