@@ -11,11 +11,4 @@ before_install:
 install:
     - sudo apt-get install -qq build-essential cmake
 
-script:
-    - make build
-    - make build_unit_test
-    - make unit_test
-
-after_success:
-    - make release
-
+script: scripts/build_ci.sh
