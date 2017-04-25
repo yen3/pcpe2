@@ -8,5 +8,5 @@ VERBOSE=1
 mkdir -p ${BUILD}
 cd ${BUILD}
 cmake -DCMAKE_BUILD_TYPE=Debug ..
-make VERBOSE=${VERBOSE} max_comsubseq -j4
-make VERBOSE=${VERBOSE} check
+make max_comsubseq -j4
+make check
