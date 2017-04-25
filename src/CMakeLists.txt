@@ -1,0 +1,27 @@
+## Use compiler debugging flags per default
+INCLUDE(CxxFlags)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
+
+## Creating Binaries for each *.cxx file
+SET(PROJECT_LIBS ${Boost_LIBRARIES})
+SET(PROJECT_BIN max_comsubseq)
+
+ADD_EXECUTABLE(${PROJECT_BIN} ${MAINFOLDER}/src/main.cxx ${PROJECT_SRCS})
+
+TARGET_LINK_LIBRARIES(${PROJECT_BIN} ${PROJECT_LIBS})
+SET_PROPERTY(TARGET ${PROJECT_BIN} PROPERTY CXX_STANDARD 11)
+SET_PROPERTY(TARGET ${PROJECT_BIN} PROPERTY CXX_STANDARD_REQUIRED ON)
+
+INSTALL(TARGETS ${PROJECT_BIN} DESTINATION bin)
+
+FILE(COPY ${MAINFOLDER}/scripts/read_fasta.py DESTINATION ${EXECUTABLE_OUTPUT_PATH})
+
+
+## Add example
+ADD_CUSTOM_TARGET(example make -f Makefile test
+                              READ_FASTA_BIN=${EXECUTABLE_OUTPUT_PATH}/read_fasta.py
+                              MAX_COMSUB_SEQ_BIN=${EXECUTABLE_OUTPUT_PATH}/${PROJECT_BIN}
+                  DEPENDS ${PROJEC_BIN}
+                  COMMENT "Run example..."
+                  SOURCES ${PROJECT_SRCS}
+                  WORKING_DIRECTORY ${MAINFOLDER}/example)
