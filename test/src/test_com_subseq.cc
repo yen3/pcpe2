@@ -289,7 +289,7 @@ TEST(com_subseq, SplitComSubseqFile_small_buffer) {
     gEnv.setBufferSize(savedBufferSize);
   }
 
-  ASSERT_EQ(split_filepaths.size(), (std::size_t) 2);
+  ASSERT_EQ(split_filepaths.size(), 2UL);
 
   ASSERT_TRUE(GetFileSize(split_filepaths[0].c_str(), file_size));
   ASSERT_EQ(file_size, FileSize(sizeof(ComSubseq) * 5));
@@ -342,7 +342,7 @@ TEST(com_subseq, SplitComSubseqFile_small_buffer_2) {
     gEnv.setBufferSize(savedBufferSize);
   }
 
-  ASSERT_EQ(split_filepaths.size(), (std::size_t) 3);
+  ASSERT_EQ(split_filepaths.size(), 3UL);
 
   for (const auto& filepath : split_filepaths) {
     ASSERT_TRUE(GetFileSize(filepath.c_str(), file_size));
