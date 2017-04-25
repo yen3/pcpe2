@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <unistd.h>
+
+#include "logging.h"
 #include "pcpe_util.h"
 
 namespace pcpe {
@@ -8,8 +11,17 @@ TEST(pcpe_util, ChechFileExists) {
   ASSERT_TRUE(ChechFileExists("./testdata/test_seq1.txt"));
   ASSERT_TRUE(ChechFileExists("./testdata/test_seq2.txt"));
 
-  ASSERT_FALSE(ChechFileExists("./does_not_exists"));
-  ASSERT_FALSE(ChechFileExists("./testdata/does_not_exists"));
+  ASSERT_FALSE(ChechFileExists("./does_not_exist"));
+  ASSERT_FALSE(ChechFileExists("./testdata/does_not_exist"));
+}
+
+TEST(pcpe_util, ChechFolderExists) {
+  ASSERT_TRUE(ChechFolderExists("."));
+  ASSERT_TRUE(ChechFolderExists("./"));
+  ASSERT_TRUE(ChechFolderExists("../"));
+
+  ASSERT_FALSE(ChechFolderExists("./does_not_exist"));
+  ASSERT_FALSE(ChechFolderExists("./does_not_exist/does_not_exist"));
 }
 
 TEST(pcpe_util, GetFileSize) {
@@ -49,6 +61,37 @@ TEST(pcpe_util, GetFileSize) {
   get_status = GetFileSize("./testdata/does_not_exists", filesize);
   ASSERT_FALSE(get_status);
   ASSERT_EQ(filesize, 0);
+}
+
+TEST(pcpe_util, CreateFolder_single_level) {
+  InitLogging(LoggingLevel::kDebug);
+
+	ASSERT_FALSE(ChechFolderExists("./testoutput/test_create_folder_single"));
+  ASSERT_TRUE(CreateFolder("testoutput/test_create_folder_single"));
+	ASSERT_TRUE(ChechFolderExists("./testoutput/test_create_folder_single"));
+
+	rmdir("./testoutput/test_create_folder_single");
+
+	ASSERT_FALSE(ChechFolderExists("temptemptemp"));
+	ASSERT_TRUE(CreateFolder("temptemptemp"));
+	EXPECT_TRUE(ChechFolderExists("temptemptemp"));
+
+  rmdir("temptemptemp");
+}
+
+TEST(pcpe_util, CreateFolder_multi_level) {
+  InitLogging(LoggingLevel::kDebug);
+
+	ASSERT_FALSE(ChechFolderExists("./testoutput/test_create_folder"));
+	ASSERT_FALSE(ChechFolderExists("./testoutput/test_create_folder/test1"));
+
+  ASSERT_TRUE(CreateFolder("testoutput/test_create_folder/test1"));
+
+	EXPECT_TRUE(ChechFolderExists("./testoutput/test_create_folder"));
+	EXPECT_TRUE(ChechFolderExists("./testoutput/test_create_folder/test1"));
+
+	rmdir("./testoutput/test_create_folder/test1");
+	rmdir("./testoutput/test_create_folder");
 }
 
 } // namespace pcpe
