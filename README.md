@@ -2,14 +2,19 @@
 
 ![travis-ci](https://travis-ci.org/yen3/pcpe2.svg?branch=master)
 
-* The original idea is from Assocaite Professor [Guang-Wu Chen](http://rcevi.cgu.edu.tw/files/14-1065-4045,r639-1.php).
-* The program is working for a stable version currently.
+* The program can find maximum common subseqences of two protein/ DNA sequences
+  files.
+* The program is under developement.
+* The original design is from Assocaite Professor [Guang-Wu Chen](http://rcevi.cgu.edu.tw/files/14-1065-4045,r639-1.php).
 
 ## Recommanded Environment
 
-* RAM: 8 GB or more
-* OS: Ubuntu 14.04 or later
-* Compiler: gcc 4.8 or later
+* RAM: 4 GB or more
+* Prerequisite
+  * C++ compiler with C++11 support
+      * gcc 4.8 or newer
+      * clang 3.4 or newer
+  * CMake 2.8 or newer
 
 ## How to run the project
 
@@ -20,22 +25,24 @@ git clone  --recursive https://github.com/yen3/pcpe2 pcpe2
 ```
 
 * Build the project
+
 ```
-make build
+mkdir build
+cd build
+cmake ..
+make -j4
+make check -j4
 ```
 
-* Test the project
+* Run unit tests
+
 ```
-make unit_test
+mkdir build
+cd build
+cmake ..
+make check -j4
 ```
 
-* Run an example
-```
-# Take a long while.
-make example
-```
+## License
 
-* Release the project
-```
-make release
-```
+* BSD-3
