@@ -1,5 +1,6 @@
 #include "logging.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -133,13 +134,13 @@ void LogRecorder::record(LoggingLevel level,
                          const char* filename,
                          uint32_t lineno,
                          const char* msg) {
-  if (level > filter_level_)
-    return;
-
-  if (out_obj_ != nullptr) {
+  if (out_obj_ != nullptr && level <= filter_level_) {
     std::lock_guard<std::mutex> lock(mutex_);
     out_obj_->stream() << "[" << filename << ":" << lineno << "]: " << msg;
   }
+
+  if (level == LoggingLevel::kFatal)
+    std::exit(1);
 }
 
 } // namespace pcpe
