@@ -229,17 +229,14 @@ bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
 
 void SplitComSubseqFile(const FilePath& ifilepath,
                         std::vector<FilePath>& ofilepaths) {
-  FileSize file_size = 0;
-  bool check = GetFileSize(ifilepath.c_str(), file_size);
-
-  if (check == false) {
+  if (!CheckFileNotEmpty(ifilepath.c_str())) {
     LOG_ERROR() << "Get file error. Please check the file exists or not."
                 << std::endl;
     return;
   }
 
-  if (file_size == 0)
-    return;
+  FileSize file_size = 0;
+  GetFileSize(ifilepath.c_str(), file_size);
 
   const FileSize buffer_size = gEnv.getBufferSize() /
     sizeof(ComSubseq) * sizeof(ComSubseq);
