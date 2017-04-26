@@ -42,7 +42,7 @@ void WriteMergedComSubseqs(ComSubseqFileWriter& writer,
   const std::size_t min_output_length = gEnv.getMinimumOutputLength();
 
   for (std::size_t i = 0; i < seqs_size; ++i)
-    if (!merges[i] && seqs[i].getLength() > min_output_length)
+    if (!merges[i] && seqs[i].getLength() >= min_output_length)
       writer.writeSeq(seqs[i]);
 }
 

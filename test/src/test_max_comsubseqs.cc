@@ -14,6 +14,11 @@ extern void MergeContineousComSubseqs(ComSubseq* seqs,
                                       bool* merges,
                                       std::size_t seqs_size);
 
+extern void WriteMergedComSubseqs(ComSubseqFileWriter& writer,
+                                  ComSubseq* seqs,
+                                  bool* merges,
+                                  std::size_t seqs_size);
+
 TEST(max_comsubseqs, MergeContineousComSubseqs) {
   std::vector<ComSubseq> seqs{
     ComSubseq(0, 0, 1, 0, 6),
@@ -55,6 +60,41 @@ TEST(max_comsubseqs, MergeContineousComSubseqs) {
     ASSERT_EQ(std::get<0>(ans[i]), seqs[i]) << i;
     ASSERT_EQ(std::get<1>(ans[i]), merges[i]) << i;
   }
+}
+
+TEST(max_comsubseqs, WriteMergedComSubseqs) {
+  FilePath ofilepath("./testoutput/test_write_merged_comsubseqs");
+  {
+    std::vector<ComSubseq> seqs {
+      ComSubseq(0, 0, 1, 0, 6), ComSubseq(1, 0, 1, 0, 6),
+      ComSubseq(1, 1, 2, 0, 6), ComSubseq(2, 0, 1, 0, 6),
+      ComSubseq(2, 1, 2, 0, 7), ComSubseq(2, 1, 3, 1, 6),
+      ComSubseq(3, 2, 0, 0, 6), ComSubseq(3, 2, 2, 0, 8),
+      ComSubseq(3, 2, 3, 1, 6), ComSubseq(3, 2, 4, 2, 6),
+      ComSubseq(4, 1, 0, 0, 6), ComSubseq(5, 0, 1, 0, 6),
+    };
+
+    bool merges[] = {
+       false, false, false, false,
+       false, true, false, false,
+       true, true, false, false};
+
+    ComSubseqFileWriter writer(ofilepath);
+    WriteMergedComSubseqs(writer, seqs.data(), merges, seqs.size());
+    writer.close();
+  }
+
+  std::vector<ComSubseq> ans {
+    ComSubseq(2, 1, 2, 0, 7), ComSubseq(3, 2, 2, 0, 8),
+  };
+
+  std::vector<ComSubseq> seqs;
+  ReadComSubseqFile(ofilepath, seqs);
+
+  ASSERT_EQ(seqs.size(), ans.size());
+
+  for (std::size_t i = 0; i < ans.size(); ++i)
+    ASSERT_EQ(ans[i], seqs[i]);
 }
 
 } // namespace pcpe
