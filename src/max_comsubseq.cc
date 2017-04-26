@@ -65,16 +65,15 @@ void MergeComSubseqsFile(const FilePath& ifilepath,
 std::size_t GetCurrentProcessSize(ComSubseq* seqs, std::size_t seqs_size) {
   // find the lastest index of the part (from seq_size to 0)
   // if x1 != x2 and y1 != y2
+  if (seqs_size <= 1)
+    return seqs_size;
 
-  std::size_t process_size = seqs_size;
-  for (; process_size > 0; --process_size)
-     if (!seqs[process_size - 1].isSameSeqeunce(seqs[process_size -2]))
-        // The for loop would stop in the `process_size - 1`, but the element
-        // have to be processed in the next time.
-       return process_size - 1;
+  for (std::size_t pidx = seqs_size - 1; pidx != 0; --pidx)
+    if (!seqs[pidx].isSameSeqeunce(seqs[pidx - 1]))
+      return pidx;
 
   // The whole buffer is the same two sequences.
-  return process_size;
+  return seqs_size;
 }
 
 void MergeComSubseqsLargeFile(const FilePath& ifilepath,
@@ -116,14 +115,13 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
 
       // TODO: the current implementation can not handle the problem that the
       // whole buffer is the same two sequences.
-      // In the situation, the process_seqs_size is 0 It means can not find
-      // the correct process size.
-      if (process_seqs_size == 0) {
+      // In the situation, the process_seqs_size is seqs_size.
+      // It means can not find the correct process size.
+      if (process_seqs_size == seqs_size && seqs_size >= 2) {
         LOG_FATAL() << "The length of common subseqences is too long to handle."
                     << "It's a TODO feature." << std::endl;
       }
     }
-
     unprocess_seqs_size = seqs_size - process_seqs_size;
 
     // Find the maximum common subseqences
