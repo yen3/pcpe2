@@ -79,8 +79,7 @@ std::size_t GetCurrentProcessSize(ComSubseq* seqs, std::size_t seqs_size) {
 void MergeComSubseqsLargeFile(const FilePath& ifilepath,
                               const FilePath& ofilepath) {
   // Create the read buffer and check list.
-  const std::size_t max_seqs_size =
-    gEnv.getBufferSize() / sizeof(ComSubseq) * sizeof(ComSubseq);
+  const std::size_t max_seqs_size = gEnv.getBufferSize() / sizeof(ComSubseq);
   std::unique_ptr<ComSubseq[]> seqs(new ComSubseq[max_seqs_size]);
   std::unique_ptr<bool[]> merges(new bool[max_seqs_size]);
 
@@ -96,7 +95,7 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
 
   while (read_file_size < file_size) {
     // Read file to Fill the buffer
-    ifile.read(reinterpret_cast<char*>(seqs.get()) + unprocess_seqs_size,
+    ifile.read(reinterpret_cast<char*>(&(seqs.get()[unprocess_seqs_size])),
         (std::streamsize)((max_seqs_size - unprocess_seqs_size) *
           sizeof(ComSubseq)));
 
@@ -119,9 +118,12 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
       // It means can not find the correct process size.
       if (process_seqs_size == seqs_size && seqs_size >= 2) {
         LOG_FATAL() << "The length of common subseqences is too long to handle."
-                    << "It's a TODO feature." << std::endl;
+                    << "It's a TODO feature." << std::endl
+                    << "You can increase the buffer size to solve the problem "
+                    << "temporary." << std::endl;
       }
     }
+
     unprocess_seqs_size = seqs_size - process_seqs_size;
 
     // Find the maximum common subseqences
@@ -195,19 +197,16 @@ void CreateFindMaxComSubseqTasks(
   }
 }
 
-void MaxdSortedComSubseqs(
-    const std::vector<FilePath>& ifilepaths,
-    std::vector<FilePath>& ofilepaths) {
+void MaxSortedComSubseqs(const std::vector<FilePath>& ifilepaths,
+                         std::vector<FilePath>& ofilepaths) {
 
   std::vector<std::unique_ptr<FindMaxComSubseqTask>> tasks;
-
   CreateFindMaxComSubseqTasks(ifilepaths, tasks);
 
   RunSimpleTasks(tasks);
 
   for (const auto& task : tasks)
-    if (task.get() != nullptr &&
-        CheckFileNotEmpty(task->getOutput().c_str()))
+    if (task.get() != nullptr && CheckFileNotEmpty(task->getOutput().c_str()))
       ofilepaths.push_back(task->getOutput().c_str());
 }
 

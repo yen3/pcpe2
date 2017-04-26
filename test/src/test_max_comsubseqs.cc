@@ -4,6 +4,7 @@
 #include <utility>
 #include <memory>
 
+#include "max_comsubseq.h"
 #include "logging.h"
 #include "com_subseq.h"
 #include "env.h"
@@ -197,18 +198,22 @@ TEST(max_comsubseqs, MergeComSubseqsLargeFile) {
 }
 
 TEST(max_comsubseqs, MergeComSubseqsLargeFile_small_buffer) {
-  const FilePath ifilepath("testoutput/test_merged_com_subseqs.in");
-  const FilePath ofilepath("testoutput/test_merged_com_subseqs.out");
+  FilePath ifilepath("./testoutput/test_merged");
+  FilePath ofilepath("./testoutput/test_merged.out");
 
   {
     std::vector<ComSubseq> seqs;
     CreateTestSeqs(seqs);
+
     WriteComSubseqFile(seqs, ifilepath);
+
+    std::vector<ComSubseq> compare_seqs;
+    ReadComSubseqFile(ifilepath, compare_seqs);
   }
 
   {
     uint32_t saved_buffer_size = gEnv.getBufferSize();
-    gEnv.setBufferSize(sizeof(ComSubseq) * 4);
+    gEnv.setBufferSize(sizeof(ComSubseq) * 6);
     MergeComSubseqsLargeFile(ifilepath, ofilepath);
 
     gEnv.setBufferSize(saved_buffer_size);
@@ -224,6 +229,44 @@ TEST(max_comsubseqs, MergeComSubseqsLargeFile_small_buffer) {
 
   for (std::size_t i = 0; i < ans.size(); ++i)
     ASSERT_EQ(ans[i], seqs[i]);
+}
+
+TEST(max_comsubseqs, MaxdSortedComSubseqs) {
+  std::vector<FilePath> ifilepaths {
+    "./testoutput/test_merged_1", "./testoutput/test_merged_2",
+  };
+  std::vector<FilePath> ofilepaths;
+
+  {
+    std::vector<ComSubseq> seqs;
+    CreateTestSeqs(seqs);
+
+    WriteComSubseqFile(seqs, ifilepaths[0]);
+    WriteComSubseqFile(seqs, ifilepaths[1]);
+  }
+
+  {
+    FilePath saved_temp_folder = gEnv.getTempFolderPath();
+    gEnv.setTempFolderPath("./testoutput/");
+
+    MaxSortedComSubseqs(ifilepaths, ofilepaths);
+
+    gEnv.setTempFolderPath(saved_temp_folder);
+  }
+
+  ASSERT_EQ(ifilepaths.size(), ofilepaths.size());
+
+  std::vector<ComSubseq> ans;
+  CreateAnsSeqs(ans);
+
+  for (const auto& filepath : ofilepaths) {
+    std::vector<ComSubseq> seqs;
+    ReadComSubseqFile(filepath, seqs);
+
+    ASSERT_EQ(seqs.size(), ans.size());
+    for (std::size_t i = 0; i < seqs.size(); ++i)
+      ASSERT_EQ(seqs[i], ans[i]);
+  }
 }
 
 } // namespace pcpe
