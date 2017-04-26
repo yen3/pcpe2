@@ -1,10 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <thread>
 
 #include "pcpe_util.h"
-
-#include <thread>
 
 namespace pcpe {
 
@@ -19,6 +18,7 @@ class Env {
          compare_seq_unit_size_(10000),        // 10000 sequences
          buffer_size_(100 * 1024 * 1024),      // 100 Mbytes
          small_seq_length_(6),                 // 6 chars
+         mim_output_length_(7),                // 7 chars
          thread_size(std::thread::hardware_concurrency()),
          temp_folder_("./temp") {
   }
@@ -26,6 +26,7 @@ class Env {
   uint32_t getIOBufferSize() const { return io_buffer_size_; }
   uint32_t getSmallSeqLength() const { return small_seq_length_; }
   uint32_t getCompareSeqenceSize() const { return compare_seq_unit_size_; }
+  uint32_t getMinimumOutputLength() const { return mim_output_length_; }
   uint32_t getBufferSize() const { return buffer_size_; }
   uint32_t getThreadsSize() const { return thread_size; }
   const FilePath& getTempFolderPath() const { return temp_folder_; }
@@ -35,6 +36,7 @@ class Env {
   void setTempFolderPath(const FilePath& path) { temp_folder_ = path; }
   void setCompareSeqenceSize(uint32_t size) {
     compare_seq_unit_size_ = size; }
+  void setMinimumOutputLength(uint32_t size) { mim_output_length_ = size; }
   void setThreadSize(uint32_t size) { thread_size = size; }
 
  private:
@@ -50,6 +52,9 @@ class Env {
 
   /// The the length of small seq. Don't modify the parameter.
   const uint16_t small_seq_length_;
+
+  /// The minimum output common subseqence length
+  uint32_t mim_output_length_;
 
   /// The number of threads to execute in parallel.
   uint32_t thread_size;
