@@ -63,6 +63,19 @@ TEST(pcpe_util, GetFileSize) {
   ASSERT_EQ(filesize, 0);
 }
 
+TEST(pcpe_util, CheckFileNotEmpty) {
+  ASSERT_TRUE(CheckFileNotEmpty("./testdata/test_seq1.txt"));
+  ASSERT_TRUE(CheckFileNotEmpty("./testdata/test_seq2.txt"));
+
+  ASSERT_FALSE(CheckFileNotEmpty("./does_not_exist"));
+  ASSERT_FALSE(CheckFileNotEmpty("./testdata/does_not_exist"));
+
+  // Create an empty file
+  std::ofstream("./testoutput/empty_file",
+                std::ofstream::out | std::ofstream::binary).close();
+  ASSERT_FALSE(CheckFileNotEmpty("./testoutput/empty_file"));
+}
+
 TEST(pcpe_util, CreateFolder_single_level) {
   InitLogging(LoggingLevel::kDebug);
 
