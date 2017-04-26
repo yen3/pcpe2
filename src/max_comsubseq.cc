@@ -73,6 +73,7 @@ std::size_t GetCurrentProcessSize(ComSubseq* seqs, std::size_t seqs_size) {
         // have to be processed in the next time.
        return process_size - 1;
 
+  // The whole buffer is the same two sequences.
   return process_size;
 }
 
@@ -107,10 +108,21 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
 
     // Find the seqences can be processed.
     std::size_t process_seqs_size;
-    if (read_file_size >= file_size)
+    if (read_file_size >= file_size) {
+      // It's the last time to merge and write.
       process_seqs_size = seqs_size;
-    else
+    } else {
       process_seqs_size = GetCurrentProcessSize(seqs.get(), seqs_size);
+
+      // TODO: the current implementation can not handle the problem that the
+      // whole buffer is the same two sequences.
+      // In the situation, the process_seqs_size is 0 It means can not find
+      // the correct process size.
+      if (process_seqs_size == 0) {
+        LOG_FATAL() << "The length of common subseqences is too long to handle."
+                    << "It's a TODO feature." << std::endl;
+      }
+    }
 
     unprocess_seqs_size = seqs_size - process_seqs_size;
 
