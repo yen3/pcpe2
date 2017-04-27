@@ -8,7 +8,6 @@
 
 namespace pcpe {
 
-extern uint32_t HashSmallSeq(const char* s);
 extern void ReadSequences(const FilePath& filepath,
                           SeqList& seqs);
 extern void ConstructSmallSeqs(const SeqList& seqs,
