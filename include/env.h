@@ -18,7 +18,7 @@ class Env {
          compare_seq_unit_size_(10000),        // 10000 sequences
          buffer_size_(100 * 1024 * 1024),      // 100 Mbytes
          small_seq_length_(6),                 // 6 chars
-         mim_output_length_(7),                // 7 chars
+         mim_output_length_(10),               // 10 chars
          thread_size(std::thread::hardware_concurrency()),
          temp_folder_("./temp") {
   }
