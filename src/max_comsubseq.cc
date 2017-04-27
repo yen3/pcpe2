@@ -17,7 +17,7 @@ void MergeContineousComSubseqs(ComSubseq* seqs,
   // Initial the check list.
   std::fill(merges, merges + seqs_size, false);
 
-  // find the maximum common subsequence from seqs
+  // Find the maximum common subsequence from seqs
   for (std::size_t base_idx = 0; base_idx < seqs_size; ++base_idx) {
     if (merges[base_idx])
       continue;
@@ -33,6 +33,31 @@ void MergeContineousComSubseqs(ComSubseq* seqs,
     }
     seqs[base_idx].setLength(base_length);
   }
+}
+
+/**
+ * Remove all ComSubseqs are merged.
+ *
+ * @return the new seqs_size.
+ * */
+std::size_t RemoveMergedComSubseqs(ComSubseq* seqs,
+                                   bool* merges,
+                                   std::size_t seqs_size) {
+
+  std::size_t new_seqs_size = 0;
+
+  // cidx = copy index
+  for (std::size_t cidx = 0; cidx < seqs_size; ++cidx) {
+    if (!merges[cidx]) {
+      seqs[new_seqs_size] = seqs[cidx];
+      new_seqs_size++;
+    }
+  }
+
+  // Reset merge state
+  std::fill(merges, merges + new_seqs_size, false);
+
+  return new_seqs_size;
 }
 
 void WriteMergedComSubseqs(ComSubseqFileWriter& writer,
@@ -96,7 +121,7 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
   while (read_file_size < file_size) {
     // Read file to Fill the buffer
     ifile.read(reinterpret_cast<char*>(&(seqs.get()[unprocess_seqs_size])),
-        (std::streamsize)((max_seqs_size - unprocess_seqs_size) *
+        static_cast<std::streamsize>((max_seqs_size - unprocess_seqs_size) *
           sizeof(ComSubseq)));
 
     read_file_size += ifile.gcount();
@@ -106,33 +131,38 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
 
     // Find the seqences can be processed.
     std::size_t process_seqs_size;
+    bool compressed_mode = false;
     if (read_file_size >= file_size) {
       // It's the last time to merge and write.
       process_seqs_size = seqs_size;
     } else {
       process_seqs_size = GetCurrentProcessSize(seqs.get(), seqs_size);
 
-      // TODO: the current implementation can not handle the problem that the
-      // whole buffer is the same two sequences.
-      // In the situation, the process_seqs_size is seqs_size.
-      // It means can not find the correct process size.
       if (process_seqs_size == seqs_size && seqs_size >= 2) {
-        LOG_FATAL() << "The length of common subseqences is too long to handle."
-                    << "It's a TODO feature." << std::endl
-                    << "You can increase the buffer size to solve the problem "
-                    << "temporary." << std::endl;
+        // In the situation, the whole buffer is the same two sequences.
+        // the process_seqs_size is seqs_size. It means can not find the
+        // correct process size. One solution is to merge the comsubseqs in
+        // the buffer and remain the last entry for next reading and merging.
+        compressed_mode = true;
       }
     }
 
-    unprocess_seqs_size = seqs_size - process_seqs_size;
-
     // Find the maximum common subseqences
     MergeContineousComSubseqs(seqs.get(), merges.get(), process_seqs_size);
+
+    // Speical case: If all sequences in the buffer are the same, remove all
+    // merged comsubseqs and remaing the last entry.
+    if (compressed_mode) {
+      seqs_size = RemoveMergedComSubseqs(seqs.get(), merges.get(),
+          process_seqs_size);
+      process_seqs_size = seqs_size - 1;
+    }
 
     // Write the result
     WriteMergedComSubseqs(writer, seqs.get(), merges.get(), process_seqs_size);
 
     // Move unprocessed seqs to the begin of the buffer.
+    unprocess_seqs_size = seqs_size - process_seqs_size;
     if (unprocess_seqs_size != 0)
       std::copy(seqs.get() + process_seqs_size, seqs.get() + seqs_size,
                 seqs.get());

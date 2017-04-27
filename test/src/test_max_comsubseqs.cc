@@ -231,6 +231,40 @@ TEST(max_comsubseqs, MergeComSubseqsLargeFile_small_buffer) {
     ASSERT_EQ(ans[i], seqs[i]);
 }
 
+TEST(max_comsubseqs, MergeComSubseqsLargeFile_small_buffer_2) {
+  FilePath ifilepath("./testoutput/test_merged");
+  FilePath ofilepath("./testoutput/test_merged.out");
+
+  {
+    std::vector<ComSubseq> seqs;
+    CreateTestSeqs(seqs);
+
+    WriteComSubseqFile(seqs, ifilepath);
+
+    std::vector<ComSubseq> compare_seqs;
+    ReadComSubseqFile(ifilepath, compare_seqs);
+  }
+
+  {
+    uint32_t saved_buffer_size = gEnv.getBufferSize();
+    gEnv.setBufferSize(sizeof(ComSubseq) * 3); // Test for special case.
+    MergeComSubseqsLargeFile(ifilepath, ofilepath);
+
+    gEnv.setBufferSize(saved_buffer_size);
+  }
+
+  std::vector<ComSubseq> seqs;
+  ReadComSubseqFile(ofilepath, seqs);
+
+  std::vector<ComSubseq> ans;
+  CreateAnsSeqs(ans);
+
+  ASSERT_EQ(seqs.size(), ans.size());
+
+  for (std::size_t i = 0; i < ans.size(); ++i)
+    ASSERT_EQ(ans[i], seqs[i]);
+}
+
 TEST(max_comsubseqs, MaxdSortedComSubseqs) {
   std::vector<FilePath> ifilepaths {
     "./testoutput/test_merged_1", "./testoutput/test_merged_2",
