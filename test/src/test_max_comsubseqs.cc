@@ -97,7 +97,14 @@ TEST(max_comsubseqs, WriteMergedComSubseqs) {
     LOG_INFO() << seqs.size() << std::endl;
 
     ComSubseqFileWriter writer(ofilepath);
-    WriteMergedComSubseqs(writer, seqs.data(), merges, seqs.size());
+    {
+      std::size_t saved_output_length = gEnv.getMinimumOutputLength();
+      gEnv.setMinimumOutputLength(7);
+
+      WriteMergedComSubseqs(writer, seqs.data(), merges, seqs.size());
+
+      gEnv.setMinimumOutputLength(saved_output_length);
+    }
     writer.close();
   }
 
@@ -123,7 +130,14 @@ TEST(max_comsubseqs, MergeComSubseqsFile) {
     WriteComSubseqFile(seqs, ifilepath);
   }
 
-  MergeComSubseqsFile(ifilepath, ofilepath);
+  {
+    std::size_t saved_output_length = gEnv.getMinimumOutputLength();
+    gEnv.setMinimumOutputLength(7);
+
+    MergeComSubseqsFile(ifilepath, ofilepath);
+
+    gEnv.setMinimumOutputLength(saved_output_length);
+  }
   std::vector<ComSubseq> seqs;
   ReadComSubseqFile(ofilepath, seqs);
 
@@ -184,7 +198,14 @@ TEST(max_comsubseqs, MergeComSubseqsLargeFile) {
     WriteComSubseqFile(seqs, ifilepath);
   }
 
-  MergeComSubseqsLargeFile(ifilepath, ofilepath);
+  {
+    std::size_t saved_output_length = gEnv.getMinimumOutputLength();
+    gEnv.setMinimumOutputLength(7);
+
+    MergeComSubseqsLargeFile(ifilepath, ofilepath);
+
+    gEnv.setMinimumOutputLength(saved_output_length);
+  }
   std::vector<ComSubseq> seqs;
   ReadComSubseqFile(ofilepath, seqs);
 
@@ -213,10 +234,14 @@ TEST(max_comsubseqs, MergeComSubseqsLargeFile_small_buffer) {
 
   {
     uint32_t saved_buffer_size = gEnv.getBufferSize();
+    std::size_t saved_output_length = gEnv.getMinimumOutputLength();
     gEnv.setBufferSize(sizeof(ComSubseq) * 6);
+    gEnv.setMinimumOutputLength(7);
+
     MergeComSubseqsLargeFile(ifilepath, ofilepath);
 
     gEnv.setBufferSize(saved_buffer_size);
+    gEnv.setMinimumOutputLength(saved_output_length);
   }
 
   std::vector<ComSubseq> seqs;
@@ -247,10 +272,14 @@ TEST(max_comsubseqs, MergeComSubseqsLargeFile_small_buffer_2) {
 
   {
     uint32_t saved_buffer_size = gEnv.getBufferSize();
-    gEnv.setBufferSize(sizeof(ComSubseq) * 3); // Test for special case.
+    std::size_t saved_output_length = gEnv.getMinimumOutputLength();
+    gEnv.setBufferSize(sizeof(ComSubseq) * 3);
+    gEnv.setMinimumOutputLength(7);
+
     MergeComSubseqsLargeFile(ifilepath, ofilepath);
 
     gEnv.setBufferSize(saved_buffer_size);
+    gEnv.setMinimumOutputLength(saved_output_length);
   }
 
   std::vector<ComSubseq> seqs;
@@ -282,10 +311,13 @@ TEST(max_comsubseqs, MaxdSortedComSubseqs) {
   {
     FilePath saved_temp_folder = gEnv.getTempFolderPath();
     gEnv.setTempFolderPath("./testoutput/");
+    std::size_t saved_output_length = gEnv.getMinimumOutputLength();
+    gEnv.setMinimumOutputLength(7);
 
     MaxSortedComSubseqs(ifilepaths, ofilepaths);
 
     gEnv.setTempFolderPath(saved_temp_folder);
+    gEnv.setMinimumOutputLength(saved_output_length);
   }
 
   ASSERT_EQ(ifilepaths.size(), ofilepaths.size());
