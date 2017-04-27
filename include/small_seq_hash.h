@@ -39,8 +39,20 @@ struct SeqLoc {
  *
  * @return an unsigned interger to present hash value.
  * */
-SmallSeqHashIndex HashSmallSeq(const char* s);
-
+constexpr SmallSeqHashIndex HashSmallSeq(const char* s) {
+  // The concent of the hash is to consider the seqeucne as a 26-based number.
+  // The chars of ithe bio-seqence has 26 variant (A .. Z) so the hash encodes
+  // it to a 10-based number. In the concept, each seqsence has an unique
+  // hash value. The disadvatance of the hash function is that the size of
+  // string can not over than 6 otherwise it would cause overflow of uint32_t.
+  return static_cast<SmallSeqHashIndex>(
+         (s[0] - 'A') * 1 +          /* 26 ** 0 == 1        */
+         (s[1] - 'A') * 26 +         /* 26 ** 1 == 26       */
+         (s[2] - 'A') * 676 +        /* 26 ** 2 == 676      */
+         (s[3] - 'A') * 17576 +      /* 26 ** 3 == 17576    */
+         (s[4] - 'A') * 456976 +     /* 26 ** 4 == 456976   */
+         (s[5] - 'A') * 11881376);   /* 26 ** 5 == 11881376 */
+}
 
 /**
  * Find the fix-sized commom subseqences from the two sequence files.

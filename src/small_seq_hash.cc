@@ -14,21 +14,6 @@
 
 namespace pcpe {
 
-SmallSeqHashIndex HashSmallSeq(const char* s) {
-  // The concent of the hash is to consider the seqeucne as a 26-based number.
-  // The chars of ithe bio-seqence has 26 variant (A .. Z) so the hash encodes
-  // it to a 10-based number. In the concept, each seqsence has an unique
-  // hash value. The disadvatance of the hash function is that the size of
-  // string can not over than 6 otherwise it would cause overflow of uint32_t.
-  return static_cast<SmallSeqHashIndex>(
-         (s[0] - 'A') * 1 +         /* 26 ** 0 == 1        */
-         (s[1] - 'A') * 26 +        /* 26 ** 1 == 26       */
-         (s[2] - 'A') * 676 +       /* 26 ** 2 == 676      */
-         (s[3] - 'A') * 17576 +     /* 26 ** 3 == 17576    */
-         (s[4] - 'A') * 456976 +    /* 26 ** 4 == 456976   */
-         (s[5] - 'A') * 11881376);   /* 26 ** 5 == 11881376 */
-}
-
 void ReadSequences(const FilePath& filepath,
                   SeqList& seqs) {
 
@@ -60,6 +45,8 @@ void ConstructSmallSeqs(const SeqList& seqs,
                         std::size_t seqs_begin,
                         std::size_t seqs_end,
                         SmallSeqLocList& smallseqs) {
+  constexpr uint32_t noise_hash_index = HashSmallSeq("XXXXXX");
+
   for (std::size_t sidx = seqs_begin; sidx < seqs_end; ++sidx) {
     // Ignore when the string is less the default size since the value of
     // tiny string is unused in bio research.
@@ -71,7 +58,9 @@ void ConstructSmallSeqs(const SeqList& seqs,
     std::size_t end_index = seqs[sidx].size() - gEnv.getSmallSeqLength();
     for (std::size_t i = 0; i <= end_index; ++i) {
       SmallSeqHashIndex index = HashSmallSeq(seqs[sidx].c_str() + i);
-      smallseqs[index].push_back(SeqLoc(static_cast<uint32_t>(sidx), static_cast<uint32_t>(i)));
+      if (index != noise_hash_index)
+        smallseqs[index].push_back(SeqLoc(static_cast<uint32_t>(sidx),
+                                          static_cast<uint32_t>(i)));
     }
   }
 }
