@@ -201,6 +201,8 @@ void FindMaxComSubseqTask::exec() {
     // process and write the result.
     MergeComSubseqsLargeFile(ifilepath_, ofilepath_);
   }
+
+  LOG_INFO() << "Find max common subseqences - "<< ofilepath_  << std::endl;
 }
 
 static
