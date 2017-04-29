@@ -272,4 +272,23 @@ void SplitComSubseqFile(const FilePath& ifilepath,
   infile.close();
 }
 
+void CombineComSubSeqFiles(const std::vector<FilePath>& ifilepaths,
+                           const FilePath& ofilepath) {
+  std::ofstream ofile(ofilepath.c_str(),
+      std::ofstream::out | std::ofstream::binary);
+
+  for (const auto& ifilepath : ifilepaths) {
+    if (!CheckFileNotEmpty(ifilepath.c_str()))
+      continue;
+
+    std::vector<ComSubseq> seqs;
+    ReadComSubseqFile(ifilepath, seqs);
+
+    ofile.write(reinterpret_cast<const char*>(seqs.data()),
+                static_cast<std::streamsize>(seqs.size() * sizeof(ComSubseq)));
+  }
+
+  ofile.close();
+}
+
 } // namespace pcpe

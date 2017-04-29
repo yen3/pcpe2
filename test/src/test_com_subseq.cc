@@ -368,4 +368,32 @@ TEST(com_subseq, SplitComSubseqFile_small_buffer_2) {
   CheckComSubseqsSame(seqs, ans);
 }
 
+TEST(com_subseq, CombineComSubSeqFiles) {
+  std::vector<FilePath> ifilepaths {
+    "./testdata/test_esort_file.in",
+    "./testdata/test_esort_file.in",
+    "./testdata/test_esort_file.in",
+    "./testdata/test_esort_file.in"
+  };
+
+  FilePath ofilepath("./testdata/test_combine_file.out");
+  CombineComSubSeqFiles(ifilepaths, ofilepath);
+
+  std::vector<ComSubseq> ans;
+  {
+    std::vector<ComSubseq> seqs;
+    ReadComSubseqFile(ifilepaths[0], seqs);
+
+    for (std::size_t i = 0; i < ifilepaths.size(); ++i)
+      ans.insert(ans.end(), seqs.begin(), seqs.end());
+  }
+
+  std::vector<ComSubseq> seqs;
+  ReadComSubseqFile(ofilepath, seqs);
+
+  ASSERT_EQ(ans.size(), seqs.size());
+  for (std::size_t i = 0; i < ans.size(); ++i)
+    ASSERT_EQ(ans[i], seqs[i]);
+}
+
 } // namespace pcpe

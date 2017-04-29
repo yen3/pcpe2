@@ -166,6 +166,17 @@ bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
  * */
 void SplitComSubseqFile(const FilePath& ifilepath,
                         std::vector<FilePath>& ofilepaths);
+
+
+/**
+ * Combine several ComSubseq files into one file.
+ *
+ * @param[in] ifilepath the list of input file paths
+ * @param[out] ofilepath the path of output file
+ * */
+void CombineComSubSeqFiles(const std::vector<FilePath>& ifilepaths,
+                           const FilePath& ofilepath);
+
 } // namespace pcpe
 
 
