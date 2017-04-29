@@ -17,7 +17,7 @@ void InitEnvironment(int argc, char* argv[]) {
   if (!pcpe::CheckFolderExists(temp_folder.c_str()))
     pcpe::CreateFolder(temp_folder.c_str());
 
-  if (argc <= 4) {
+  if (argc <= 3) {
     LOG_ERROR() << "Need two input file and one output filepath." << std::endl;
     exit(1);
   }
