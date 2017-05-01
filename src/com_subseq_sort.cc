@@ -120,8 +120,7 @@ void ConstructSortComSubseqFileTasks(
     oss << gEnv.getTempFolderPath() << "/sorted_compare_hash_" << curr_index;
     curr_index++;
 
-    tasks.push_back(std::unique_ptr<SortComSubseqsFileTask>(
-            new SortComSubseqsFileTask(input, oss.str())));
+    tasks.emplace_back(new SortComSubseqsFileTask(input, oss.str()));
   }
 }
 

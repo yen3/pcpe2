@@ -59,8 +59,8 @@ void ConstructSmallSeqs(const SeqList& seqs,
     for (std::size_t i = 0; i <= end_index; ++i) {
       SmallSeqHashIndex index = HashSmallSeq(seqs[sidx].c_str() + i);
       if (index != noise_hash_index)
-        smallseqs[index].push_back(SeqLoc(static_cast<uint32_t>(sidx),
-                                          static_cast<uint32_t>(i)));
+        smallseqs[index].emplace_back(static_cast<uint32_t>(sidx),
+                                      static_cast<uint32_t>(i));
     }
   }
 }
@@ -157,11 +157,10 @@ void ConstructCompareSmallSeqTasks(
       oss << kTempFolderPrefix << "/compare_hash_" << curr_index++;
       FilePath output(oss.str());
 
-      tasks.push_back(std::unique_ptr<CompareSmallSeqTask>(
-            new CompareSmallSeqTask(xs, ys,
-                x_steps[x], x_steps[x+1],
-                y_steps[y], y_steps[y+1],
-                output)));
+      tasks.emplace_back(new CompareSmallSeqTask(xs, ys,
+                         x_steps[x], x_steps[x+1],
+                         y_steps[y], y_steps[y+1],
+                         output));
     }
   }
 }

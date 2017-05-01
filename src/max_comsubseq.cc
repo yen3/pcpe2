@@ -224,8 +224,7 @@ void CreateFindMaxComSubseqTasks(
     oss << temp_folder << "/max_comsubseq_" << curr_index;
     curr_index++;
 
-    tasks.push_back(std::unique_ptr<FindMaxComSubseqTask>(
-          new FindMaxComSubseqTask(input, oss.str())));
+    tasks.emplace_back(new FindMaxComSubseqTask(input, oss.str()));
   }
 }
 
