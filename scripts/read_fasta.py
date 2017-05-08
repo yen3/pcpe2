@@ -1,5 +1,4 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -58,7 +57,7 @@ def writeResult(fn, seq_map):
 
 def run(fn):
     writeResult(fn, readFastaSet(fn))
-    print "Read file " + fn
+    print("Read file " + fn)
 
 
 def main():
