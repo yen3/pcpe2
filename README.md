@@ -5,7 +5,7 @@
 * The program can find maximum common subseqences of two protein/ DNA sequences
   files.
 * The program is under developement.
-* The original design is from Assocaite Professor [Guang-Wu Chen](http://rcevi.cgu.edu.tw/files/14-1065-4045,r639-1.php).
+* The original design is from Professor [Guang-Wu Chen](http://rcevi.cgu.edu.tw/files/14-1065-4045,r639-1.php).
 
 ## Recommanded Environment
 

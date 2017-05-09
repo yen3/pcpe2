@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "logging.h"
+#include "com_subseq.h"
 #include "small_seq_hash.h"
 #include "com_subseq_sort.h"
 #include "max_comsubseq.h"

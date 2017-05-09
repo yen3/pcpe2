@@ -1,5 +1,7 @@
 #include "max_comsubseq.h"
 
+#include <vector>
+#include <fstream>
 #include <sstream>
 #include <memory>
 

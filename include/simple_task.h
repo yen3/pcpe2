@@ -5,12 +5,9 @@
  * possible.  The project is not a large project so just to implement a simple
  * thread pool to execute all tasks.
  * */
-
 #include <vector>
 #include <thread>
-#include <mutex>
 #include <atomic>
-#include <memory>
 
 #include "logging.h"
 #include "env.h"

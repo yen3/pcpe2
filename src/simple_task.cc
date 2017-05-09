@@ -1,5 +1,9 @@
-#include "logging.h"
 #include "simple_task.h"
+
+#include <vector>
+
+#include "logging.h"
+
 
 namespace pcpe {
 

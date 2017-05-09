@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "com_subseq.h"
 #include "small_seq_hash.h"
 #include "pcpe_util.h"
 #include "env.h"

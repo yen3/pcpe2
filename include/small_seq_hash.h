@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 #include "seq.h"
-#include "com_subseq.h"
 #include "pcpe_util.h"
 
 #include <cstdint>

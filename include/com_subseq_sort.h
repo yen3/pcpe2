@@ -1,8 +1,7 @@
 #pragma once
 
 #include <vector>
-
-#include "com_subseq.h"
+#include "pcpe_util.h"
 
 namespace pcpe {
 /**
