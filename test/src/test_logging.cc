@@ -26,7 +26,7 @@ TEST(logging, test_log_file) {
   std::string log_result;
   std::getline(in, log_result);
 
-  ASSERT_EQ(std::string("[test_logging.cc:0]: testtest"), log_result);
+  ASSERT_EQ(std::string("[INFO:test_logging.cc:0]: testtest"), log_result);
 
   LOG_INFO() << "Just for test" << std::endl;
 }
