@@ -163,6 +163,9 @@ void ConstructCompareSmallSeqTasks(
                          output));
     }
   }
+
+  LOG_INFO() << tasks.size() << " compare small-seq tasks are created."
+             << std::endl;
 }
 
 void CompareSmallSeqs(const FilePath& xfilepath,

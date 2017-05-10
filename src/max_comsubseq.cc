@@ -228,6 +228,9 @@ void CreateFindMaxComSubseqTasks(
 
     tasks.emplace_back(new FindMaxComSubseqTask(input, oss.str()));
   }
+
+  LOG_INFO() << tasks.size() << " finding max comsubseq tasks are created."
+             << std::endl;
 }
 
 void MaxSortedComSubseqs(const std::vector<FilePath>& ifilepaths,

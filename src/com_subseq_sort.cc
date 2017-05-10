@@ -122,6 +122,9 @@ void ConstructSortComSubseqFileTasks(
 
     tasks.emplace_back(new SortComSubseqsFileTask(input, oss.str()));
   }
+
+  LOG_INFO() << tasks.size() << " sorting small-seq tasks are created."
+             << std::endl;
 }
 
 void SortComSubseqsFiles(const std::vector<FilePath>& ifilepaths,
