@@ -1,31 +1,28 @@
 #include "com_subseq_sort.h"
 
-#include <vector>
-#include <sstream>
 #include <algorithm>
 #include <memory>
 #include <queue>
+#include <sstream>
+#include <vector>
 
 #include "com_subseq.h"
-#include "simple_task.h"
-#include "logging.h"
 #include "env.h"
+#include "logging.h"
 #include "pcpe_util.h"
+#include "simple_task.h"
 
 namespace pcpe {
 
-bool CompareComSubseqFileReaderFirstEntry(
-      const ComSubseqFileReader& x,
-      const ComSubseqFileReader& y) {
+bool CompareComSubseqFileReaderFirstEntry(const ComSubseqFileReader& x,
+                                          const ComSubseqFileReader& y) {
   return x.buffer_[x.buffer_idx_] > y.buffer_[y.buffer_idx_];
 }
 
 class SortComSubseqsFileTask {
  public:
-  SortComSubseqsFileTask(const FilePath& ifilepath,
-                         const FilePath& ofilepath):
-    ifilepath_(ifilepath), ofilepath_(ofilepath) {
-  }
+  SortComSubseqsFileTask(const FilePath& ifilepath, const FilePath& ofilepath)
+      : ifilepath_(ifilepath), ofilepath_(ofilepath) {}
   void exec();
 
   const FilePath& getOutput() const { return ofilepath_; }
@@ -35,9 +32,8 @@ class SortComSubseqsFileTask {
   FilePath ofilepath_;
 };
 
-static
-void SortSingleComSubseqFile(const FilePath& ifilepath,
-                             const FilePath& ofilepath) {
+static void SortSingleComSubseqFile(const FilePath& ifilepath,
+                                    const FilePath& ofilepath) {
   std::vector<ComSubseq> seqs;
   ReadComSubseqFile(ifilepath, seqs);
   sort(seqs.begin(), seqs.end());
@@ -57,8 +53,7 @@ void SortComSubseqsFileTask::exec() {
     // comsubseqs and write to the output file.
     SortSingleComSubseqFile(split_files[0], ofilepath_);
 
-    LOG_INFO() << "Sort the file without esort - "
-               << ifilepath_ << std::endl;
+    LOG_INFO() << "Sort the file without esort - " << ifilepath_ << std::endl;
   } else {
     // The size of input file is more than buffer size. It would do
     // 1. Sort each files.
@@ -73,11 +68,12 @@ void SortComSubseqsFileTask::exec() {
     // Create all readers from split files
     auto cmp_fun = [](const ComSubseqFileReader* x,
                       const ComSubseqFileReader* y) -> bool {
-            return CompareComSubseqFileReaderFirstEntry(*x, *y);
-        };
+      return CompareComSubseqFileReaderFirstEntry(*x, *y);
+    };
 
-    std::priority_queue<ComSubseqFileReader*,
-      std::vector<ComSubseqFileReader*>, decltype(cmp_fun)> readers(cmp_fun);
+    std::priority_queue<ComSubseqFileReader*, std::vector<ComSubseqFileReader*>,
+                        decltype(cmp_fun)>
+        readers(cmp_fun);
 
     for (const auto& file : split_files)
       readers.push(new ComSubseqFileReader(file));
@@ -105,15 +101,14 @@ void SortComSubseqsFileTask::exec() {
     }
     writer.close();
 
-    LOG_INFO() << "Sort the file with esort - "
-               << ifilepath_ << " " << split_files.size() << std::endl;
+    LOG_INFO() << "Sort the file with esort - " << ifilepath_ << " "
+               << split_files.size() << std::endl;
   }
 }
 
 void ConstructSortComSubseqFileTasks(
     const std::vector<FilePath>& ifilepaths,
     std::vector<std::unique_ptr<SortComSubseqsFileTask>>& tasks) {
-
   std::size_t curr_index = 0;
   for (const auto& input : ifilepaths) {
     std::ostringstream oss;
@@ -139,4 +134,4 @@ void SortComSubseqsFiles(const std::vector<FilePath>& ifilepaths,
       ofilepaths.push_back(task->getOutput());
 }
 
-} // namespace pcpe
+}  // namespace pcpe

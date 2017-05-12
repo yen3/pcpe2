@@ -14,14 +14,13 @@ std::ostream& operator<<(std::ostream& out, const ComSubseq& s);
 
 class ComSubseq {
   friend std::ostream& operator<<(std::ostream& out, const ComSubseq& s);
+
  public:
   ComSubseq() = default;
 
-  ComSubseq(uint32_t x, uint32_t y,
-            uint32_t x_loc, uint32_t y_loc,
-            uint32_t len):
-                x_(x), y_(y), x_loc_(x_loc), y_loc_(y_loc), len_(len) {
-  }
+  ComSubseq(uint32_t x, uint32_t y, uint32_t x_loc, uint32_t y_loc,
+            uint32_t len)
+      : x_(x), y_(y), x_loc_(x_loc), y_loc_(y_loc), len_(len) {}
 
   ComSubseq(const ComSubseq&) = default;
   ComSubseq& operator=(const ComSubseq&) = default;
@@ -42,17 +41,17 @@ class ComSubseq {
   bool operator!=(const ComSubseq& rhs) const { return !(*this == rhs); }
 
  private:
-    uint32_t x_;
-    uint32_t y_;
-    uint32_t x_loc_;
-    uint32_t y_loc_;
-    uint32_t len_;
+  uint32_t x_;
+  uint32_t y_;
+  uint32_t x_loc_;
+  uint32_t y_loc_;
+  uint32_t len_;
 };
 
-class ComSubseqFileReader{
+class ComSubseqFileReader {
   friend bool CompareComSubseqFileReaderFirstEntry(
-      const ComSubseqFileReader& x,
-      const ComSubseqFileReader& y);
+      const ComSubseqFileReader& x, const ComSubseqFileReader& y);
+
  public:
   /// Construct with filepath
   explicit ComSubseqFileReader(const FilePath& filepath);
@@ -66,7 +65,8 @@ class ComSubseqFileReader{
   const char* getFilePath() const { return filepath_.c_str(); }
 
   bool is_open() const {
-    return infile_.is_open() || (std::size_t)buffer_idx_ < (std::size_t)buffer_size_;
+    return infile_.is_open() ||
+           (std::size_t)buffer_idx_ < (std::size_t)buffer_size_;
   }
 
   bool eof() const {
@@ -167,7 +167,6 @@ bool WriteComSubseqFile(const std::vector<ComSubseq>& com_list,
 void SplitComSubseqFile(const FilePath& ifilepath,
                         std::vector<FilePath>& ofilepaths);
 
-
 /**
  * Combine several ComSubseq files into one file.
  *
@@ -177,7 +176,4 @@ void SplitComSubseqFile(const FilePath& ifilepath,
 void CombineComSubSeqFiles(const std::vector<FilePath>& ifilepaths,
                            const FilePath& ofilepath);
 
-} // namespace pcpe
-
-
-
+}  // namespace pcpe

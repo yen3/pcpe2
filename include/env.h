@@ -14,14 +14,14 @@ extern Env gEnv;
 
 class Env {
  public:
-  Env(): io_buffer_size_(16 * 1024 * 1024),    // 16 Mbytes
-         compare_seq_unit_size_(10000),        // 10000 sequences
-         buffer_size_(100 * 1024 * 1024),      // 100 Mbytes
-         small_seq_length_(6),                 // 6 chars
-         mim_output_length_(10),               // 10 chars
-         thread_size(std::thread::hardware_concurrency()),
-         temp_folder_("./temp") {
-  }
+  Env()
+      : io_buffer_size_(16 * 1024 * 1024),  // 16 Mbytes
+        compare_seq_unit_size_(10000),      // 10000 sequences
+        buffer_size_(100 * 1024 * 1024),    // 100 Mbytes
+        small_seq_length_(6),               // 6 chars
+        mim_output_length_(10),             // 10 chars
+        thread_size(std::thread::hardware_concurrency()),
+        temp_folder_("./temp") {}
 
   uint32_t getIOBufferSize() const { return io_buffer_size_; }
   uint32_t getSmallSeqLength() const { return small_seq_length_; }
@@ -34,8 +34,7 @@ class Env {
   void setIOBufferSize(uint32_t size) { io_buffer_size_ = size; }
   void setBufferSize(uint32_t size) { buffer_size_ = size; }
   void setTempFolderPath(const FilePath& path) { temp_folder_ = path; }
-  void setCompareSeqenceSize(uint32_t size) {
-    compare_seq_unit_size_ = size; }
+  void setCompareSeqenceSize(uint32_t size) { compare_seq_unit_size_ = size; }
   void setMinimumOutputLength(uint32_t size) { mim_output_length_ = size; }
   void setThreadSize(uint32_t size) { thread_size = size; }
 
@@ -63,4 +62,4 @@ class Env {
   FilePath temp_folder_;
 };
 
-} // namespace pcpe
+}  // namespace pcpe

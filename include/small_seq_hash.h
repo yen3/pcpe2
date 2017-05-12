@@ -1,11 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
-#include "seq.h"
 #include "pcpe_util.h"
+#include "seq.h"
 
 #include <cstdint>
 
@@ -20,9 +20,8 @@ typedef std::vector<SeqLoc> Value;
 typedef std::unordered_map<SmallSeqHashIndex, Value> SmallSeqLocList;
 
 struct SeqLoc {
-  SeqLoc(): idx(0), loc(0) {}
-  SeqLoc(uint32_t pidx, uint32_t ploc):
-    idx(pidx), loc(ploc) {}
+  SeqLoc() : idx(0), loc(0) {}
+  SeqLoc(uint32_t pidx, uint32_t ploc) : idx(pidx), loc(ploc) {}
 
   const uint32_t idx;
   const uint32_t loc;
@@ -45,12 +44,12 @@ constexpr SmallSeqHashIndex HashSmallSeq(const char* s) {
   // hash value. The disadvatance of the hash function is that the size of
   // string can not over than 6 otherwise it would cause overflow of uint32_t.
   return static_cast<SmallSeqHashIndex>(
-         (s[0] - 'A') * 1 +          /* 26 ** 0 == 1        */
-         (s[1] - 'A') * 26 +         /* 26 ** 1 == 26       */
-         (s[2] - 'A') * 676 +        /* 26 ** 2 == 676      */
-         (s[3] - 'A') * 17576 +      /* 26 ** 3 == 17576    */
-         (s[4] - 'A') * 456976 +     /* 26 ** 4 == 456976   */
-         (s[5] - 'A') * 11881376);   /* 26 ** 5 == 11881376 */
+      (s[0] - 'A') * 1 +        /* 26 ** 0 == 1        */
+      (s[1] - 'A') * 26 +       /* 26 ** 1 == 26       */
+      (s[2] - 'A') * 676 +      /* 26 ** 2 == 676      */
+      (s[3] - 'A') * 17576 +    /* 26 ** 3 == 17576    */
+      (s[4] - 'A') * 456976 +   /* 26 ** 4 == 456976   */
+      (s[5] - 'A') * 11881376); /* 26 ** 5 == 11881376 */
 }
 
 /**
@@ -62,8 +61,7 @@ constexpr SmallSeqHashIndex HashSmallSeq(const char* s) {
  *                              result.
  *
  * */
-void CompareSmallSeqs(const FilePath& filepath_x,
-                      const FilePath& filepath_y,
+void CompareSmallSeqs(const FilePath& filepath_x, const FilePath& filepath_y,
                       std::vector<FilePath>& result_filepaths);
 
-} // namespace pcpe
+}  // namespace pcpe

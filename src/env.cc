@@ -4,4 +4,4 @@ namespace pcpe {
 
 Env gEnv;
 
-} // namespace pcpe
+}  // namespace pcpe

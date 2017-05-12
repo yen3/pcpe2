@@ -4,11 +4,9 @@
 
 #include "logging.h"
 
-
 namespace pcpe {
 
-void GetStepsToNumber(const std::size_t n,
-                      const std::size_t step,
+void GetStepsToNumber(const std::size_t n, const std::size_t step,
                       std::vector<std::size_t>& steps) {
   if (n == 0) {
     LOG_WARNING() << "The end step is 0." << std::endl;
@@ -21,4 +19,4 @@ void GetStepsToNumber(const std::size_t n,
   steps.emplace_back(n);
 }
 
-} // namespace pcpe
+}  // namespace pcpe

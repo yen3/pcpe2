@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <fstream>
+#include <string>
 
 namespace pcpe {
 
@@ -49,7 +49,6 @@ bool GetFileSize(const char* filepath, FileSize& size);
  */
 bool CreateFolder(const char* path);
 
-
 /**
  * Check the file exists and the size of the file is > 0.
  *
@@ -64,5 +63,4 @@ bool CreateFolder(const char* path);
  * */
 bool CheckFileNotEmpty(const char* path);
 
-} // namespace pcpe
-
+}  // namespace pcpe

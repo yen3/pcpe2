@@ -1,28 +1,26 @@
 #include "max_comsubseq.h"
 
-#include <vector>
 #include <fstream>
-#include <sstream>
 #include <memory>
+#include <sstream>
+#include <vector>
 
-#include "logging.h"
 #include "com_subseq.h"
-#include "simple_task.h"
-#include "pcpe_util.h"
 #include "env.h"
+#include "logging.h"
+#include "pcpe_util.h"
+#include "simple_task.h"
 
 namespace pcpe {
 
-void MergeContineousComSubseqs(ComSubseq* seqs,
-                               bool* merges,
+void MergeContineousComSubseqs(ComSubseq* seqs, bool* merges,
                                std::size_t seqs_size) {
   // Initial the check list.
   std::fill(merges, merges + seqs_size, false);
 
   // Find the maximum common subsequence from seqs
   for (std::size_t base_idx = 0; base_idx < seqs_size; ++base_idx) {
-    if (merges[base_idx])
-      continue;
+    if (merges[base_idx]) continue;
 
     uint32_t base_length = seqs[base_idx].getLength();
     for (std::size_t cidx = base_idx; cidx + 1 < seqs_size; ++cidx) {
@@ -42,10 +40,8 @@ void MergeContineousComSubseqs(ComSubseq* seqs,
  *
  * @return the new seqs_size.
  * */
-std::size_t RemoveMergedComSubseqs(ComSubseq* seqs,
-                                   bool* merges,
+std::size_t RemoveMergedComSubseqs(ComSubseq* seqs, bool* merges,
                                    std::size_t seqs_size) {
-
   std::size_t new_seqs_size = 0;
 
   // cidx = copy index
@@ -62,10 +58,8 @@ std::size_t RemoveMergedComSubseqs(ComSubseq* seqs,
   return new_seqs_size;
 }
 
-void WriteMergedComSubseqs(ComSubseqFileWriter& writer,
-                           ComSubseq* seqs,
-                           bool* merges,
-                           std::size_t seqs_size) {
+void WriteMergedComSubseqs(ComSubseqFileWriter& writer, ComSubseq* seqs,
+                           bool* merges, std::size_t seqs_size) {
   const std::size_t min_output_length = gEnv.getMinimumOutputLength();
 
   for (std::size_t i = 0; i < seqs_size; ++i)
@@ -73,8 +67,7 @@ void WriteMergedComSubseqs(ComSubseqFileWriter& writer,
       writer.writeSeq(seqs[i]);
 }
 
-void MergeComSubseqsFile(const FilePath& ifilepath,
-                         const FilePath& ofilepath) {
+void MergeComSubseqsFile(const FilePath& ifilepath, const FilePath& ofilepath) {
   // Create read buffer and merges
   std::vector<ComSubseq> seqs;
   ReadComSubseqFile(ifilepath, seqs);
@@ -92,12 +85,10 @@ void MergeComSubseqsFile(const FilePath& ifilepath,
 std::size_t GetCurrentProcessSize(ComSubseq* seqs, std::size_t seqs_size) {
   // find the lastest index of the part (from seq_size to 0)
   // if x1 != x2 and y1 != y2
-  if (seqs_size <= 1)
-    return seqs_size;
+  if (seqs_size <= 1) return seqs_size;
 
   for (std::size_t pidx = seqs_size - 1; pidx != 0; --pidx)
-    if (!seqs[pidx].isSameSeqeunce(seqs[pidx - 1]))
-      return pidx;
+    if (!seqs[pidx].isSameSeqeunce(seqs[pidx - 1])) return pidx;
 
   // The whole buffer is the same two sequences.
   return seqs_size;
@@ -111,7 +102,7 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
   std::unique_ptr<bool[]> merges(new bool[max_seqs_size]);
 
   std::ifstream ifile(ifilepath.c_str(),
-      std::ifstream::in | std::ifstream::binary);
+                      std::ifstream::in | std::ifstream::binary);
   ComSubseqFileWriter writer(ofilepath);
 
   FileSize file_size;
@@ -123,12 +114,12 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
   while (read_file_size < file_size) {
     // Read file to Fill the buffer
     ifile.read(reinterpret_cast<char*>(&(seqs.get()[unprocess_seqs_size])),
-        static_cast<std::streamsize>((max_seqs_size - unprocess_seqs_size) *
-          sizeof(ComSubseq)));
+               static_cast<std::streamsize>(
+                   (max_seqs_size - unprocess_seqs_size) * sizeof(ComSubseq)));
 
     read_file_size += ifile.gcount();
-    std::size_t read_seqs_size = (std::size_t)ifile.gcount() /
-      sizeof(ComSubseq);
+    std::size_t read_seqs_size =
+        (std::size_t)ifile.gcount() / sizeof(ComSubseq);
     std::size_t seqs_size = unprocess_seqs_size + read_seqs_size;
 
     // Find the seqences can be processed.
@@ -155,8 +146,8 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
     // Speical case: If all sequences in the buffer are the same, remove all
     // merged comsubseqs and remaing the last entry.
     if (compressed_mode) {
-      seqs_size = RemoveMergedComSubseqs(seqs.get(), merges.get(),
-          process_seqs_size);
+      seqs_size =
+          RemoveMergedComSubseqs(seqs.get(), merges.get(), process_seqs_size);
       process_seqs_size = seqs_size - 1;
     }
 
@@ -176,10 +167,8 @@ void MergeComSubseqsLargeFile(const FilePath& ifilepath,
 
 class FindMaxComSubseqTask {
  public:
-  FindMaxComSubseqTask(
-      const FilePath& input, const FilePath& output):
-    ifilepath_(input), ofilepath_(output) {
-  }
+  FindMaxComSubseqTask(const FilePath& input, const FilePath& output)
+      : ifilepath_(input), ofilepath_(output) {}
 
   void exec();
 
@@ -204,21 +193,19 @@ void FindMaxComSubseqTask::exec() {
     MergeComSubseqsLargeFile(ifilepath_, ofilepath_);
   }
 
-  LOG_INFO() << "Find max common subseqences - "<< ofilepath_  << std::endl;
+  LOG_INFO() << "Find max common subseqences - " << ofilepath_ << std::endl;
 }
 
-static
-void CreateFindMaxComSubseqTasks(
+static void CreateFindMaxComSubseqTasks(
     const std::vector<FilePath>& ifilepaths,
     std::vector<std::unique_ptr<FindMaxComSubseqTask>>& tasks) {
-
   const FilePath& temp_folder = gEnv.getTempFolderPath();
 
   std::size_t curr_index = 0;
   for (const auto& input : ifilepaths) {
     if (!CheckFileNotEmpty(input.c_str())) {
-      LOG_WARNING() << "Get the info of the file error. - "
-                    << input << std::endl;
+      LOG_WARNING() << "Get the info of the file error. - " << input
+                    << std::endl;
       continue;
     }
 
@@ -235,7 +222,6 @@ void CreateFindMaxComSubseqTasks(
 
 void MaxSortedComSubseqs(const std::vector<FilePath>& ifilepaths,
                          std::vector<FilePath>& ofilepaths) {
-
   std::vector<std::unique_ptr<FindMaxComSubseqTask>> tasks;
   CreateFindMaxComSubseqTasks(ifilepaths, tasks);
 
@@ -246,4 +232,4 @@ void MaxSortedComSubseqs(const std::vector<FilePath>& ifilepaths,
       ofilepaths.push_back(task->getOutput().c_str());
 }
 
-} // namespace pcpe
+}  // namespace pcpe

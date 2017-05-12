@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 namespace pcpe {
 
@@ -34,11 +34,10 @@ void InitLogging(const char* filename, LoggingLevel default_level);
 
 #define LOG(level) pcpe::LogMessage(level, __FILE__, __LINE__).stream()
 
-#define LOG_FATAL()   LOG(pcpe::LoggingLevel::kFatal)
-#define LOG_ERROR()   LOG(pcpe::LoggingLevel::kError)
+#define LOG_FATAL() LOG(pcpe::LoggingLevel::kFatal)
+#define LOG_ERROR() LOG(pcpe::LoggingLevel::kError)
 #define LOG_WARNING() LOG(pcpe::LoggingLevel::kWarning)
-#define LOG_INFO()    LOG(pcpe::LoggingLevel::kInfo)
-#define LOG_DEBUG()   LOG(pcpe::LoggingLevel::kDebug)
+#define LOG_INFO() LOG(pcpe::LoggingLevel::kInfo)
+#define LOG_DEBUG() LOG(pcpe::LoggingLevel::kDebug)
 
-} // namespace pcpe
-
+}  // namespace pcpe

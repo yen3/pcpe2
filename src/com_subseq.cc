@@ -1,26 +1,25 @@
 #include "com_subseq.h"
 
-#include <fstream>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 
+#include "env.h"
 #include "logging.h"
 #include "pcpe_util.h"
-#include "env.h"
 
 namespace pcpe {
 
 std::ostream& operator<<(std::ostream& out, const ComSubseq& s) {
-  out << s.x_ << " " << s.y_ << " "
-      << s.x_loc_ << " " << s.y_loc_ << " "
+  out << s.x_ << " " << s.y_ << " " << s.x_loc_ << " " << s.y_loc_ << " "
       << s.len_;
   return out;
 }
 
 bool ComSubseq::isContinued(const ComSubseq& rhs) const {
   return (x_ == rhs.x_) && (y_ == rhs.y_) &&
-    ((rhs.x_loc_ - x_loc_ == 1)  || (x_loc_ - rhs.x_loc_ == 1)) &&
-    ((rhs.y_loc_ - y_loc_ == 1)  || (y_loc_ - rhs.y_loc_ == 1));
+         ((rhs.x_loc_ - x_loc_ == 1) || (x_loc_ - rhs.x_loc_ == 1)) &&
+         ((rhs.y_loc_ - y_loc_ == 1) || (y_loc_ - rhs.y_loc_ == 1));
 }
 
 bool ComSubseq::isSameSeqeunce(const ComSubseq& rhs) const {
@@ -28,47 +27,39 @@ bool ComSubseq::isSameSeqeunce(const ComSubseq& rhs) const {
 }
 
 bool ComSubseq::operator==(const ComSubseq& rhs) const {
-  return (x_ == rhs.x_) && (y_ == rhs.y_) &&
-    (x_loc_ == rhs.x_loc_) && (y_loc_ == rhs.y_loc_);
+  return (x_ == rhs.x_) && (y_ == rhs.y_) && (x_loc_ == rhs.x_loc_) &&
+         (y_loc_ == rhs.y_loc_);
 }
 
 bool ComSubseq::operator<(const ComSubseq& rhs) const {
-  if (x_ != rhs.x_)
-    return x_ < rhs.x_;
+  if (x_ != rhs.x_) return x_ < rhs.x_;
 
-  if (y_ != rhs.y_)
-    return y_ < rhs.y_;
+  if (y_ != rhs.y_) return y_ < rhs.y_;
 
-  if (x_loc_ != rhs.x_loc_)
-    return x_loc_ < rhs.x_loc_;
+  if (x_loc_ != rhs.x_loc_) return x_loc_ < rhs.x_loc_;
 
   return y_loc_ < rhs.y_loc_;
 }
 
 bool ComSubseq::operator>(const ComSubseq& rhs) const {
-  if (x_ != rhs.x_)
-    return x_ > rhs.x_;
+  if (x_ != rhs.x_) return x_ > rhs.x_;
 
-  if (y_ != rhs.y_)
-    return y_ > rhs.y_;
+  if (y_ != rhs.y_) return y_ > rhs.y_;
 
-  if (x_loc_ != rhs.x_loc_)
-    return x_loc_ > rhs.x_loc_;
+  if (x_loc_ != rhs.x_loc_) return x_loc_ > rhs.x_loc_;
 
   return y_loc_ > rhs.y_loc_;
 }
 
-
-ComSubseqFileReader::ComSubseqFileReader(const FilePath& filepath):
-  filepath_(filepath),
-  infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
-  file_size_(0),
-  curr_read_size_(0),
-  max_buffer_size_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
-  buffer_(new ComSubseq[(std::size_t)max_buffer_size_]),
-  buffer_size_(0),
-  buffer_idx_((std::size_t)max_buffer_size_) {
-
+ComSubseqFileReader::ComSubseqFileReader(const FilePath& filepath)
+    : filepath_(filepath),
+      infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
+      file_size_(0),
+      curr_read_size_(0),
+      max_buffer_size_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
+      buffer_(new ComSubseq[(std::size_t)max_buffer_size_]),
+      buffer_size_(0),
+      buffer_idx_((std::size_t)max_buffer_size_) {
   if (!infile_) {
     LOG_ERROR() << "Open file error - " << filepath_ << std::endl;
     return;
@@ -97,7 +88,7 @@ void ComSubseqFileReader::readBuffer() {
 
   // fill the buffer with new data
   infile_.read(reinterpret_cast<char*>(buffer_.get()),
-      (std::streamsize)sizeof(ComSubseq) * max_buffer_size_);
+               (std::streamsize)sizeof(ComSubseq) * max_buffer_size_);
 
   infile_.fail();
   std::streamsize read_size = infile_.gcount();
@@ -114,15 +105,14 @@ void ComSubseqFileReader::readBuffer() {
     close();
   }
 
-  if (curr_read_size_ == file_size_)
-    close();
+  if (curr_read_size_ == file_size_) close();
 }
 
 bool ComSubseqFileReader::readSeq(ComSubseq& seq) {
   if (buffer_idx_ >= (std::size_t)buffer_size_) {
     LOG_ERROR() << "Read sequence error from file `" << filepath_ << "`! "
-      << " ridx: " << buffer_idx_
-      << ", buffer size: " << buffer_size_ << std::endl;
+                << " ridx: " << buffer_idx_ << ", buffer size: " << buffer_size_
+                << std::endl;
     return false;
   }
 
@@ -139,42 +129,40 @@ bool ReadComSubseqFile(const FilePath& filepath,
                        std::vector<ComSubseq>& com_seqs) {
   FileSize file_size = 0;
   if (!GetFileSize(filepath.c_str(), file_size)) {
-    LOG_ERROR() << "Chec the file size error - "  << filepath
-      << ". Check the file exists or not" << std::endl;
+    LOG_ERROR() << "Chec the file size error - " << filepath
+                << ". Check the file exists or not" << std::endl;
     return false;
   }
 
   if (file_size % (FileSize)sizeof(ComSubseq) != 0) {
     LOG_ERROR() << "File content error. Please check the file content."
-      << std::endl;
+                << std::endl;
     return false;
   }
 
   std::size_t seq_size =
-    static_cast<std::size_t>(file_size / (FileSize)sizeof(ComSubseq));
+      static_cast<std::size_t>(file_size / (FileSize)sizeof(ComSubseq));
 
   // If the file is empty. Ignore the file
-  if (seq_size == 0)
-    return true;
+  if (seq_size == 0) return true;
 
   com_seqs.resize(seq_size);
 
   // read the file
   std::ifstream infile(filepath.c_str(),
-      std::ifstream::in | std::ifstream::binary);
+                       std::ifstream::in | std::ifstream::binary);
   infile.read(reinterpret_cast<char*>(com_seqs.data()), file_size);
   infile.close();
 
   return true;
 }
 
-ComSubseqFileWriter::ComSubseqFileWriter(FilePath filepath):
-  filepath_(filepath),
-  outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
-  buffer_(new ComSubseq[gEnv.getIOBufferSize() / sizeof(ComSubseq)]),
-  buffer_size_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
-  buffer_idx_(0) {
-}
+ComSubseqFileWriter::ComSubseqFileWriter(FilePath filepath)
+    : filepath_(filepath),
+      outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
+      buffer_(new ComSubseq[gEnv.getIOBufferSize() / sizeof(ComSubseq)]),
+      buffer_size_(gEnv.getIOBufferSize() / sizeof(ComSubseq)),
+      buffer_idx_(0) {}
 
 ComSubseqFileWriter::~ComSubseqFileWriter() {
   if (is_open()) {
@@ -183,8 +171,7 @@ ComSubseqFileWriter::~ComSubseqFileWriter() {
 }
 
 bool ComSubseqFileWriter::writeSeq(const ComSubseq& seq) {
-  if (buffer_idx_ >= (std::size_t)buffer_size_)
-    writeBuffer();
+  if (buffer_idx_ >= (std::size_t)buffer_size_) writeBuffer();
 
   if (buffer_idx_ >= (std::size_t)buffer_size_) {
     LOG_ERROR() << "write sequence error - " << filepath_ << std::endl;
@@ -204,10 +191,10 @@ void ComSubseqFileWriter::writeBuffer() {
     return;
   }
 
-  if (buffer_idx_ == 0)
-    return;
+  if (buffer_idx_ == 0) return;
 
-  outfile_.write(reinterpret_cast<char*>(buffer_.get()),
+  outfile_.write(
+      reinterpret_cast<char*>(buffer_.get()),
       (std::streamsize)sizeof(ComSubseq) * (std::streamsize)buffer_idx_);
   buffer_idx_ = 0;
 }
@@ -238,8 +225,8 @@ void SplitComSubseqFile(const FilePath& ifilepath,
   FileSize file_size = 0;
   GetFileSize(ifilepath.c_str(), file_size);
 
-  const FileSize buffer_size = gEnv.getBufferSize() /
-    sizeof(ComSubseq) * sizeof(ComSubseq);
+  const FileSize buffer_size =
+      gEnv.getBufferSize() / sizeof(ComSubseq) * sizeof(ComSubseq);
   if (file_size <= buffer_size) {
     ofilepaths.push_back(ifilepath);
     return;
@@ -247,23 +234,25 @@ void SplitComSubseqFile(const FilePath& ifilepath,
 
   // TODO: Resolve the warning
   std::size_t split_files_size = (std::size_t)(file_size / buffer_size);
-  if (file_size % buffer_size != 0)
-    split_files_size++;
+  if (file_size % buffer_size != 0) split_files_size++;
 
   // Split a file to several files
   std::ifstream infile(ifilepath, std::ifstream::in | std::ifstream::binary);
-  std::unique_ptr<ComSubseq[]> buffer(new ComSubseq[
-      (std::size_t)buffer_size / sizeof(ComSubseq)]);
+  std::unique_ptr<ComSubseq[]> buffer(
+      new ComSubseq[(std::size_t)buffer_size / sizeof(ComSubseq)]);
   for (std::size_t i = 0; i < split_files_size; ++i) {
     std::size_t read_size =
-      (std::size_t)infile.read(reinterpret_cast<char*>(buffer.get()), buffer_size).gcount();
+        (std::size_t)infile
+            .read(reinterpret_cast<char*>(buffer.get()), buffer_size)
+            .gcount();
 
     std::ostringstream oss;
     oss << ifilepath << "_" << i;
     const FilePath ofilepath(oss.str());
     std::ofstream ofile(ofilepath.c_str(),
-        std::ofstream::out | std::ofstream::binary);
-    ofile.write(reinterpret_cast<const char*>(buffer.get()), (std::streamsize)read_size);
+                        std::ofstream::out | std::ofstream::binary);
+    ofile.write(reinterpret_cast<const char*>(buffer.get()),
+                (std::streamsize)read_size);
     ofile.close();
 
     ofilepaths.push_back(ofilepath);
@@ -275,11 +264,10 @@ void SplitComSubseqFile(const FilePath& ifilepath,
 void CombineComSubSeqFiles(const std::vector<FilePath>& ifilepaths,
                            const FilePath& ofilepath) {
   std::ofstream ofile(ofilepath.c_str(),
-      std::ofstream::out | std::ofstream::binary);
+                      std::ofstream::out | std::ofstream::binary);
 
   for (const auto& ifilepath : ifilepaths) {
-    if (!CheckFileNotEmpty(ifilepath.c_str()))
-      continue;
+    if (!CheckFileNotEmpty(ifilepath.c_str())) continue;
 
     std::vector<ComSubseq> seqs;
     ReadComSubseqFile(ifilepath, seqs);
@@ -291,4 +279,4 @@ void CombineComSubSeqFiles(const std::vector<FilePath>& ifilepaths,
   ofile.close();
 }
 
-} // namespace pcpe
+}  // namespace pcpe

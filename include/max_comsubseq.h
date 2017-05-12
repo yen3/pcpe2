@@ -30,8 +30,7 @@ namespace pcpe {
  * @param[out] ofilepaths The list of output filepaths.
  *
  * */
-void MaxSortedComSubseqs(
-    const std::vector<FilePath>& ifilepaths,
-    std::vector<FilePath>& ofilepaths);
+void MaxSortedComSubseqs(const std::vector<FilePath>& ifilepaths,
+                         std::vector<FilePath>& ofilepaths);
 
-} // namespace pcpe
+}  // namespace pcpe

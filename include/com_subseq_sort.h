@@ -18,4 +18,4 @@ namespace pcpe {
 void SortComSubseqsFiles(const std::vector<FilePath>& input_filepaths,
                          std::vector<FilePath>& sorted_filepaths);
 
-} // namespace pcpe
+}  // namespace pcpe

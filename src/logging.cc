@@ -16,20 +16,17 @@ class LogObject {
 
 class LogStdErrObject : public LogObject {
  public:
-  LogStdErrObject(): LogObject() {}
+  LogStdErrObject() : LogObject() {}
   virtual ~LogStdErrObject() {}
-  virtual std::ostream& stream() {  return std::cerr; }
+  virtual std::ostream& stream() { return std::cerr; }
   virtual void close() {}
 };
 
 class LogFileObject : public LogObject {
  public:
-  explicit LogFileObject(const char* filename):
-    LogObject(), out_(filename, std::ofstream::out), filename_(filename) {
-  }
-  virtual ~LogFileObject() {
-    close();
-  }
+  explicit LogFileObject(const char* filename)
+      : LogObject(), out_(filename, std::ofstream::out), filename_(filename) {}
+  virtual ~LogFileObject() { close(); }
   virtual std::ostream& stream() { return out_; }
   virtual void close() {
     out_.flush();
@@ -43,9 +40,8 @@ class LogFileObject : public LogObject {
 
 class LogRecorder {
  public:
-  LogRecorder():
-    out_obj_(nullptr), filter_level_(LoggingLevel::kInfo), mutex_() {
-  }
+  LogRecorder()
+      : out_obj_(nullptr), filter_level_(LoggingLevel::kInfo), mutex_() {}
 
   void initStdErr(LoggingLevel level = LoggingLevel::kInfo) {
     LogObject* obj = new LogStdErrObject();
@@ -53,14 +49,12 @@ class LogRecorder {
   }
 
   void initFile(const char* filename,
-      LoggingLevel level = LoggingLevel::kInfo) {
+                LoggingLevel level = LoggingLevel::kInfo) {
     LogObject* obj = new LogFileObject(filename);
     initInternal(obj, level);
   }
 
-  void initNone() {
-    initInternal(nullptr, LoggingLevel::kNone);
-  }
+  void initNone() { initInternal(nullptr, LoggingLevel::kNone); }
 
   virtual ~LogRecorder() {
     if (out_obj_ != nullptr) {
@@ -69,8 +63,8 @@ class LogRecorder {
     }
   }
 
-  virtual void record(LoggingLevel level, const char* filename,
-                      uint32_t lineno, const char* msg);
+  virtual void record(LoggingLevel level, const char* filename, uint32_t lineno,
+                      const char* msg);
 
  private:
   void initInternal(LogObject* out_obj, LoggingLevel level) {
@@ -93,63 +87,51 @@ namespace {
 
 LogRecorder gLogRecorder;
 
-void WriteLog(LoggingLevel level,
-              const char* filename,
-              uint32_t lineno,
+void WriteLog(LoggingLevel level, const char* filename, uint32_t lineno,
               const char* msg) {
   gLogRecorder.record(level, filename, lineno, msg);
 }
 
-} // namespace
+}  // namespace
 
 void InitLogging(LoggingLevel default_level) {
   gLogRecorder.initStdErr(default_level);
 }
 
-void InitLogging(const std::string& filename,
-                 LoggingLevel default_level) {
+void InitLogging(const std::string& filename, LoggingLevel default_level) {
   gLogRecorder.initFile(filename.c_str(), default_level);
 }
 
-void InitLogging(const char* filename,
-                 LoggingLevel default_level) {
+void InitLogging(const char* filename, LoggingLevel default_level) {
   gLogRecorder.initFile(filename, default_level);
 }
 
-LogMessage::LogMessage(LoggingLevel level,
-                       const char* filename,
-                       uint32_t lineno):
-    level_(level), filename_(filename), line_(lineno), out_() {
-}
+LogMessage::LogMessage(LoggingLevel level, const char* filename,
+                       uint32_t lineno)
+    : level_(level), filename_(filename), line_(lineno), out_() {}
 
 LogMessage::~LogMessage() {
   WriteLog(level_, filename_.c_str(), line_, out_.str().c_str());
 }
 
-std::ostringstream& LogMessage::stream() {
-  return out_;
-}
+std::ostringstream& LogMessage::stream() { return out_; }
 
 static const char* GetLoggingLevelStr(LoggingLevel level) {
-  static const std::string level_str[] =
-    {"NONE", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG"};
+  static const std::string level_str[] = {"NONE",    "FATAL", "ERROR",
+                                          "WARNING", "INFO",  "DEBUG"};
 
   return level_str[static_cast<uint32_t>(level)].c_str();
 }
 
-void LogRecorder::record(LoggingLevel level,
-                         const char* filename,
-                         uint32_t lineno,
-                         const char* msg) {
+void LogRecorder::record(LoggingLevel level, const char* filename,
+                         uint32_t lineno, const char* msg) {
   if (out_obj_ != nullptr && level <= filter_level_) {
     std::lock_guard<std::mutex> lock(mutex_);
-    out_obj_->stream() << "[" << GetLoggingLevelStr(level) << ":"
-        << filename << ":" << lineno << "]: " << msg;
+    out_obj_->stream() << "[" << GetLoggingLevelStr(level) << ":" << filename
+                       << ":" << lineno << "]: " << msg;
   }
 
-  if (level == LoggingLevel::kFatal)
-    std::exit(1);
+  if (level == LoggingLevel::kFatal) std::exit(1);
 }
 
-} // namespace pcpe
-
+}  // namespace pcpe
