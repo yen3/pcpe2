@@ -184,4 +184,15 @@ void CompareSmallSeqs(const FilePath& xfilepath, const FilePath& yfilepath,
       rfilepaths.push_back(task->getOutput());
 }
 
+
+void ConstructSmallSeqHash(const FilePath& filepath,
+                           std::vector<FilePath>& hash_filepaths) {
+}
+
+void CompareSmallSeqs(const std::vector<FilePath>& filepath_x,
+                      const std::vector<FilePath>& filepath_y,
+                      std::vector<FilePath>& result_filepaths) {
+
+}
+
 }  // namespace pcpe
