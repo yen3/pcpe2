@@ -218,12 +218,29 @@ void CompareSmallSeqs(const FilePath& xfilepath, const FilePath& yfilepath,
 
 void ConstructSmallSeqHash(const FilePath& filepath,
                            std::vector<FilePath>& hash_filepaths) {
+  SeqList xs;
+  ReadSequences(xfilepath, xs);
+
+  SeqList ys;
+  ReadSequences(yfilepath, ys);
+
+  LOG_INFO() << "Read sequence done. " << xs.size() << " " << ys.size()
+             << std::endl;
+
+  // Construct a task list
+
+  // Construct all hash table files
+
+  // Return the output files
 }
 
 void CompareSmallSeqs(const std::vector<FilePath>& filepath_x,
                       const std::vector<FilePath>& filepath_y,
                       std::vector<FilePath>& result_filepaths) {
 
+  // Construct a task list
+
+  // Return the outputfiles
 }
 
 }  // namespace pcpe
