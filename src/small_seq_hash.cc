@@ -14,6 +14,38 @@
 
 namespace pcpe {
 
+// TODO: Design hash table file format
+class SmallSeqHashFileReader;
+class SmallSeqHashFileWriter;
+
+class SmallSeqHashFileReader {
+ public:
+  bool readEntry(SmallSeqHashIndex& key, Value& value);
+};
+
+class SmallSeqHashFileWriter {
+ public:
+  bool writeEntry(const SmallSeqHashIndex& key, const Value& value);
+};
+
+struct SmallSeqHashHashFile {
+ public:
+  SmallSeqHashIndex key_;
+  Value& value_;
+  SmallSeqHashFileReader reader_;
+};
+
+bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key,
+                                       Value& value) {
+  return false;
+}
+
+bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex& key,
+                                        const Value& value) {
+  return false;
+}
+
+
 void ReadSequences(const FilePath& filepath, SeqList& seqs) {
   if (!CheckFileExists(filepath.c_str())) {
     LOG_ERROR() << "The file does not exist - " << filepath << std::endl;
@@ -183,7 +215,6 @@ void CompareSmallSeqs(const FilePath& xfilepath, const FilePath& yfilepath,
     if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
       rfilepaths.push_back(task->getOutput());
 }
-
 
 void ConstructSmallSeqHash(const FilePath& filepath,
                            std::vector<FilePath>& hash_filepaths) {
