@@ -218,6 +218,7 @@ void CompareSmallSeqs(const FilePath& xfilepath, const FilePath& yfilepath,
 
 void ConstructSmallSeqHash(const FilePath& filepath,
                            std::vector<FilePath>& hash_filepaths) {
+  // Read sequences
   SeqList xs;
   ReadSequences(xfilepath, xs);
 
@@ -234,13 +235,25 @@ void ConstructSmallSeqHash(const FilePath& filepath,
   // Return the output files
 }
 
-void CompareSmallSeqs(const std::vector<FilePath>& filepath_x,
-                      const std::vector<FilePath>& filepath_y,
-                      std::vector<FilePath>& result_filepaths) {
-
+void CompareSmallSeqHash(const std::vector<FilePath>& filepath_x,
+                         const std::vector<FilePath>& filepath_y,
+                         std::vector<FilePath>& result_filepaths) {
   // Construct a task list
 
   // Return the outputfiles
+}
+
+void CompareSmallSeqs2(const FilePath& xfilepath, const FilePath& yfilepath,
+                       std::vector<FilePath>& rfilepaths) {
+  // Construct hash table for two sequence files.
+  std::vector<FilePath> x_hash_paths;
+  ConstructSmallSeqHash(xfilepath, x_hash_paths);
+
+  std::vector<FilePath> y_hash_paths;
+  ConstructSmallSeqHash(yfilepath, y_hash_paths);
+
+  // Compare the hash tables
+  CompareSmallSeqHash(x_hash_paths, y_hash_paths, rfilepaths);
 }
 
 }  // namespace pcpe
