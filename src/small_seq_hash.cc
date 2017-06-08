@@ -1,5 +1,7 @@
 #include "small_seq_hash.h"
 
+#include <cstdlib>
+#include <cstdint>
 #include <fstream>
 #include <memory>
 #include <sstream>
