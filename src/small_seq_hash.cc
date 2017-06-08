@@ -200,13 +200,9 @@ void ConstructSmallSeqHash(const FilePath& filepath,
                            std::vector<FilePath>& hash_filepaths) {
   // Read sequences
   SeqList xs;
-  ReadSequences(xfilepath, xs);
+  ReadSequences(filepath, xs);
 
-  SeqList ys;
-  ReadSequences(yfilepath, ys);
-
-  LOG_INFO() << "Read sequence done. " << xs.size() << " " << ys.size()
-             << std::endl;
+  LOG_INFO() << "Read sequence done. " << xs.size() << " " << std::endl;
 
   // Construct a task list
 

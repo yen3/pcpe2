@@ -37,7 +37,7 @@ class SmallSeqHashFileReader {
   /// Return true to present a valid read.
   bool readEntry(SmallSeqHashIndex& key, Value& value);
   bool readEntry(std::pair<SmallSeqHashIndex, Value>& entry) {
-    readEntry(entry.first, entry.second);
+    return readEntry(entry.first, entry.second);
   }
 
   /// Get the path of input file
@@ -69,7 +69,7 @@ class SmallSeqHashFileWriter {
   /// Return true to present a valid write.
   bool writeEntry(const SmallSeqHashIndex& key, const Value& value);
   bool writeEntry(const std::pair<SmallSeqHashIndex, Value>& entry) {
-    writeEntry(entry.first, entry.second);
+    return writeEntry(entry.first, entry.second);
   }
 
   /// Get the path of output file
@@ -77,7 +77,7 @@ class SmallSeqHashFileWriter {
 
   void close();
 
-  bool is_open() { return output_.is_open(); }
+  bool is_open() { return outfile_.is_open(); }
 
  private:
   void writeBuffer();
