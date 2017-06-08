@@ -14,17 +14,59 @@
 
 namespace pcpe {
 
-#if 0
-bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key,
-                                       Value& value) {
-  return false;
+SmallSeqHashFileWriter::SmallSeqHashFileWriter(const FilePath& filepath)
+    : filepath_(filepath),
+      outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
+      max_buffer_size_(gEnv.getIOBufferSize()),
+      buffer_size_(0),
+      buffer_(new uint8_t[max_buffer_size_]) {}
+
+void SmallSeqHashFileWriter::writeBuffer() {
+  if (!is_open() || buffer_size_ == 0) {
+    return;
+  }
+
+  outfile_.write(reinterpret_cast<const char*>(buffer_.get()),
+                 (std::streamsize)(sizeof(uint8_t) * buffer_size_));
+  buffer_size_ = 0;
 }
 
-bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex& key,
+bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex key,
                                         const Value& value) {
-  return false;
+  if (value.empty()) return true;
+
+  if (!is_open()) return false;
+
+  const std::size_t entry_size = sizeof(SmallSeqHashIndex) +
+                                 sizeof(uint32_t) +
+                                 sizeof(SeqLoc) * value.size();
+
+  // Check the buffer has enough size to put the entry.
+  if (entry_size + buffer_size_ > max_buffer_size_) writeBuffer();
+
+  uint8_t* entry_buffer = buffer_.get() + buffer_size_;
+
+  // Write index
+  std::memcpy(entry_buffer, &key, sizeof(SmallSeqHashIndex));
+  entry_buffer += sizeof(SmallSeqHashIndex);
+
+  // Write value size
+  if (value.size() > UINT_MAX) {
+    LOG_FATAL() << "The current file format can not handle the data size."
+                << std::endl;
+  }
+  uint32_t value_size = (uint32_t)value.size();
+  std::memcpy(entry_buffer, &value_size, sizeof(uint32_t));
+  entry_buffer += sizeof(uint32_t);
+
+  // Write value
+  std::memcpy(entry_buffer, value.data(), sizeof(SeqLoc) * value_size);
+
+  // Done to add the entry to the buffer, change the buffer size.
+  buffer_size_ += entry_size;
+
+  return true;
 }
-#endif
 
 void ReadSequences(const FilePath& filepath, SeqList& seqs) {
   if (!CheckFileExists(filepath.c_str())) {
@@ -196,6 +238,7 @@ void CompareSmallSeqs(const FilePath& xfilepath, const FilePath& yfilepath,
       rfilepaths.push_back(task->getOutput());
 }
 
+#if 0
 void ConstructSmallSeqHash(const FilePath& filepath,
                            std::vector<FilePath>& hash_filepaths) {
   // Read sequences
@@ -231,5 +274,6 @@ void CompareSmallSeqs2(const FilePath& xfilepath, const FilePath& yfilepath,
   // Compare the hash tables
   CompareSmallSeqHash(x_hash_paths, y_hash_paths, rfilepaths);
 }
+#endif
 
 }  // namespace pcpe

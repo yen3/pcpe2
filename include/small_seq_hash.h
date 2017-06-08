@@ -64,10 +64,10 @@ class SmallSeqHashFileReader {
 class SmallSeqHashFileWriter {
  public:
   explicit SmallSeqHashFileWriter(const FilePath& filepath);
-  ~SmallSeqHashFileWriter();
+  ~SmallSeqHashFileWriter() { close(); }
 
   /// Return true to present a valid write.
-  bool writeEntry(const SmallSeqHashIndex& key, const Value& value);
+  bool writeEntry(const SmallSeqHashIndex key, const Value& value);
   bool writeEntry(const std::pair<SmallSeqHashIndex, Value>& entry) {
     return writeEntry(entry.first, entry.second);
   }
@@ -75,7 +75,10 @@ class SmallSeqHashFileWriter {
   /// Get the path of output file
   const FilePath& getPath() const { return filepath_; }
 
-  void close();
+  void close() {
+    writeBuffer();
+    outfile_.close();
+  }
 
   bool is_open() { return outfile_.is_open(); }
 
@@ -85,10 +88,9 @@ class SmallSeqHashFileWriter {
   const FilePath filepath_;
   std::ofstream outfile_;
 
-  const std::size_t max_buffer_size;  // unit: byte
-  std::size_t buffer_size_;  // unit: byte
+  const std::size_t max_buffer_size_;  // unit: byte
+  std::size_t buffer_size_;            // unit: byte
   std::unique_ptr<uint8_t[]> buffer_;
-  std::size_t curr_buffer_idx;
 };
 
 /**
