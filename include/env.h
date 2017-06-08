@@ -31,16 +31,19 @@ class Env {
   uint32_t getThreadsSize() const { return thread_size; }
   const FilePath& getTempFolderPath() const { return temp_folder_; }
 
-  void setIOBufferSize(uint32_t size) { io_buffer_size_ = size; }
-  void setBufferSize(uint32_t size) { buffer_size_ = size; }
+  void setIOBufferSize(uint32_t size) {
+    io_buffer_size_ = size / sizeof(uint32_t) * sizeof(uint32_t);
+  }
+  void setBufferSize(uint32_t size) {
+    buffer_size_ = size / sizeof(uint32_t) * sizeof(uint32_t);
+  }
   void setTempFolderPath(const FilePath& path) { temp_folder_ = path; }
   void setCompareSeqenceSize(uint32_t size) { compare_seq_unit_size_ = size; }
   void setMinimumOutputLength(uint32_t size) { mim_output_length_ = size; }
   void setThreadSize(uint32_t size) { thread_size = size; }
 
  private:
-  /// The IO buffer size. The paramemter is used by ComSubseqFileReader/
-  /// ComSubseqFileWriter.
+  /// The IO buffer size. The paramemter is used by FileReader/FileWriter.
   uint32_t io_buffer_size_;
 
   /// The number of sequences for each comparison and builing hash table.
