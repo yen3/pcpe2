@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "pcpe_util.h"
@@ -31,7 +32,7 @@ struct SeqLoc {
 class SmallSeqHashFileReader {
  public:
   explicit SmallSeqHashFileReader(const FilePath& filepath);
-  ~SmallSeqHashFileReader();
+  ~SmallSeqHashFileReader() { close(); }
 
   /// Return true to present a valid read.
   bool readEntry(SmallSeqHashIndex& key, Value& value);
@@ -42,11 +43,18 @@ class SmallSeqHashFileReader {
   /// Get the path of input file
   const FilePath& getPath() { return filepath_; }
 
-  bool is_open();
+  bool is_open() const {
+    return infile_.is_open() || buffer_idx_ < buffer_size_;
+  }
 
-  bool eof();
+  bool eof() {
+    if (is_open())
+      return false;
+    else
+      return buffer_idx_ >= buffer_size_;
+  }
 
-  void close();
+  void close() { infile_.close(); }
 
  private:
   const FilePath filepath_;
@@ -55,10 +63,10 @@ class SmallSeqHashFileReader {
   FileSize file_size_;       // unit: byte
   FileSize curr_read_size_;  // unit: byte
 
-  const std::size_t max_buffer_size;  // unit: byte
-  std::size_t buffer_size_;           // unit: byte
+  const std::size_t max_buffer_size_;  // unit: byte
+  std::size_t buffer_size_;            // unit: byte
   std::unique_ptr<uint8_t[]> buffer_;
-  std::size_t curr_buffer_idx;
+  std::size_t buffer_idx_;
 };
 
 class SmallSeqHashFileWriter {
