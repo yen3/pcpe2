@@ -37,9 +37,57 @@ bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex key,
 
   if (!is_open()) return false;
 
+  if (value.size() > UINT_MAX) {
+    // The program does not support so many values in one entry. If the error
+    // happens, it means that one entry costs more than 32 GBytes memory.
+    //
+    // There are two possible results.
+    // 1. System has no such memory to run the program.
+    // 2. System has enough memory but the program would run very slow.
+    //
+    // In practice, it's possible to happen but rare. I have no plan to deal
+    // with the case currently. Maybe I will try to resolve the problem in
+    // future but not now. It's a harder problem for the such scale.
+    LOG_FATAL() << "The current file format can not handle the data size."
+                << std::endl;
+    return false;
+  }
+
+  // Get the entry size in the file (unit: byte(s))
   const std::size_t entry_size = sizeof(SmallSeqHashIndex) +
                                  sizeof(uint32_t) +
                                  sizeof(SeqLoc) * value.size();
+
+  if (entry_size > max_buffer_size_) {
+    // Deal with the speical case. If the entry size is larger than buffer size,
+    // it means the buffer can not contain the entry. One possible soultion is
+    // to write the entry to the file directly.
+
+    // The reason to clean the buffer first is to make sure writing sequence
+    // order. If users don't mind the order, the action can be ignored.
+    writeBuffer();
+
+    // Write index
+    outfile_.write(reinterpret_cast<const char*>(&key),
+                   sizeof(SmallSeqHashIndex));
+
+    // Write value size
+    uint32_t value_size = (uint32_t)value.size();
+    outfile_.write(reinterpret_cast<const char*>(&value_size),
+                   sizeof(uint32_t));
+
+    // Write value(s)
+    outfile_.write(reinterpret_cast<const char*>(value.data()),
+                   sizeof(SeqLoc) * value_size);
+
+    return true;
+  }
+
+  // In the case, the buffer can handle the entry. The following section does
+  // two things.
+  // 1. If the currnet empty buffer size can not handle the entry, write the
+  //    buffer to the file and clean.
+  // 2. Copy the entry to the buffer and update the related information.
 
   // Check the buffer has enough size to put the entry.
   if (entry_size + buffer_size_ > max_buffer_size_) writeBuffer();
@@ -51,15 +99,11 @@ bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex key,
   entry_buffer += sizeof(SmallSeqHashIndex);
 
   // Write value size
-  if (value.size() > UINT_MAX) {
-    LOG_FATAL() << "The current file format can not handle the data size."
-                << std::endl;
-  }
   uint32_t value_size = (uint32_t)value.size();
   std::memcpy(entry_buffer, &value_size, sizeof(uint32_t));
   entry_buffer += sizeof(uint32_t);
 
-  // Write value
+  // Write value(s)
   std::memcpy(entry_buffer, value.data(), sizeof(SeqLoc) * value_size);
 
   // Done to add the entry to the buffer, change the buffer size.
