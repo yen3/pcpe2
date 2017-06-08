@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_map>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "pcpe_util.h"
@@ -54,7 +54,8 @@ class SmallSeqHashFileReader {
   FileSize file_size_;       // unit: byte
   FileSize curr_read_size_;  // unit: byte
 
-  std::size_t buffer_size_;  // unit: byte
+  const std::size_t max_buffer_size;  // unit: byte
+  std::size_t buffer_size_;           // unit: byte
   std::unique_ptr<uint8_t[]> buffer_;
   std::size_t curr_buffer_idx;
 };
@@ -83,6 +84,7 @@ class SmallSeqHashFileWriter {
   const FilePath filepath_;
   std::ofstream outfile_;
 
+  const std::size_t max_buffer_size;  // unit: byte
   std::size_t buffer_size_;  // unit: byte
   std::unique_ptr<uint8_t[]> buffer_;
   std::size_t curr_buffer_idx;
