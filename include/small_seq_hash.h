@@ -29,6 +29,67 @@ struct SeqLoc {
   const uint32_t loc;
 };
 
+class SmallSeqHashFileReader {
+ public:
+  explicit SmallSeqHashFileReader(const FilePath& filepath);
+  ~SmallSeqHashFileReader();
+
+  /// Return true to present a valid read.
+  bool readEntry(SmallSeqHashIndex& key, Value& value);
+  bool readEntry(std::pair<SmallSeqHashIndex, Value>& entry) {
+    readEntry(entry.first, entry.second);
+  }
+
+  /// Get the path of input file
+  const FilePath& getPath() { return filepath_; }
+
+  bool is_open();
+
+  bool eof();
+
+  void close();
+
+ private:
+  const FilePath filepath_;
+  std::ifstream infile_;
+
+  FileSize file_size_;       // unit: byte
+  FileSize curr_read_size_;  // unit: byte
+
+  std::size_t buffer_size_;  // unit: byte
+  std::unique_ptr<uint8_t[]> buffer_;
+  std::size_t curr_buffer_idx;
+};
+
+class SmallSeqHashFileWriter {
+ public:
+  explicit SmallSeqHashFileWriter(const FilePath& filepath);
+  ~SmallSeqHashFileWriter();
+
+  /// Return true to present a valid write.
+  bool writeEntry(const SmallSeqHashIndex& key, const Value& value);
+  bool writeEntry(const std::pair<SmallSeqHashIndex, Value>& entry) {
+    writeEntry(entry.first, entry.second);
+  }
+
+  /// Get the path of output file
+  const FilePath& getPath() const { return filepath_; }
+
+  void close();
+
+  bool is_open() { return output_.is_open(); }
+
+ private:
+  void writeBuffer();
+
+  const FilePath filepath_;
+  std::ofstream outfile_;
+
+  std::size_t buffer_size_;  // unit: byte
+  std::unique_ptr<uint8_t[]> buffer_;
+  std::size_t curr_buffer_idx;
+};
+
 /**
  * Get the hash value of the small seqeuence.
  *

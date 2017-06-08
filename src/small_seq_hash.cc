@@ -14,64 +14,6 @@
 
 namespace pcpe {
 
-// TODO: Design hash table file format
-class SmallSeqHashFileReader;
-class SmallSeqHashFileWriter;
-
-class SmallSeqHashFileReader {
- public:
-  explicit SmallSeqHashFileReader(const FilePath& filepath);
-  ~SmallSeqHashFileReader();
-
-  /// Return true to present a valid read.
-  bool readEntry(SmallSeqHashIndex& key, Value& value);
-
-  const FilePath& getFilePath() { return filepath_; }
-
-  bool is_open();
-
-  bool eof();
-
-  void close();
-
- private:
-  const FilePath filepath_;
-  std::ifstream infile_;
-
-  FileSize file_size_;                  // unit: byte
-  FileSize curr_read_size_;             // unit: byte
-
-  std::size_t buffer_size_;             // unit: byte
-  std::unique_ptr<uint8_t[]> buffer_;
-  std::size_t curr_buffer_idx;
-};
-
-class SmallSeqHashFileWriter {
- public:
-  explicit SmallSeqHashFileWriter(const FilePath& filepath);
-  ~SmallSeqHashFileWriter();
-
-  /// Return true to present a valid write.
-  bool writeEntry(const SmallSeqHashIndex& key, const Value& value);
-
-  /// Get the path of output file
-  const FilePath& getFilePath() const { return filepath_; }
-
-  void close();
-
-  bool is_open() { return output_.is_open(); }
-
- private:
-  void writeBuffer();
-
-  const FilePath filepath_;
-  std::ofstream outfile_;
-
-  std::size_t buffer_size_;             // unit: byte
-  std::unique_ptr<uint8_t[]> buffer_;
-  std::size_t curr_buffer_idx;
-};
-
 #if 0
 bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key,
                                        Value& value) {
@@ -83,7 +25,6 @@ bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex& key,
   return false;
 }
 #endif
-
 
 void ReadSequences(const FilePath& filepath, SeqList& seqs) {
   if (!CheckFileExists(filepath.c_str())) {
