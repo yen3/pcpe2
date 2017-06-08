@@ -5,8 +5,8 @@
 
 namespace pcpe {
 
-typedef std::string FilePath;
-typedef std::ifstream::pos_type FileSize;
+using FilePath = std::string;
+using FileSize = std::ifstream::pos_type;
 
 /**
  * Check the file of the path exists or not

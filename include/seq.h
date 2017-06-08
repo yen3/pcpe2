@@ -5,7 +5,7 @@
 
 namespace pcpe {
 
-typedef std::string Seq;
-typedef std::vector<Seq> SeqList;
+using Seq = std::string;
+using SeqList = std::vector<Seq>;
 
 }  // namespace pcpe
