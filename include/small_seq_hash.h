@@ -14,10 +14,10 @@ namespace pcpe {
 
 struct SeqLoc;
 
-typedef uint32_t SmallSeqHashIndex;
-typedef std::vector<SeqLoc> Value;
-typedef std::unordered_map<SmallSeqHashIndex, Value> SmallSeqLocList;
-typedef std::map<SmallSeqHashIndex, Value> SmallSeqs;
+using SmallSeqHashIndex = uint32_t;
+using Value = std::vector<SeqLoc>;
+using SmallSeqLocList = std::unordered_map<SmallSeqHashIndex, Value>;
+using SmallSeqs = std::map<SmallSeqHashIndex, Value>;
 
 struct SeqLoc {
   SeqLoc() : idx(0), loc(0) {}
