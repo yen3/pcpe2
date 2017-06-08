@@ -12,8 +12,6 @@
 
 namespace pcpe {
 
-static const uint32_t kSmallSeqLength = 6;
-
 struct SeqLoc;
 
 typedef uint32_t SmallSeqHashIndex;
