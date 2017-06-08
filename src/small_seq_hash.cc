@@ -16,12 +16,44 @@
 
 namespace pcpe {
 
+SmallSeqHashFileReader::SmallSeqHashFileReader(const FilePath& filepath)
+    : filepath_(filepath),
+      infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
+      file_size_(0),
+      curr_read_size_(0),
+      buffer_size_(gEnv.getIOBufferSize()),
+      buffer_(new uint8_t[buffer_size_]),
+      buffer_idx_(0) {
+
+  if (!infile_) {
+    LOG_ERROR() << "Open file error - " << filepath_ << std::endl;
+    return;
+  }
+
+  bool get_status = GetFileSize(filepath_.c_str(), file_size_);
+  if (!get_status) {
+    LOG_ERROR() << "Get file size error - " << filepath_ << std::endl;
+    return;
+  }
+
+  readBuffer();
+}
+
+void SmallSeqHashFileReader::readBuffer() {
+
+}
+
+bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
+  return false;
+}
+
 SmallSeqHashFileWriter::SmallSeqHashFileWriter(const FilePath& filepath)
     : filepath_(filepath),
       outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
       max_buffer_size_(gEnv.getIOBufferSize()),
       buffer_size_(0),
-      buffer_(new uint8_t[max_buffer_size_]) {}
+      buffer_(new uint8_t[max_buffer_size_]) {
+}
 
 void SmallSeqHashFileWriter::writeBuffer() {
   if (!is_open() || buffer_size_ == 0) {
