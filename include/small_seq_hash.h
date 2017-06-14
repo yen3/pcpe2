@@ -46,14 +46,14 @@ class SmallSeqHashFileReader {
   const FilePath& getPath() const { return filepath_; }
 
   bool is_open() const {
-    return infile_.is_open() || buffer_idx_ < buffer_size_;
+    return infile_.is_open() || used_buffer_size_ < buffer_size_;
   }
 
   bool eof() {
     if (is_open())
       return false;
     else
-      return buffer_idx_ >= buffer_size_;
+      return used_buffer_size_ >= buffer_size_;
   }
 
   void close() { infile_.close(); }
@@ -67,9 +67,10 @@ class SmallSeqHashFileReader {
   FileSize file_size_;       // unit: byte
   FileSize curr_read_size_;  // unit: byte
 
-  const std::size_t buffer_size_;  // unit: byte
+  const std::size_t max_buffer_size_;  // unit: byte
+  std::size_t buffer_size_;
   std::unique_ptr<uint8_t[]> buffer_;
-  std::size_t buffer_idx_;
+  std::size_t used_buffer_size_;
 };
 
 class SmallSeqHashFileWriter {

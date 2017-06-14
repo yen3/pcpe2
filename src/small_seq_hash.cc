@@ -21,10 +21,11 @@ SmallSeqHashFileReader::SmallSeqHashFileReader(const FilePath& filepath)
       infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
       file_size_(0),
       curr_read_size_(0),
-      buffer_size_(gEnv.getIOBufferSize()),
+      max_buffer_size_(gEnv.getIOBufferSize() / sizeof(uint32_t) *
+                       sizeof(uint32_t)),
+      buffer_size_(0),
       buffer_(new uint8_t[buffer_size_]),
-      buffer_idx_(0) {
-
+      used_buffer_size_(0) {
   if (!infile_) {
     LOG_ERROR() << "Open file error - " << filepath_ << std::endl;
     return;
@@ -40,20 +41,108 @@ SmallSeqHashFileReader::SmallSeqHashFileReader(const FilePath& filepath)
 }
 
 void SmallSeqHashFileReader::readBuffer() {
+  if (curr_read_size_ >= file_size_ || !infile_.is_open()) {
+    return;
+  }
 
+  // Move the tail data to the head
+  for (std::size_t new_i = 0, i = used_buffer_size_; i < buffer_size_;
+       ++i, ++new_i) {
+    buffer_[new_i] = buffer_[i];
+  }
+
+  // Read new data
+  std::size_t max_read_size = max_buffer_size_ - used_buffer_size_;
+  infile_.read(reinterpret_cast<char*>(buffer_.get() + used_buffer_size_),
+               static_cast<std::streamsize>(sizeof(uint8_t) * max_read_size));
+
+  FileSize read_size = infile_.gcount();
+  curr_read_size_ += read_size;
+
+  buffer_size_ = used_buffer_size_ + (std::size_t)read_size;
+  used_buffer_size_ = 0;
+
+  if (curr_read_size_ == file_size_) {
+    close();
+  }
+
+  if (curr_read_size_ > file_size_) {
+    LOG_ERROR() << "Read file error. The read bytes (" << curr_read_size_
+                << " byte(s)) is over the file size (" << file_size_
+                << " byte(s))." << std::endl;
+  }
 }
 
 bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
-  return false;
+  if (!is_open()) {
+    LOG_ERROR() << "The file is closed!" << std::endl;
+    return false;
+  }
+
+  // Check the function can get the key and value size information from the
+  // buffer
+  if (buffer_size_ - used_buffer_size_ <
+      sizeof(SmallSeqHashIndex) + sizeof(uint32_t)) {
+    readBuffer();
+  }
+
+  // Caution: readBuffer function may change the `buffer_size` and
+  // `used_buffer_size`.
+
+  // Read the key and value size first.
+  uint8_t* curr_buffer = buffer_.get() + used_buffer_size_;
+  uint32_t value_size = 0;
+  std::memcpy(&key, curr_buffer, sizeof(SmallSeqHashIndex));
+  curr_buffer += sizeof(SmallSeqHashIndex);
+  std::memcpy(&value_size, curr_buffer, sizeof(uint32_t));
+  curr_buffer += sizeof(uint32_t);
+
+  used_buffer_size_ += sizeof(SmallSeqHashIndex) + sizeof(uint32_t);
+
+  if (value_size > UINT_MAX) {
+    // The program does not support so many values in one entry, you can get
+    // more infor in comments of `SmallSeqHashFileWriter::writeEntry`.
+    LOG_FATAL() << "The current program can not handle the data size. "
+                << value_size << std::endl;
+    return false;
+  }
+
+  // Read all values
+  value.resize(value_size);
+  if (buffer_size_ - used_buffer_size_ < value.size() * sizeof(SeqLoc)) {
+    // Retrieve the value info in one time.
+    std::memcpy(value.data(), curr_buffer, sizeof(SeqLoc) * value.size());
+    used_buffer_size_ += sizeof(SeqLoc) * value.size();
+  } else {
+    // Retrieve as many values as possible.
+    for (std::size_t curr_value_size = 0; curr_value_size < value.size(); ) {
+      // Make sure there is at least one value can be read.
+      if (buffer_size_ - used_buffer_size_ < sizeof(SeqLoc)) {
+        readBuffer();
+      }
+
+      std::size_t curr_buffer_size = buffer_size_ - used_buffer_size_;
+      std::size_t read_value_size =
+          curr_buffer_size / sizeof(SeqLoc) * sizeof(SeqLoc);
+      std::memcpy(value.data() + curr_value_size,
+                  buffer_.get() + used_buffer_size_,
+                  read_value_size);
+
+      used_buffer_size_ += read_value_size;
+      curr_value_size += read_value_size / sizeof(SeqLoc);
+    }
+  }
+
+  return true;
 }
 
 SmallSeqHashFileWriter::SmallSeqHashFileWriter(const FilePath& filepath)
     : filepath_(filepath),
       outfile_(filepath_.c_str(), std::ofstream::out | std::ofstream::binary),
-      max_buffer_size_(gEnv.getIOBufferSize()),
+      max_buffer_size_(gEnv.getIOBufferSize() / sizeof(uint32_t) *
+                       sizeof(uint32_t)),
       buffer_size_(0),
-      buffer_(new uint8_t[max_buffer_size_]) {
-}
+      buffer_(new uint8_t[max_buffer_size_]) {}
 
 void SmallSeqHashFileWriter::writeBuffer() {
   if (!is_open() || buffer_size_ == 0) {
@@ -88,8 +177,7 @@ bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex key,
   }
 
   // Get the entry size in the file (unit: byte(s))
-  const std::size_t entry_size = sizeof(SmallSeqHashIndex) +
-                                 sizeof(uint32_t) +
+  const std::size_t entry_size = sizeof(SmallSeqHashIndex) + sizeof(uint32_t) +
                                  sizeof(SeqLoc) * value.size();
 
   if (entry_size > max_buffer_size_) {
