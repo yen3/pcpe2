@@ -16,13 +16,18 @@
 
 namespace pcpe {
 
+const std::size_t kMinimizeReadBufferSize =
+    sizeof(SmallSeqHashIndex) + sizeof(uint32_t) + sizeof(SeqLoc);
+
 SmallSeqHashFileReader::SmallSeqHashFileReader(const FilePath& filepath)
     : filepath_(filepath),
       infile_(filepath_.c_str(), std::ifstream::in | std::ifstream::binary),
       file_size_(0),
       curr_read_size_(0),
-      max_buffer_size_(gEnv.getIOBufferSize() / sizeof(uint32_t) *
-                       sizeof(uint32_t)),
+      max_buffer_size_(
+          (gEnv.getIOBufferSize() > kMinimizeReadBufferSize)
+              ? (gEnv.getIOBufferSize() / sizeof(uint32_t) * sizeof(uint32_t))
+              : kMinimizeReadBufferSize),
       buffer_size_(0),
       buffer_(new uint8_t[buffer_size_]),
       used_buffer_size_(0) {
@@ -79,10 +84,9 @@ bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
     return false;
   }
 
-  // Check the function can get the key and value size information from the
-  // buffer
-  if (buffer_size_ - used_buffer_size_ <
-      sizeof(SmallSeqHashIndex) + sizeof(uint32_t)) {
+  // Check the function can get the key, value size and one value information
+  // from the buffer
+  if (buffer_size_ - used_buffer_size_ < kMinimizeReadBufferSize) {
     readBuffer();
   }
 
@@ -115,18 +119,12 @@ bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
     used_buffer_size_ += sizeof(SeqLoc) * value.size();
   } else {
     // Retrieve as many values as possible.
-    for (std::size_t curr_value_size = 0; curr_value_size < value.size(); ) {
-      // Make sure there is at least one value can be read.
-      if (buffer_size_ - used_buffer_size_ < sizeof(SeqLoc)) {
-        readBuffer();
-      }
-
+    for (std::size_t curr_value_size = 0; curr_value_size < value.size();) {
       std::size_t curr_buffer_size = buffer_size_ - used_buffer_size_;
       std::size_t read_value_size =
           curr_buffer_size / sizeof(SeqLoc) * sizeof(SeqLoc);
       std::memcpy(value.data() + curr_value_size,
-                  buffer_.get() + used_buffer_size_,
-                  read_value_size);
+                  buffer_.get() + used_buffer_size_, read_value_size);
 
       used_buffer_size_ += read_value_size;
       curr_value_size += read_value_size / sizeof(SeqLoc);
@@ -258,6 +256,201 @@ void ReadSequences(const FilePath& filepath, SeqList& seqs) {
   in_file.close();
   in_file.clear();
 }
+
+void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
+                        std::size_t seqs_end, SmallSeqs& smallseqs) {
+  constexpr uint32_t noise_hash_index = HashSmallSeq("XXXXXX");
+
+  for (std::size_t sidx = seqs_begin; sidx < seqs_end; ++sidx) {
+    // Ignore when the string is less the default size since the value of
+    // tiny string is unused in bio research.
+    if (seqs[sidx].size() < gEnv.getSmallSeqLength()) continue;
+
+    // Put all fixed-size subseqence with seqeunce index infor to the hash
+    // table
+    std::size_t end_index = seqs[sidx].size() - gEnv.getSmallSeqLength();
+    for (std::size_t i = 0; i <= end_index; ++i) {
+      SmallSeqHashIndex index = HashSmallSeq(seqs[sidx].c_str() + i);
+      if (index != noise_hash_index)
+        smallseqs[index].emplace_back(static_cast<uint32_t>(sidx),
+                                      static_cast<uint32_t>(i));
+    }
+  }
+}
+
+class CreateHashTableFileTask {
+ public:
+  CreateHashTableFileTask(const SeqList& ss, std::size_t ss_begin,
+                          std::size_t ss_end, const FilePath& output_path)
+      : ss_(ss), ss_begin_(ss_begin), ss_end_(ss_end), output_(output_path) {}
+  void exec();
+
+  const FilePath& getOutput() { return output_; }
+
+ private:
+  const SeqList& ss_;
+  const std::size_t ss_begin_;
+  const std::size_t ss_end_;
+
+  FilePath output_;
+};
+
+void CreateHashTableFileTask::exec() {
+  SmallSeqs small_seqs;
+  ConstructSmallSeqs(ss_, ss_begin_, ss_end_, small_seqs);
+
+  SmallSeqHashFileWriter writer(output_);
+  for (const auto& kv : small_seqs) {
+    writer.writeEntry(kv.first, kv.second);
+  }
+}
+
+void ConstructHashTableFileTasks(
+    const SeqList& ss,
+    std::vector<std::unique_ptr<CreateHashTableFileTask>>& tasks) {
+  const std::size_t kSeqSize = gEnv.getCompareSeqenceSize();
+
+  std::vector<std::size_t> steps;
+  GetStepsToNumber(ss.size(), kSeqSize, steps);
+
+  static std::size_t curr_index = 0;
+  const FilePath& kTempFolderPrefix = gEnv.getTempFolderPath();
+
+  for (std::size_t i = 0; i < steps.size() - 1; ++i) {
+    // Generate result filename
+    std::ostringstream oss;
+    oss << kTempFolderPrefix << "/hash_table_" << curr_index++;
+    FilePath output(oss.str());
+
+    tasks.emplace_back(
+        new CreateHashTableFileTask(ss, steps[i], steps[i + 1], output));
+  }
+}
+
+void ConstructSmallSeqHash(const FilePath& filepath,
+                           std::vector<FilePath>& hash_filepaths) {
+  // Read sequences
+  SeqList xs;
+  ReadSequences(filepath, xs);
+
+  LOG_INFO() << "Read sequence done. " << xs.size() << " " << std::endl;
+
+  // Construct a task list
+  std::vector<std::unique_ptr<CreateHashTableFileTask>> tasks;
+  ConstructHashTableFileTasks(xs, tasks);
+
+  // Construct all hash table files
+  RunSimpleTasks(tasks);
+
+  // Return the output files
+  for (const auto& task : tasks)
+    if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
+      hash_filepaths.emplace_back(task->getOutput());
+}
+
+class CompareHashTableFileTask {
+ public:
+  CompareHashTableFileTask(const FilePath& x_filepath,
+                           const FilePath& y_filepath, const FilePath& output)
+      : x_filepath_(x_filepath), y_filepath_(y_filepath), output_(output) {}
+
+  void exec();
+
+  FilePath& getOutput() { return output_; }
+
+ private:
+  FilePath x_filepath_;
+  FilePath y_filepath_;
+
+  FilePath output_;
+};
+
+void CompareHashTableFileTask::exec() {
+  if (!CheckFileNotEmpty(x_filepath_.c_str()) ||
+      !CheckFileNotEmpty(y_filepath_.c_str()))
+    return;
+
+  SmallSeqHashFileReader x_reader(x_filepath_);
+  SmallSeqHashFileReader y_reader(y_filepath_);
+
+  std::pair<SmallSeqHashIndex, Value> x_entry;
+  x_reader.readEntry(x_entry);
+
+  std::pair<SmallSeqHashIndex, Value> y_entry;
+  y_reader.readEntry(y_entry);
+
+  ComSubseqFileWriter writer(output_);
+  while (!x_reader.eof() && !y_reader.eof()) {
+    if (x_entry.first > y_entry.first) {
+      y_reader.readEntry(y_entry);
+    } else if (x_entry.first < y_entry.first) {
+      x_reader.readEntry(x_entry);
+    } else {
+      for (const auto& x : x_entry.second) {
+        for (const auto& y : y_entry.second) {
+          writer.writeSeq(
+              ComSubseq(x.idx, y.idx, x.loc, y.loc, gEnv.getSmallSeqLength()));
+        }
+      }
+
+      x_reader.readEntry(x_entry);
+      y_reader.readEntry(y_entry);
+    }
+  }
+
+  x_reader.close();
+  y_reader.close();
+  writer.close();
+}
+
+void ConstructCompareHashTableFileTask(
+    const std::vector<FilePath>& x_filepaths,
+    const std::vector<FilePath>& y_filepaths,
+    std::vector<std::unique_ptr<CompareHashTableFileTask>>& tasks) {
+  const FilePath& kTempFolderPrefix = gEnv.getTempFolderPath();
+  std::size_t curr_index = 0;
+  for (const auto& x : x_filepaths) {
+    for (const auto& y : y_filepaths) {
+      // Generate result filename
+      std::ostringstream oss;
+      oss << kTempFolderPrefix << "/compared_hash_" << curr_index++;
+      FilePath output(oss.str());
+
+      tasks.emplace_back(new CompareHashTableFileTask(x, y, output));
+    }
+  }
+}
+
+void CompareSmallSeqHash(const std::vector<FilePath>& x_filepaths,
+                         const std::vector<FilePath>& y_filepaths,
+                         std::vector<FilePath>& result_filepaths) {
+  // Construct a task list
+  std::vector<std::unique_ptr<CompareHashTableFileTask>> tasks;
+  ConstructCompareHashTableFileTask(x_filepaths, y_filepaths, tasks);
+
+  // Return the outputfiles
+  for (const auto& task : tasks)
+    if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
+      result_filepaths.emplace_back(task->getOutput());
+}
+
+void CompareSmallSeqsByFile(const FilePath& xfilepath,
+                            const FilePath& yfilepath,
+                            std::vector<FilePath>& rfilepaths) {
+  // Construct hash table for two sequence files.
+  std::vector<FilePath> x_hash_paths;
+  ConstructSmallSeqHash(xfilepath, x_hash_paths);
+
+  std::vector<FilePath> y_hash_paths;
+  ConstructSmallSeqHash(yfilepath, y_hash_paths);
+
+  // Compare the hash tables
+  CompareSmallSeqHash(x_hash_paths, y_hash_paths, rfilepaths);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Previous implementation
+////////////////////////////////////////////////////////////////////////////////
 
 void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
                         std::size_t seqs_end, SmallSeqLocList& smallseqs) {
@@ -403,43 +596,5 @@ void CompareSmallSeqs(const FilePath& xfilepath, const FilePath& yfilepath,
     if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
       rfilepaths.push_back(task->getOutput());
 }
-
-#if 0
-void ConstructSmallSeqHash(const FilePath& filepath,
-                           std::vector<FilePath>& hash_filepaths) {
-  // Read sequences
-  SeqList xs;
-  ReadSequences(filepath, xs);
-
-  LOG_INFO() << "Read sequence done. " << xs.size() << " " << std::endl;
-
-  // Construct a task list
-
-  // Construct all hash table files
-
-  // Return the output files
-}
-
-void CompareSmallSeqHash(const std::vector<FilePath>& filepath_x,
-                         const std::vector<FilePath>& filepath_y,
-                         std::vector<FilePath>& result_filepaths) {
-  // Construct a task list
-
-  // Return the outputfiles
-}
-
-void CompareSmallSeqs2(const FilePath& xfilepath, const FilePath& yfilepath,
-                       std::vector<FilePath>& rfilepaths) {
-  // Construct hash table for two sequence files.
-  std::vector<FilePath> x_hash_paths;
-  ConstructSmallSeqHash(xfilepath, x_hash_paths);
-
-  std::vector<FilePath> y_hash_paths;
-  ConstructSmallSeqHash(yfilepath, y_hash_paths);
-
-  // Compare the hash tables
-  CompareSmallSeqHash(x_hash_paths, y_hash_paths, rfilepaths);
-}
-#endif
 
 }  // namespace pcpe
