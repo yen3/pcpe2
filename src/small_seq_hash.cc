@@ -16,7 +16,7 @@
 
 namespace pcpe {
 
-const std::size_t kMinimizeReadBufferSize =
+const std::size_t kMinimalReadBufferSize =
     sizeof(SmallSeqHashIndex) + sizeof(uint32_t) + sizeof(SeqLoc);
 
 SmallSeqHashFileReader::SmallSeqHashFileReader(const FilePath& filepath)
@@ -25,9 +25,9 @@ SmallSeqHashFileReader::SmallSeqHashFileReader(const FilePath& filepath)
       file_size_(0),
       curr_read_size_(0),
       max_buffer_size_(
-          (gEnv.getIOBufferSize() > kMinimizeReadBufferSize)
+          (gEnv.getIOBufferSize() > kMinimalReadBufferSize)
               ? (gEnv.getIOBufferSize() / sizeof(uint32_t) * sizeof(uint32_t))
-              : kMinimizeReadBufferSize),
+              : kMinimalReadBufferSize),
       buffer_size_(0),
       buffer_(new uint8_t[buffer_size_]),
       used_buffer_size_(0) {
@@ -86,7 +86,7 @@ bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
 
   // Check the function can get the key, value size and one value information
   // from the buffer
-  if (buffer_size_ - used_buffer_size_ < kMinimizeReadBufferSize) {
+  if (buffer_size_ - used_buffer_size_ < kMinimalReadBufferSize) {
     readBuffer();
   }
 
