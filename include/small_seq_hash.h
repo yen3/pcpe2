@@ -17,8 +17,8 @@ namespace pcpe {
 struct SeqLoc;
 
 using SmallSeqHashIndex = uint32_t;
-using Value = std::vector<SeqLoc>;
 using SeqLocList = std::vector<SeqLoc>;
+
 using SmallSeqList = std::map<SmallSeqHashIndex, SeqLocList>;
 
 struct SeqLoc {
