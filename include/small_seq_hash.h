@@ -43,7 +43,9 @@ class SmallSeqHashFileReader {
   /// Get the path of input file
   const FilePath& getPath() const { return filepath_; }
 
-  bool is_open() const { return infile_.is_open() || used_buffer_size_ < buffer_size_; }
+  bool is_open() const {
+    return infile_.is_open() || used_buffer_size_ < buffer_size_;
+  }
 
   bool eof() { return !is_open(); }
 
