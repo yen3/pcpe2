@@ -318,6 +318,8 @@ void CreateHashTableFileTask::exec() {
     writer.writeEntry(entry);
   }
   writer.close();
+
+  LOG_INFO() << "Create hash file: " << output_ << " done." << std::endl;
 }
 
 void ConstructHashTableFileTasks(
@@ -474,9 +476,9 @@ void CompareSmallSeqHash(const std::vector<FilePath>& x_filepaths,
       result_filepaths.emplace_back(task->getOutput());
 }
 
-void CompareSmallSeqsByFile(const FilePath& xfilepath,
-                            const FilePath& yfilepath,
-                            std::vector<FilePath>& rfilepaths) {
+void CompareSmallSeqs(const FilePath& xfilepath,
+                      const FilePath& yfilepath,
+                      std::vector<FilePath>& rfilepaths) {
   // Construct hash table for two sequence files.
   std::vector<FilePath> x_hash_paths;
   ConstructSmallSeqHash(xfilepath, x_hash_paths);
@@ -486,155 +488,6 @@ void CompareSmallSeqsByFile(const FilePath& xfilepath,
 
   // Compare the hash tables
   CompareSmallSeqHash(x_hash_paths, y_hash_paths, rfilepaths);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Previous implementation
-////////////////////////////////////////////////////////////////////////////////
-
-void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
-                        std::size_t seqs_end, SmallSeqLocList& smallseqs) {
-  constexpr uint32_t noise_hash_index = HashSmallSeq("XXXXXX");
-
-  for (std::size_t sidx = seqs_begin; sidx < seqs_end; ++sidx) {
-    // Ignore when the string is less the default size since the value of
-    // tiny string is unused in bio research.
-    if (seqs[sidx].size() < gEnv.getSmallSeqLength()) continue;
-
-    // Put all fixed-size subseqence with seqeunce index infor to the hash
-    // table
-    std::size_t end_index = seqs[sidx].size() - gEnv.getSmallSeqLength();
-    for (std::size_t i = 0; i <= end_index; ++i) {
-      SmallSeqHashIndex index = HashSmallSeq(seqs[sidx].c_str() + i);
-      if (index != noise_hash_index)
-        smallseqs[index].emplace_back(static_cast<uint32_t>(sidx),
-                                      static_cast<uint32_t>(i));
-    }
-  }
-}
-
-void ComapreHashSmallSeqs(const SmallSeqLocList& xs, const SmallSeqLocList& ys,
-                          const FilePath& ofilepath) {
-  ComSubseqFileWriter writer(ofilepath);
-
-  for (auto xi = xs.cbegin(); xi != xs.cend(); ++xi) {
-    auto& s = xi->first;
-    auto find_y = ys.find(s);
-    if (find_y == ys.end()) continue;
-
-    const Value& xlocs = xi->second;
-    const Value& ylocs = find_y->second;
-
-    for (std::size_t xl = 0; xl < xlocs.size(); ++xl) {
-      for (std::size_t yl = 0; yl < ylocs.size(); ++yl) {
-        ComSubseq css(xlocs[xl].idx, ylocs[yl].idx, xlocs[xl].loc,
-                      ylocs[yl].loc, gEnv.getSmallSeqLength());
-        writer.writeSeq(css);
-      }
-    }
-  }
-  writer.close();
-
-  LOG_INFO() << "Write file done - " << ofilepath << " " << xs.size() << " "
-             << ys.size() << std::endl;
-}
-
-class CompareSmallSeqTask {
- public:
-  CompareSmallSeqTask(const SeqList& xs, const SeqList& ys,
-                      std::size_t xs_begin, std::size_t xs_end,
-                      std::size_t ys_begin, std::size_t ys_end,
-                      const FilePath& output)
-      : xs_(xs),
-        ys_(ys),
-        xs_begin_(xs_begin),
-        xs_end_(xs_end),
-        ys_begin_(ys_begin),
-        ys_end_(ys_end),
-        output_(output) {}
-
-  void exec();
-
-  const FilePath& getOutput() { return output_; }
-
- private:
-  const SeqList& xs_;
-  const SeqList& ys_;
-
-  const std::size_t xs_begin_;
-  const std::size_t xs_end_;
-
-  const std::size_t ys_begin_;
-  const std::size_t ys_end_;
-
-  const FilePath output_;
-};
-
-void CompareSmallSeqTask::exec() {
-  // Construct SmallSeqLocList
-  SmallSeqLocList x_smallseqs;
-  ConstructSmallSeqs(xs_, xs_begin_, xs_end_, x_smallseqs);
-
-  SmallSeqLocList y_smallseqs;
-  ConstructSmallSeqs(ys_, ys_begin_, ys_end_, y_smallseqs);
-
-  // Compare the two lists and save to file.
-  ComapreHashSmallSeqs(x_smallseqs, y_smallseqs, output_);
-}
-
-void ConstructCompareSmallSeqTasks(
-    const SeqList& xs, const SeqList& ys,
-    std::vector<std::unique_ptr<CompareSmallSeqTask>>& tasks) {
-  const std::size_t kSeqSize = gEnv.getCompareSeqenceSize();
-
-  std::vector<std::size_t> x_steps;
-  GetStepsToNumber(xs.size(), kSeqSize, x_steps);
-
-  std::vector<std::size_t> y_steps;
-  GetStepsToNumber(ys.size(), kSeqSize, y_steps);
-
-  std::size_t curr_index = 0;
-  const FilePath& kTempFolderPrefix = gEnv.getTempFolderPath();
-  for (std::size_t x = 0; x < x_steps.size() - 1; ++x) {
-    for (std::size_t y = 0; y < y_steps.size() - 1; ++y) {
-      // Generate result filename
-      std::ostringstream oss;
-      oss << kTempFolderPrefix << "/compare_hash_" << curr_index++;
-      FilePath output(oss.str());
-
-      tasks.emplace_back(new CompareSmallSeqTask(xs, ys, x_steps[x],
-                                                 x_steps[x + 1], y_steps[y],
-                                                 y_steps[y + 1], output));
-    }
-  }
-
-  LOG_INFO() << tasks.size() << " compare small-seq tasks are created."
-             << std::endl;
-}
-
-void CompareSmallSeqs(const FilePath& xfilepath, const FilePath& yfilepath,
-                      std::vector<FilePath>& rfilepaths) {
-  // Read sequence from the two files
-  SeqList xs;
-  ReadSequences(xfilepath, xs);
-
-  SeqList ys;
-  ReadSequences(yfilepath, ys);
-
-  LOG_INFO() << "Read sequence done. " << xs.size() << " " << ys.size()
-             << std::endl;
-
-  // Construct a task list
-  std::vector<std::unique_ptr<CompareSmallSeqTask>> tasks;
-  ConstructCompareSmallSeqTasks(xs, ys, tasks);
-
-  // Run all compare tasks
-  RunSimpleTasks(tasks);
-
-  // Return the output files
-  for (const auto& task : tasks)
-    if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
-      rfilepaths.push_back(task->getOutput());
 }
 
 }  // namespace pcpe

@@ -18,7 +18,6 @@ struct SeqLoc;
 
 using SmallSeqHashIndex = uint32_t;
 using Value = std::vector<SeqLoc>;
-using SmallSeqLocList = std::unordered_map<SmallSeqHashIndex, Value>;
 using SmallSeqs = std::map<SmallSeqHashIndex, Value>;
 
 struct SeqLoc {
@@ -134,33 +133,7 @@ constexpr SmallSeqHashIndex HashSmallSeq(const char* s) {
  *                              result.
  *
  * */
-void CompareSmallSeqs(const FilePath& filepath_x, const FilePath& filepath_y,
-                      std::vector<FilePath>& result_filepaths);
-
-/**
- * Construct hash tables and save to several files.
- *
- * @param[in] filepath the fasta input file path
- * @param[out] a list of filepaths contain hash value and related data.
- *
- * */
-void ConstructSmallSeqHash(const FilePath& filepath,
-                           std::vector<FilePath>& hash_filepaths);
-
-/**
- *
- * Find the fix-sized commom subseqences from the two sequence files.
- *
- * @param[in] hash_filepaths_x the small-seq hash tables
- * @param[in] hash_filepaths_y the compared small-seq hash tables
- * @param[out] result_filepaths the list of file paths to store the compared
- *                              result.
- * */
-void CompareSmallSeqs(const std::vector<FilePath>& filepath_x,
-                      const std::vector<FilePath>& filepath_y,
-                      std::vector<FilePath>& result_filepaths);
-void CompareSmallSeqsByFile(const FilePath& xfilepath,
-                            const FilePath& yfilepath,
-                            std::vector<FilePath>& rfilepaths);
-
+void CompareSmallSeqs(const FilePath& xfilepath,
+                      const FilePath& yfilepath,
+                      std::vector<FilePath>& rfilepaths);
 }  // namespace pcpe
