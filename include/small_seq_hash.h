@@ -18,7 +18,7 @@ struct SeqLoc;
 
 using SmallSeqHashIndex = uint32_t;
 using Value = std::vector<SeqLoc>;
-using SmallSeqs = std::map<SmallSeqHashIndex, Value>;
+using SmallSeqList = std::map<SmallSeqHashIndex, Value>;
 
 struct SeqLoc {
   SeqLoc() : idx(0), loc(0) {}

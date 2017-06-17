@@ -272,7 +272,7 @@ void ReadSequences(const FilePath& filepath, SeqList& seqs) {
 }
 
 void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
-                        std::size_t seqs_end, SmallSeqs& smallseqs) {
+                        std::size_t seqs_end, SmallSeqList& smallseqs) {
   constexpr uint32_t noise_hash_index = HashSmallSeq("XXXXXX");
 
   for (std::size_t sidx = seqs_begin; sidx < seqs_end; ++sidx) {
@@ -310,7 +310,7 @@ class CreateHashTableFileTask {
 };
 
 void CreateHashTableFileTask::exec() {
-  SmallSeqs small_seqs;
+  SmallSeqList small_seqs;
   ConstructSmallSeqs(ss_, ss_begin_, ss_end_, small_seqs);
 
   SmallSeqHashFileWriter writer(output_);
