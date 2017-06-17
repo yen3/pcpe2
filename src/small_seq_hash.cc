@@ -314,8 +314,8 @@ void CreateHashTableFileTask::exec() {
   ConstructSmallSeqs(ss_, ss_begin_, ss_end_, small_seqs);
 
   SmallSeqHashFileWriter writer(output_);
-  for (const auto& kv : small_seqs) {
-    writer.writeEntry(kv.first, kv.second);
+  for (const auto& entry : small_seqs) {
+    writer.writeEntry(entry);
   }
   writer.close();
 }
@@ -406,9 +406,13 @@ void CompareHashTableFileTask::exec() {
   ComSubseqFileWriter writer(output_);
   while (!x_reader.eof() || !y_reader.eof()) {
     if (x_entry.first > y_entry.first) {
-      if (!y_reader.eof()) y_reader.readEntry(y_entry);
+      if (!y_reader.eof()) {
+        y_reader.readEntry(y_entry);
+      }
     } else if (x_entry.first < y_entry.first) {
-      if (!x_reader.eof()) x_reader.readEntry(x_entry);
+      if (!x_reader.eof()) {
+        x_reader.readEntry(x_entry);
+      }
     } else {
       for (const auto& x : x_entry.second) {
         for (const auto& y : y_entry.second) {
