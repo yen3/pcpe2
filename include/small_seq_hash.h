@@ -32,9 +32,7 @@ struct SeqLoc {
 class SmallSeqHashFileReader {
  public:
   explicit SmallSeqHashFileReader(const FilePath& filepath);
-  ~SmallSeqHashFileReader() {
-    if (is_open()) close();
-  }
+  ~SmallSeqHashFileReader() { close(); }
 
   /// Return true to present a valid read.
   bool readEntry(SmallSeqHashIndex& key, Value& value);
@@ -45,9 +43,7 @@ class SmallSeqHashFileReader {
   /// Get the path of input file
   const FilePath& getPath() const { return filepath_; }
 
-  bool is_open() const {
-    return infile_.is_open() || used_buffer_size_ < buffer_size_;
-  }
+  bool is_open() const { return infile_.is_open() || used_buffer_size_ < buffer_size_; }
 
   bool eof() {
     if (is_open())
@@ -56,7 +52,9 @@ class SmallSeqHashFileReader {
       return used_buffer_size_ >= buffer_size_;
   }
 
-  void close() { infile_.close(); }
+  void close() {
+    if (infile_.is_open()) infile_.close();
+  }
 
  private:
   void readBuffer();
@@ -88,6 +86,8 @@ class SmallSeqHashFileWriter {
   const FilePath& getPath() const { return filepath_; }
 
   void close() {
+    if (!outfile_.is_open()) return;
+
     writeBuffer();
     outfile_.close();
   }

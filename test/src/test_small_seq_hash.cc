@@ -1,30 +1,78 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <iostream>
 
 #include "com_subseq.h"
-#include "small_seq_hash.h"
-#include "pcpe_util.h"
 #include "env.h"
+#include "logging.h"
+#include "pcpe_util.h"
+#include "small_seq_hash.h"
 
 namespace pcpe {
 
-extern void ReadSequences(const FilePath& filepath,
-                          SeqList& seqs);
-extern void ConstructSmallSeqs(const SeqList& seqs,
-                               std::size_t seqs_begin,
+extern void ReadSequences(const FilePath& filepath, SeqList& seqs);
+extern void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
                                std::size_t seqs_end,
                                SmallSeqLocList& smallseqs);
 extern void ComapreHashSmallSeqs(const SmallSeqLocList& xs,
                                  const SmallSeqLocList& ys,
                                  const FilePath& ofilepath);
 
+bool IsSameSmallSeqs(const SmallSeqs& xs, const SmallSeqs& ys) {
+  if (xs.size() != ys.size()) return false;
+
+  auto xs_iter_end = xs.end();
+  auto ys_iter_end = ys.end();
+
+  for (auto xs_iter = xs.begin(), ys_iter = ys.begin();
+       xs_iter != xs_iter_end && ys_iter != ys_iter_end; ++xs_iter, ++ys_iter) {
+    if (xs_iter->first != ys_iter->first) return false;
+
+    if (xs_iter->second.size() != ys_iter->second.size()) return false;
+
+    for (std::size_t i = 0; i < xs_iter->second.size(); ++i) {
+      if (xs_iter->second[i].idx != ys_iter->second[i].idx ||
+          xs_iter->second[i].loc != ys_iter->second[i].loc)
+        return false;
+    }
+  }
+
+  return true;
+}
+
+void ReadSmallSeqs(const FilePath& ifilepath, SmallSeqs& ss) {
+  SmallSeqHashFileReader reader(ifilepath);
+  while (!reader.eof()) {
+    SmallSeqHashIndex index;
+    Value value;
+    reader.readEntry(index, value);
+
+    for (const auto& v : value) {
+      ss[index].emplace_back(v);
+    }
+  }
+  reader.close();
+}
+
+void WriteSmallSeqs(const SmallSeqs& ss, const FilePath& ofilepath) {
+  SmallSeqHashFileWriter writer(ofilepath);
+  for (const auto& kv : ss) {
+    writer.writeEntry(kv);
+  }
+  writer.close();
+}
 
 TEST(compare_subseq, test_hash_value) {
-    EXPECT_EQ(0UL,   HashSmallSeq("AAAAAA"));
-    EXPECT_EQ(1UL,   HashSmallSeq("BAAAAA"));
-    EXPECT_EQ(27UL,  HashSmallSeq("BBAAAA"));
-    EXPECT_EQ(703UL, HashSmallSeq("BBBAAA"));
+  EXPECT_EQ(0UL, HashSmallSeq("AAAAAA"));
+  EXPECT_EQ(1UL, HashSmallSeq("BAAAAA"));
+  EXPECT_EQ(27UL, HashSmallSeq("BBAAAA"));
+  EXPECT_EQ(703UL, HashSmallSeq("BBBAAA"));
+
+  EXPECT_EQ(61288890UL, HashSmallSeq("ABCDEF"));
+  EXPECT_EQ(73645521UL, HashSmallSeq("BCDEFG"));
+  EXPECT_EQ(86002152UL, HashSmallSeq("CDEFGH"));
+  EXPECT_EQ(98358783UL, HashSmallSeq("DEFGHI"));
 }
 
 TEST(compare_subseq, test_read_smallseqs_1) {
@@ -184,8 +232,7 @@ TEST(compare_subseq, CompareHashSmallSeqs) {
   std::sort(com_seqs.begin(), com_seqs.end());
 
   ASSERT_EQ(ans.size(), com_seqs.size());
-  for (std::size_t i = 0; i < ans.size(); ++i)
-    ASSERT_EQ(ans[i], com_seqs[i]);
+  for (std::size_t i = 0; i < ans.size(); ++i) ASSERT_EQ(ans[i], com_seqs[i]);
 }
 
 TEST(compare_subseq, CompareSmallSeqs) {
@@ -213,8 +260,7 @@ TEST(compare_subseq, CompareSmallSeqs) {
   std::sort(com_seqs.begin(), com_seqs.end());
 
   ASSERT_EQ(ans.size(), com_seqs.size());
-  for (std::size_t i = 0; i < ans.size(); ++i)
-    ASSERT_EQ(ans[i], com_seqs[i]);
+  for (std::size_t i = 0; i < ans.size(); ++i) ASSERT_EQ(ans[i], com_seqs[i]);
 }
 
 TEST(compare_subseq, CompareSmallSeqs_2) {
@@ -252,8 +298,155 @@ TEST(compare_subseq, CompareSmallSeqs_2) {
   ans.push_back(ComSubseq(2, 1, 3, 1, 6));
 
   ASSERT_EQ(ans.size(), com_seqs.size());
-  for (std::size_t i = 0; i < ans.size(); ++i)
-    ASSERT_EQ(ans[i], com_seqs[i]);
+  for (std::size_t i = 0; i < ans.size(); ++i) ASSERT_EQ(ans[i], com_seqs[i]);
 }
 
-} // namespace pcpe
+TEST(compare_subseq, test_small_hash_table_reader) {
+  SmallSeqs seqs;
+  seqs[0].emplace_back(SeqLoc(1, 0));
+  seqs[2].emplace_back(SeqLoc(2, 0));
+  seqs[2].emplace_back(SeqLoc(5, 0));
+  seqs[3].emplace_back(SeqLoc(3, 0));
+  seqs[4].emplace_back(SeqLoc(0, 0));
+
+  const FilePath input_path = "testdata/test_small_hash_table_reader_1.in";
+
+  SmallSeqs read_seqs;
+  ReadSmallSeqs(input_path, read_seqs);
+
+  ASSERT_TRUE(IsSameSmallSeqs(seqs, read_seqs));
+}
+
+TEST(compare_subseq, test_small_hash_table_reader_small_buffer) {
+  InitLogging(LoggingLevel::kDebug);
+
+  SmallSeqs seqs;
+  seqs[0].emplace_back(SeqLoc(1, 0));
+  seqs[2].emplace_back(SeqLoc(2, 0));
+  seqs[2].emplace_back(SeqLoc(5, 0));
+  seqs[3].emplace_back(SeqLoc(3, 0));
+  seqs[4].emplace_back(SeqLoc(0, 0));
+
+  const FilePath input_path = "testdata/test_small_hash_table_reader_1.in";
+
+  SmallSeqs read_seqs;
+  {
+    std::size_t savedIOBufferSize = gEnv.getIOBufferSize();
+    gEnv.setIOBufferSize(48);
+
+    ReadSmallSeqs(input_path, read_seqs);
+
+    gEnv.setIOBufferSize(savedIOBufferSize);
+  }
+
+  ASSERT_TRUE(IsSameSmallSeqs(seqs, read_seqs));
+}
+
+TEST(compare_subseq, test_small_hash_table_reader_minimal_buffer) {
+  InitLogging(LoggingLevel::kDebug);
+
+  SmallSeqs seqs;
+  seqs[0].emplace_back(SeqLoc(1, 0));
+  seqs[2].emplace_back(SeqLoc(2, 0));
+  seqs[2].emplace_back(SeqLoc(5, 0));
+  seqs[3].emplace_back(SeqLoc(3, 0));
+  seqs[4].emplace_back(SeqLoc(0, 0));
+
+  const FilePath input_path = "testdata/test_small_hash_table_reader_1.in";
+
+  SmallSeqs read_seqs;
+  {
+    std::size_t savedIOBufferSize = gEnv.getIOBufferSize();
+    gEnv.setIOBufferSize(sizeof(SmallSeqHashIndex) + sizeof(uint32_t) +
+                         sizeof(SeqLoc));
+
+    ReadSmallSeqs(input_path, read_seqs);
+
+    gEnv.setIOBufferSize(savedIOBufferSize);
+  }
+
+  ASSERT_TRUE(IsSameSmallSeqs(seqs, read_seqs));
+}
+
+TEST(compare_subseq, test_small_hash_table_writer) {
+  // Read the seqs
+  SmallSeqs seqs;
+  ReadSmallSeqs("testdata/test_small_hash_table_reader_1.in", seqs);
+
+  // Write the sequences
+  const FilePath output_path = "testoutput/test_small_hash_table_writer";
+  WriteSmallSeqs(seqs, output_path);
+
+  // Check file size
+  FileSize output_file_size;
+  bool check_state = GetFileSize(output_path.c_str(), output_file_size);
+  ASSERT_EQ(check_state, true);
+  ASSERT_EQ(output_file_size, 72);
+
+  // Read it back again and comapre
+  SmallSeqs read_seqs;
+  ReadSmallSeqs(output_path, read_seqs);
+  ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+}
+
+TEST(compare_subseq, test_small_hash_table_writer_small_buffer) {
+  // Read the seqs
+  SmallSeqs seqs;
+  ReadSmallSeqs("testdata/test_small_hash_table_reader_1.in", seqs);
+
+  // Write the sequences
+  const FilePath output_path = "testoutput/test_small_hash_table_writer";
+  {
+    std::size_t savedIOBufferSize = gEnv.getIOBufferSize();
+    gEnv.setIOBufferSize(sizeof(SmallSeqHashIndex) + sizeof(uint32_t) +
+                         sizeof(SeqLoc));
+
+    WriteSmallSeqs(seqs, output_path);
+
+    gEnv.setIOBufferSize(savedIOBufferSize);
+  }
+
+  // Check file size
+  FileSize output_file_size;
+  bool check_state = GetFileSize(output_path.c_str(), output_file_size);
+  ASSERT_EQ(check_state, true);
+  ASSERT_EQ(output_file_size, 72);
+
+  // Read it back again and comapre
+  SmallSeqs read_seqs;
+  ReadSmallSeqs(output_path, read_seqs);
+  ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+}
+
+TEST(compare_subseq, test_small_hash_table_writer_minimal_buffer) {
+  // Read the seqs
+  SmallSeqs seqs;
+  ReadSmallSeqs("testdata/test_small_hash_table_reader_1.in", seqs);
+
+  // Write the sequences
+  const FilePath output_path = "testoutput/test_small_hash_table_writer";
+  {
+    std::size_t savedIOBufferSize = gEnv.getIOBufferSize();
+    //gEnv.setIOBufferSize(sizeof(SmallSeqHashIndex) + sizeof(uint32_t) +
+                         //sizeof(SeqLoc));
+
+    gEnv.setIOBufferSize(sizeof(uint32_t));
+
+    WriteSmallSeqs(seqs, output_path);
+
+    gEnv.setIOBufferSize(savedIOBufferSize);
+  }
+
+  // Check file size
+  FileSize output_file_size;
+  bool check_state = GetFileSize(output_path.c_str(), output_file_size);
+  ASSERT_EQ(check_state, true);
+  ASSERT_EQ(output_file_size, 72);
+
+  // Read it back again and comapre
+  SmallSeqs read_seqs;
+  ReadSmallSeqs(output_path, read_seqs);
+  ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+}
+
+}  // namespace pcpe

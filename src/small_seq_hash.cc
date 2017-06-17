@@ -29,8 +29,10 @@ SmallSeqHashFileReader::SmallSeqHashFileReader(const FilePath& filepath)
               ? (gEnv.getIOBufferSize() / sizeof(uint32_t) * sizeof(uint32_t))
               : kMinimalReadBufferSize),
       buffer_size_(0),
-      buffer_(new uint8_t[buffer_size_]),
+      buffer_(new uint8_t[max_buffer_size_]),
       used_buffer_size_(0) {
+  std::memset(buffer_.get(), 0, sizeof(uint8_t) * max_buffer_size_);
+
   if (!infile_) {
     LOG_ERROR() << "Open file error - " << filepath_ << std::endl;
     return;
@@ -57,16 +59,19 @@ void SmallSeqHashFileReader::readBuffer() {
   }
 
   // Read new data
-  std::size_t max_read_size = max_buffer_size_ - used_buffer_size_;
-  infile_.read(reinterpret_cast<char*>(buffer_.get() + used_buffer_size_),
-               static_cast<std::streamsize>(sizeof(uint8_t) * max_read_size));
+  std::size_t remaining_size = buffer_size_ - used_buffer_size_;
+  used_buffer_size_ = 0;
 
+  infile_.read(reinterpret_cast<char*>(buffer_.get() + remaining_size),
+               static_cast<std::streamsize>(
+                   sizeof(uint8_t) * (max_buffer_size_ - remaining_size)));
+  infile_.fail();
+
+  // Calculate the total read file size
   FileSize read_size = infile_.gcount();
   curr_read_size_ += read_size;
 
-  buffer_size_ = used_buffer_size_ + (std::size_t)read_size;
-  used_buffer_size_ = 0;
-
+  buffer_size_ = remaining_size + (std::size_t)read_size;
   if (curr_read_size_ == file_size_) {
     close();
   }
@@ -75,6 +80,7 @@ void SmallSeqHashFileReader::readBuffer() {
     LOG_ERROR() << "Read file error. The read bytes (" << curr_read_size_
                 << " byte(s)) is over the file size (" << file_size_
                 << " byte(s))." << std::endl;
+    close();
   }
 }
 
@@ -97,10 +103,8 @@ bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
   uint8_t* curr_buffer = buffer_.get() + used_buffer_size_;
   uint32_t value_size = 0;
   std::memcpy(&key, curr_buffer, sizeof(SmallSeqHashIndex));
-  curr_buffer += sizeof(SmallSeqHashIndex);
-  std::memcpy(&value_size, curr_buffer, sizeof(uint32_t));
-  curr_buffer += sizeof(uint32_t);
-
+  std::memcpy(&value_size, curr_buffer + sizeof(SmallSeqHashIndex),
+              sizeof(uint32_t));
   used_buffer_size_ += sizeof(SmallSeqHashIndex) + sizeof(uint32_t);
 
   if (value_size > UINT_MAX) {
@@ -113,21 +117,31 @@ bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
 
   // Read all values
   value.resize(value_size);
-  if (buffer_size_ - used_buffer_size_ < value.size() * sizeof(SeqLoc)) {
+  if (buffer_size_ - used_buffer_size_ >= value.size() * sizeof(SeqLoc)) {
     // Retrieve the value info in one time.
-    std::memcpy(value.data(), curr_buffer, sizeof(SeqLoc) * value.size());
+    std::memcpy(value.data(), buffer_.get() + used_buffer_size_,
+                sizeof(SeqLoc) * value.size());
     used_buffer_size_ += sizeof(SeqLoc) * value.size();
   } else {
     // Retrieve as many values as possible.
     for (std::size_t curr_value_size = 0; curr_value_size < value.size();) {
+      if (buffer_size_ - used_buffer_size_ < sizeof(SeqLoc)) {
+        readBuffer();
+      }
+
       std::size_t curr_buffer_size = buffer_size_ - used_buffer_size_;
-      std::size_t read_value_size =
-          curr_buffer_size / sizeof(SeqLoc) * sizeof(SeqLoc);
+      std::size_t max_read_value_size = curr_buffer_size / sizeof(SeqLoc);
+
+      // Make sure it's the last time or not.
+      if (max_read_value_size + curr_value_size >= value.size()) {
+        max_read_value_size = value.size() - curr_value_size;
+      }
+      std::size_t read_value_size = max_read_value_size * sizeof(SeqLoc);
       std::memcpy(value.data() + curr_value_size,
                   buffer_.get() + used_buffer_size_, read_value_size);
 
       used_buffer_size_ += read_value_size;
-      curr_value_size += read_value_size / sizeof(SeqLoc);
+      curr_value_size += max_read_value_size;
     }
   }
 
@@ -330,14 +344,14 @@ void ConstructHashTableFileTasks(
 void ConstructSmallSeqHash(const FilePath& filepath,
                            std::vector<FilePath>& hash_filepaths) {
   // Read sequences
-  SeqList xs;
-  ReadSequences(filepath, xs);
+  SeqList ss;
+  ReadSequences(filepath, ss);
 
-  LOG_INFO() << "Read sequence done. " << xs.size() << " " << std::endl;
+  LOG_INFO() << "Read sequence done. " << ss.size() << " " << std::endl;
 
   // Construct a task list
   std::vector<std::unique_ptr<CreateHashTableFileTask>> tasks;
-  ConstructHashTableFileTasks(xs, tasks);
+  ConstructHashTableFileTasks(ss, tasks);
 
   // Construct all hash table files
   RunSimpleTasks(tasks);
@@ -380,11 +394,11 @@ void CompareHashTableFileTask::exec() {
   y_reader.readEntry(y_entry);
 
   ComSubseqFileWriter writer(output_);
-  while (!x_reader.eof() && !y_reader.eof()) {
+  while (!x_reader.eof() || !y_reader.eof()) {
     if (x_entry.first > y_entry.first) {
-      y_reader.readEntry(y_entry);
+      if (!y_reader.eof()) y_reader.readEntry(y_entry);
     } else if (x_entry.first < y_entry.first) {
-      x_reader.readEntry(x_entry);
+      if (!x_reader.eof()) x_reader.readEntry(x_entry);
     } else {
       for (const auto& x : x_entry.second) {
         for (const auto& y : y_entry.second) {
@@ -393,8 +407,8 @@ void CompareHashTableFileTask::exec() {
         }
       }
 
-      x_reader.readEntry(x_entry);
-      y_reader.readEntry(y_entry);
+      if (!x_reader.eof()) x_reader.readEntry(x_entry);
+      if (!y_reader.eof()) y_reader.readEntry(y_entry);
     }
   }
 
