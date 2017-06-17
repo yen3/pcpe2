@@ -366,8 +366,8 @@ void ConstructSmallSeqHash(const FilePath& filepath,
     if (task != nullptr && CheckFileExists(task->getOutput().c_str())) {
       hash_filepaths.emplace_back(task->getOutput());
     } else {
-      LOG_WARNING() << "The output file does not exsit: "
-                    << task->getOutput() << std::endl;
+      LOG_WARNING() << "The output file does not exsit: " << task->getOutput()
+                    << std::endl;
     }
   }
 }
@@ -394,6 +394,16 @@ void CompareHashTableFileTask::exec() {
       !CheckFileNotEmpty(y_filepath_.c_str()))
     return;
 
+  auto write_comsubseq = [](const Value& x_value, const Value& y_value,
+                            ComSubseqFileWriter& writer) {
+    for (const auto& x : x_value) {
+      for (const auto& y : y_value) {
+        writer.writeSeq(
+            ComSubseq(x.idx, y.idx, x.loc, y.loc, gEnv.getSmallSeqLength()));
+      }
+    }
+  };
+
   SmallSeqHashFileReader x_reader(x_filepath_);
   SmallSeqHashFileReader y_reader(y_filepath_);
 
@@ -405,30 +415,29 @@ void CompareHashTableFileTask::exec() {
 
   ComSubseqFileWriter writer(output_);
   while (!x_reader.eof() || !y_reader.eof()) {
-    if (x_entry.first > y_entry.first) {
-      if (!y_reader.eof()) {
-        y_reader.readEntry(y_entry);
-      }
-    } else if (x_entry.first < y_entry.first) {
-      if (!x_reader.eof()) {
-        x_reader.readEntry(x_entry);
-      }
-    } else {
-      for (const auto& x : x_entry.second) {
-        for (const auto& y : y_entry.second) {
-          writer.writeSeq(
-              ComSubseq(x.idx, y.idx, x.loc, y.loc, gEnv.getSmallSeqLength()));
-        }
-      }
+    if (x_entry.first == y_entry.first) {
+      write_comsubseq(x_entry.second, y_entry.second, writer);
 
       if (!x_reader.eof()) x_reader.readEntry(x_entry);
       if (!y_reader.eof()) y_reader.readEntry(y_entry);
     }
+    else if (x_reader.eof())                y_reader.readEntry(y_entry);
+    else if (y_reader.eof())                x_reader.readEntry(x_entry);
+    else if (x_entry.first > y_entry.first) y_reader.readEntry(y_entry);
+    else if (x_entry.first < y_entry.first) x_reader.readEntry(x_entry);
+  }
+
+  // Deal the last entry
+  if (x_entry.first == y_entry.first) {
+    write_comsubseq(x_entry.second, y_entry.second, writer);
   }
 
   x_reader.close();
   y_reader.close();
   writer.close();
+
+  LOG_INFO() << "Compare " << x_filepath_ << " and " << y_filepath_ << " done."
+             << std::endl;
 }
 
 void ConstructCompareHashTableFileTask(
@@ -456,9 +465,12 @@ void CompareSmallSeqHash(const std::vector<FilePath>& x_filepaths,
   std::vector<std::unique_ptr<CompareHashTableFileTask>> tasks;
   ConstructCompareHashTableFileTask(x_filepaths, y_filepaths, tasks);
 
+  // Run the tasks
+  RunSimpleTasks(tasks);
+
   // Return the outputfiles
   for (const auto& task : tasks)
-    if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
+    if (task != nullptr && CheckFileNotEmpty(task->getOutput().c_str()))
       result_filepaths.emplace_back(task->getOutput());
 }
 

@@ -45,12 +45,7 @@ class SmallSeqHashFileReader {
 
   bool is_open() const { return infile_.is_open() || used_buffer_size_ < buffer_size_; }
 
-  bool eof() {
-    if (is_open())
-      return false;
-    else
-      return used_buffer_size_ >= buffer_size_;
-  }
+  bool eof() { return !is_open(); }
 
   void close() {
     if (infile_.is_open()) infile_.close();

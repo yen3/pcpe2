@@ -18,6 +18,9 @@ extern void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
 extern void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
                                std::size_t seqs_end,
                                SmallSeqs& smallseqs);
+extern void CompareSmallSeqHash(const std::vector<FilePath>& x_filepaths,
+                                const std::vector<FilePath>& y_filepaths,
+                                std::vector<FilePath>& result_filepaths);
 extern void ComapreHashSmallSeqs(const SmallSeqLocList& xs,
                                  const SmallSeqLocList& ys,
                                  const FilePath& ofilepath);
@@ -728,6 +731,103 @@ TEST(compare_subseq, test_construct_small_seq_hash_files_4) {
 
     ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
   }
+}
+
+TEST(compare_subseq, test_compare_small_seq_hash_1) {
+  // Prepare input files
+  std::vector<FilePath> x_hash_paths;
+  std::vector<FilePath> y_hash_paths;
+
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+    gEnv.setTempFolderPath("testoutput");
+
+    ConstructSmallSeqHash("testdata/test_seq1.txt", x_hash_paths);
+    ConstructSmallSeqHash("testdata/test_seq2.txt", y_hash_paths);
+
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+  std::vector<FilePath> compare_paths;
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+    gEnv.setTempFolderPath("testoutput");
+    CompareSmallSeqHash(x_hash_paths, y_hash_paths, compare_paths);
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+  ASSERT_EQ(1UL, compare_paths.size());
+
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(0, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 3, 1, 6));
+
+  const FilePath& output_path = compare_paths[0];
+  std::vector<ComSubseq> com_seqs;
+  ReadComSubseqFile(output_path, com_seqs);
+
+  ASSERT_EQ(ans.size(), com_seqs.size());
+  std::sort(com_seqs.begin(), com_seqs.end());
+  for (std::size_t i = 0; i < ans.size(); ++i) ASSERT_EQ(ans[i], com_seqs[i]);
+}
+
+TEST(compare_subseq, test_compare_small_seq_hash_2) {
+  // Prepare input files
+  std::vector<FilePath> x_hash_paths;
+  std::vector<FilePath> y_hash_paths;
+
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+    uint32_t saved_compare_seq_size = gEnv.getCompareSeqenceSize();
+    gEnv.setTempFolderPath("testoutput");
+    gEnv.setCompareSeqenceSize(1);
+
+    ConstructSmallSeqHash("testdata/test_seq1.txt", x_hash_paths);
+    ConstructSmallSeqHash("testdata/test_seq2.txt", y_hash_paths);
+
+    gEnv.setCompareSeqenceSize(saved_compare_seq_size);
+    gEnv.setTempFolderPath(saved_temp);
+
+    ASSERT_EQ(3UL, x_hash_paths.size());
+    ASSERT_EQ(2UL, y_hash_paths.size());
+  }
+
+  std::vector<FilePath> compare_paths;
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+
+    gEnv.setTempFolderPath("testoutput");
+
+    CompareSmallSeqHash(x_hash_paths, y_hash_paths, compare_paths);
+
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+
+  std::vector<ComSubseq> ans;
+  ans.push_back(ComSubseq(0, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(1, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 0, 1, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 2, 0, 6));
+  ans.push_back(ComSubseq(2, 1, 3, 1, 6));
+
+  ASSERT_EQ(5UL, compare_paths.size());
+  std::vector<ComSubseq> com_seqs;
+
+  for (const auto& f : compare_paths) {
+    std::vector<ComSubseq> read_seqs;
+    ReadComSubseqFile(f, read_seqs);
+    com_seqs.insert(com_seqs.end(), read_seqs.begin(), read_seqs.end());
+  }
+
+  ASSERT_EQ(ans.size(), com_seqs.size());
+  std::sort(com_seqs.begin(), com_seqs.end());
+  for (std::size_t i = 0; i < ans.size(); ++i) ASSERT_EQ(ans[i], com_seqs[i]);
 }
 
 }  // namespace pcpe
