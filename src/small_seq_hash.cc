@@ -84,7 +84,8 @@ void SmallSeqHashFileReader::readBuffer() {
   }
 }
 
-bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key, Value& value) {
+bool SmallSeqHashFileReader::readEntry(SmallSeqHashIndex& key,
+                                       SeqLocList& value) {
   if (!is_open()) {
     LOG_ERROR() << "The file is closed!" << std::endl;
     return false;
@@ -167,7 +168,7 @@ void SmallSeqHashFileWriter::writeBuffer() {
 }
 
 bool SmallSeqHashFileWriter::writeEntry(const SmallSeqHashIndex key,
-                                        const Value& value) {
+                                        const SeqLocList& value) {
   if (value.empty()) return true;
 
   if (!is_open()) return false;
@@ -396,7 +397,8 @@ void CompareHashTableFileTask::exec() {
       !CheckFileNotEmpty(y_filepath_.c_str()))
     return;
 
-  auto write_comsubseq = [](const Value& x_value, const Value& y_value,
+  auto write_comsubseq = [](const SeqLocList& x_value,
+                            const SeqLocList& y_value,
                             ComSubseqFileWriter& writer) {
     for (const auto& x : x_value) {
       for (const auto& y : y_value) {
@@ -409,10 +411,10 @@ void CompareHashTableFileTask::exec() {
   SmallSeqHashFileReader x_reader(x_filepath_);
   SmallSeqHashFileReader y_reader(y_filepath_);
 
-  std::pair<SmallSeqHashIndex, Value> x_entry;
+  std::pair<SmallSeqHashIndex, SeqLocList> x_entry;
   x_reader.readEntry(x_entry);
 
-  std::pair<SmallSeqHashIndex, Value> y_entry;
+  std::pair<SmallSeqHashIndex, SeqLocList> y_entry;
   y_reader.readEntry(y_entry);
 
   ComSubseqFileWriter writer(output_);

@@ -18,7 +18,8 @@ struct SeqLoc;
 
 using SmallSeqHashIndex = uint32_t;
 using Value = std::vector<SeqLoc>;
-using SmallSeqList = std::map<SmallSeqHashIndex, Value>;
+using SeqLocList = std::vector<SeqLoc>;
+using SmallSeqList = std::map<SmallSeqHashIndex, SeqLocList>;
 
 struct SeqLoc {
   SeqLoc() : idx(0), loc(0) {}
@@ -34,8 +35,8 @@ class SmallSeqHashFileReader {
   ~SmallSeqHashFileReader() { close(); }
 
   /// Return true to present a valid read.
-  bool readEntry(SmallSeqHashIndex& key, Value& value);
-  bool readEntry(std::pair<SmallSeqHashIndex, Value>& entry) {
+  bool readEntry(SmallSeqHashIndex& key, SeqLocList& value);
+  bool readEntry(std::pair<SmallSeqHashIndex, SeqLocList>& entry) {
     return readEntry(entry.first, entry.second);
   }
 
@@ -71,8 +72,8 @@ class SmallSeqHashFileWriter {
   ~SmallSeqHashFileWriter() { close(); }
 
   /// Return true to present a valid write.
-  bool writeEntry(const SmallSeqHashIndex key, const Value& value);
-  bool writeEntry(const std::pair<SmallSeqHashIndex, Value>& entry) {
+  bool writeEntry(const SmallSeqHashIndex key, const SeqLocList& value);
+  bool writeEntry(const std::pair<SmallSeqHashIndex, SeqLocList>& entry) {
     return writeEntry(entry.first, entry.second);
   }
 

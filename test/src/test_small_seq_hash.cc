@@ -46,7 +46,7 @@ void ReadSmallSeqs(const FilePath& ifilepath, SmallSeqList& ss) {
   SmallSeqHashFileReader reader(ifilepath);
   while (!reader.eof()) {
     SmallSeqHashIndex index;
-    Value value;
+    SeqLocList value;
     reader.readEntry(index, value);
 
     for (const auto& v : value) {
@@ -245,7 +245,7 @@ TEST(compare_subseq, test_read_smallseqs_2_1) {
   ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1UL);
 
   {
-    Value& idxlocs = seqs[HashSmallSeq("ABCDEF")];
+    SeqLocList& idxlocs = seqs[HashSmallSeq("ABCDEF")];
 
     ASSERT_EQ(idxlocs.size(), 3UL);
 
@@ -258,7 +258,7 @@ TEST(compare_subseq, test_read_smallseqs_2_1) {
   }
 
   {
-    Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
+    SeqLocList& idxlocs = seqs[HashSmallSeq("BCDEFG")];
 
     ASSERT_EQ(idxlocs.size(), 3UL);
 
@@ -271,7 +271,7 @@ TEST(compare_subseq, test_read_smallseqs_2_1) {
   }
 
   {
-    Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
+    SeqLocList& idxlocs = seqs[HashSmallSeq("CDEFGH")];
 
     ASSERT_EQ(idxlocs.size(), 2UL);
 
@@ -282,7 +282,7 @@ TEST(compare_subseq, test_read_smallseqs_2_1) {
   }
 
   {
-    Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
+    SeqLocList& idxlocs = seqs[HashSmallSeq("DEFGHI")];
 
     ASSERT_EQ(idxlocs.size(), 1UL);
 
@@ -314,7 +314,7 @@ TEST(compare_subseq, test_read_smallseqs_2_2) {
   ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1UL);
 
   {
-    Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
+    SeqLocList& idxlocs = seqs[HashSmallSeq("BCDEFG")];
 
     ASSERT_EQ(idxlocs.size(), 1UL);
 
@@ -323,7 +323,7 @@ TEST(compare_subseq, test_read_smallseqs_2_2) {
   }
 
   {
-    Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
+    SeqLocList& idxlocs = seqs[HashSmallSeq("CDEFGH")];
 
     ASSERT_EQ(idxlocs.size(), 1UL);
 
@@ -332,7 +332,7 @@ TEST(compare_subseq, test_read_smallseqs_2_2) {
   }
 
   {
-    Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
+    SeqLocList& idxlocs = seqs[HashSmallSeq("DEFGHI")];
 
     ASSERT_EQ(idxlocs.size(), 1UL);
 
