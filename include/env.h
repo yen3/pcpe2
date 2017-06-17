@@ -32,10 +32,12 @@ class Env {
   const FilePath& getTempFolderPath() const { return temp_folder_; }
 
   void setIOBufferSize(uint32_t size) {
-    io_buffer_size_ = size / sizeof(uint32_t) * sizeof(uint32_t);
+    io_buffer_size_ =
+        size / (uint32_t)sizeof(uint32_t) * (uint32_t)sizeof(uint32_t);
   }
   void setBufferSize(uint32_t size) {
-    buffer_size_ = size / sizeof(uint32_t) * sizeof(uint32_t);
+    buffer_size_ =
+        size / (uint32_t)sizeof(uint32_t) * (uint32_t)sizeof(uint32_t);
   }
   void setTempFolderPath(const FilePath& path) { temp_folder_ = path; }
   void setCompareSeqenceSize(uint32_t size) { compare_seq_unit_size_ = size; }
