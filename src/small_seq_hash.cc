@@ -317,6 +317,7 @@ void CreateHashTableFileTask::exec() {
   for (const auto& kv : small_seqs) {
     writer.writeEntry(kv.first, kv.second);
   }
+  writer.close();
 }
 
 void ConstructHashTableFileTasks(
@@ -326,6 +327,10 @@ void ConstructHashTableFileTasks(
 
   std::vector<std::size_t> steps;
   GetStepsToNumber(ss.size(), kSeqSize, steps);
+  if (steps.size() <= 1) {
+    LOG_ERROR() << "Split seqeuence task error!" << std::endl;
+    return;
+  }
 
   static std::size_t curr_index = 0;
   const FilePath& kTempFolderPrefix = gEnv.getTempFolderPath();
@@ -357,9 +362,14 @@ void ConstructSmallSeqHash(const FilePath& filepath,
   RunSimpleTasks(tasks);
 
   // Return the output files
-  for (const auto& task : tasks)
-    if (task != nullptr && CheckFileExists(task->getOutput().c_str()))
+  for (const auto& task : tasks) {
+    if (task != nullptr && CheckFileExists(task->getOutput().c_str())) {
       hash_filepaths.emplace_back(task->getOutput());
+    } else {
+      LOG_WARNING() << "The output file does not exsit: "
+                    << task->getOutput() << std::endl;
+    }
+  }
 }
 
 class CompareHashTableFileTask {

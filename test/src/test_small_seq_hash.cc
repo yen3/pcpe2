@@ -15,6 +15,9 @@ extern void ReadSequences(const FilePath& filepath, SeqList& seqs);
 extern void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
                                std::size_t seqs_end,
                                SmallSeqLocList& smallseqs);
+extern void ConstructSmallSeqs(const SeqList& seqs, std::size_t seqs_begin,
+                               std::size_t seqs_end,
+                               SmallSeqs& smallseqs);
 extern void ComapreHashSmallSeqs(const SmallSeqLocList& xs,
                                  const SmallSeqLocList& ys,
                                  const FilePath& ofilepath);
@@ -318,8 +321,6 @@ TEST(compare_subseq, test_small_hash_table_reader) {
 }
 
 TEST(compare_subseq, test_small_hash_table_reader_small_buffer) {
-  InitLogging(LoggingLevel::kDebug);
-
   SmallSeqs seqs;
   seqs[0].emplace_back(SeqLoc(1, 0));
   seqs[2].emplace_back(SeqLoc(2, 0));
@@ -343,8 +344,6 @@ TEST(compare_subseq, test_small_hash_table_reader_small_buffer) {
 }
 
 TEST(compare_subseq, test_small_hash_table_reader_minimal_buffer) {
-  InitLogging(LoggingLevel::kDebug);
-
   SmallSeqs seqs;
   seqs[0].emplace_back(SeqLoc(1, 0));
   seqs[2].emplace_back(SeqLoc(2, 0));
@@ -447,6 +446,288 @@ TEST(compare_subseq, test_small_hash_table_writer_minimal_buffer) {
   SmallSeqs read_seqs;
   ReadSmallSeqs(output_path, read_seqs);
   ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+}
+
+TEST(compare_subseq, test_read_smallseqs_2_1) {
+  FilePath filepath = "testdata/test_seq1.txt";
+  SeqList seq_list;
+  ReadSequences(filepath, seq_list);
+
+  //SmallSeqLocList seqs;
+  SmallSeqs seqs;
+  ConstructSmallSeqs(seq_list, 0, seq_list.size(), seqs);
+
+  // Check the correct key size
+  ASSERT_EQ(seqs.size(), 4UL);
+
+  // Check keys exist
+  ASSERT_NE(seqs.find(HashSmallSeq("ABCDEF")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("BCDEFG")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("CDEFGH")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("DEFGHI")), seqs.end());
+
+  // Check all idx& locations are saved
+  ASSERT_EQ(seqs[HashSmallSeq("ABCDEF")].size(), 3UL);
+  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 3UL);
+  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 2UL);
+  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1UL);
+
+  {
+    Value& idxlocs = seqs[HashSmallSeq("ABCDEF")];
+
+    ASSERT_EQ(idxlocs.size(), 3UL);
+
+    ASSERT_EQ(idxlocs[0].idx, 0U);
+    ASSERT_EQ(idxlocs[0].loc, 0U);
+    ASSERT_EQ(idxlocs[1].idx, 1U);
+    ASSERT_EQ(idxlocs[1].loc, 0U);
+    ASSERT_EQ(idxlocs[2].idx, 2U);
+    ASSERT_EQ(idxlocs[2].loc, 0U);
+  }
+
+  {
+    Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
+
+    ASSERT_EQ(idxlocs.size(), 3UL);
+
+    ASSERT_EQ(idxlocs[0].idx, 0U);
+    ASSERT_EQ(idxlocs[0].loc, 1U);
+    ASSERT_EQ(idxlocs[1].idx, 1U);
+    ASSERT_EQ(idxlocs[1].loc, 1U);
+    ASSERT_EQ(idxlocs[2].idx, 2U);
+    ASSERT_EQ(idxlocs[2].loc, 1U);
+  }
+
+  {
+    Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
+
+    ASSERT_EQ(idxlocs.size(), 2UL);
+
+    ASSERT_EQ(idxlocs[0].idx, 1U);
+    ASSERT_EQ(idxlocs[0].loc, 2U);
+    ASSERT_EQ(idxlocs[1].idx, 2U);
+    ASSERT_EQ(idxlocs[1].loc, 2U);
+  }
+
+  {
+    Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
+
+    ASSERT_EQ(idxlocs.size(), 1UL);
+
+    ASSERT_EQ(idxlocs[0].idx, 2U);
+    ASSERT_EQ(idxlocs[0].loc, 3U);
+  }
+}
+
+TEST(compare_subseq, test_read_smallseqs_2_2) {
+  FilePath filepath = "testdata/test_seq2.txt";
+
+  SeqList seq_list;
+  ReadSequences(filepath, seq_list);
+
+  SmallSeqs seqs;
+  ConstructSmallSeqs(seq_list, 0, seq_list.size(), seqs);
+
+  // Check the correct key size
+  ASSERT_EQ(seqs.size(), 3UL);
+
+  // Check keys exist
+  ASSERT_NE(seqs.find(HashSmallSeq("BCDEFG")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("CDEFGH")), seqs.end());
+  ASSERT_NE(seqs.find(HashSmallSeq("DEFGHI")), seqs.end());
+
+  // Check all idx& locations are saved
+  ASSERT_EQ(seqs[HashSmallSeq("BCDEFG")].size(), 1UL);
+  ASSERT_EQ(seqs[HashSmallSeq("CDEFGH")].size(), 1UL);
+  ASSERT_EQ(seqs[HashSmallSeq("DEFGHI")].size(), 1UL);
+
+  {
+    Value& idxlocs = seqs[HashSmallSeq("BCDEFG")];
+
+    ASSERT_EQ(idxlocs.size(), 1UL);
+
+    ASSERT_EQ(idxlocs[0].idx, 0U);
+    ASSERT_EQ(idxlocs[0].loc, 0U);
+  }
+
+  {
+    Value& idxlocs = seqs[HashSmallSeq("CDEFGH")];
+
+    ASSERT_EQ(idxlocs.size(), 1UL);
+
+    ASSERT_EQ(idxlocs[0].idx, 1U);
+    ASSERT_EQ(idxlocs[0].loc, 0U);
+  }
+
+  {
+    Value& idxlocs = seqs[HashSmallSeq("DEFGHI")];
+
+    ASSERT_EQ(idxlocs.size(), 1UL);
+
+    ASSERT_EQ(idxlocs[0].idx, 1U);
+    ASSERT_EQ(idxlocs[0].loc, 1U);
+  }
+}
+
+TEST(compare_subseq, test_construct_small_seq_hash_files_1) {
+  FilePath filepath = "testdata/test_seq1.txt";
+
+  std::vector<FilePath> ht_paths;
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+    gEnv.setTempFolderPath("testoutput/");
+
+    ConstructSmallSeqHash(filepath, ht_paths);
+
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+  ASSERT_EQ(1UL, ht_paths.size());
+
+  const FilePath& ofilepath = ht_paths[0];
+  ASSERT_TRUE(CheckFileExists(ofilepath.c_str()));
+
+  SmallSeqs seqs;
+  seqs[61288890].emplace_back(SeqLoc(0, 0));
+  seqs[61288890].emplace_back(SeqLoc(1, 0));
+  seqs[61288890].emplace_back(SeqLoc(2, 0));
+
+  seqs[73645521].emplace_back(SeqLoc(0, 1));
+  seqs[73645521].emplace_back(SeqLoc(1, 1));
+  seqs[73645521].emplace_back(SeqLoc(2, 1));
+
+  seqs[86002152].emplace_back(SeqLoc(1, 2));
+  seqs[86002152].emplace_back(SeqLoc(2, 2));
+
+  seqs[98358783].emplace_back(SeqLoc(2, 3));
+
+  SmallSeqs read_seqs;
+  ReadSmallSeqs(ofilepath, read_seqs);
+
+  ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+}
+
+TEST(compare_subseq, test_construct_small_seq_hash_files_2) {
+  FilePath filepath = "testdata/test_seq1.txt";
+
+  std::vector<FilePath> ht_paths;
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+    uint32_t saved_compare_seq_size = gEnv.getCompareSeqenceSize();
+
+    gEnv.setTempFolderPath("testoutput/");
+    gEnv.setCompareSeqenceSize(2);
+
+    ConstructSmallSeqHash(filepath, ht_paths);
+
+    gEnv.setCompareSeqenceSize(saved_compare_seq_size);
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+  ASSERT_EQ(2UL, ht_paths.size());
+  {
+    const FilePath& ofilepath = ht_paths[0];
+
+    SmallSeqs seqs;
+    seqs[61288890].emplace_back(SeqLoc(0, 0));
+    seqs[61288890].emplace_back(SeqLoc(1, 0));
+    seqs[73645521].emplace_back(SeqLoc(0, 1));
+    seqs[73645521].emplace_back(SeqLoc(1, 1));
+    seqs[86002152].emplace_back(SeqLoc(1, 2));
+
+    SmallSeqs read_seqs;
+    ReadSmallSeqs(ofilepath, read_seqs);
+
+    ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+  }
+  {
+    const FilePath& ofilepath = ht_paths[1];
+
+    SmallSeqs seqs;
+    seqs[61288890].emplace_back(SeqLoc(2, 0));
+    seqs[73645521].emplace_back(SeqLoc(2, 1));
+    seqs[86002152].emplace_back(SeqLoc(2, 2));
+    seqs[98358783].emplace_back(SeqLoc(2, 3));
+
+
+    SmallSeqs read_seqs;
+    ReadSmallSeqs(ofilepath, read_seqs);
+
+    ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+  }
+}
+
+TEST(compare_subseq, test_construct_small_seq_hash_files_3) {
+  FilePath filepath = "testdata/test_seq2.txt";
+
+  std::vector<FilePath> ht_paths;
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+    gEnv.setTempFolderPath("testoutput/");
+
+    ConstructSmallSeqHash(filepath, ht_paths);
+
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+  ASSERT_EQ(1UL, ht_paths.size());
+
+  const FilePath& ofilepath = ht_paths[0];
+  ASSERT_TRUE(CheckFileExists(ofilepath.c_str()));
+
+  SmallSeqs seqs;
+  seqs[73645521].emplace_back(SeqLoc(0, 0));
+  seqs[86002152].emplace_back(SeqLoc(1, 0));
+  seqs[98358783].emplace_back(SeqLoc(1, 1));
+
+  SmallSeqs read_seqs;
+  ReadSmallSeqs(ofilepath, read_seqs);
+
+  ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+}
+
+TEST(compare_subseq, test_construct_small_seq_hash_files_4) {
+  FilePath filepath = "testdata/test_seq2.txt";
+
+  std::vector<FilePath> ht_paths;
+  {
+    FilePath saved_temp = gEnv.getTempFolderPath();
+    uint32_t saved_compare_seq_size = gEnv.getCompareSeqenceSize();
+
+    gEnv.setTempFolderPath("testoutput/");
+    gEnv.setCompareSeqenceSize(1);
+
+    ConstructSmallSeqHash(filepath, ht_paths);
+
+    gEnv.setCompareSeqenceSize(saved_compare_seq_size);
+    gEnv.setTempFolderPath(saved_temp);
+  }
+
+  ASSERT_EQ(2UL, ht_paths.size());
+
+  {
+    const FilePath& ofilepath = ht_paths[0];
+
+    SmallSeqs seqs;
+    seqs[73645521].emplace_back(SeqLoc(0, 0));
+
+    SmallSeqs read_seqs;
+    ReadSmallSeqs(ofilepath, read_seqs);
+
+    ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+  }
+  {
+    const FilePath& ofilepath = ht_paths[1];
+
+    SmallSeqs seqs;
+    seqs[86002152].emplace_back(SeqLoc(1, 0));
+    seqs[98358783].emplace_back(SeqLoc(1, 1));
+
+    SmallSeqs read_seqs;
+    ReadSmallSeqs(ofilepath, read_seqs);
+
+    ASSERT_TRUE(IsSameSmallSeqs(read_seqs, seqs));
+  }
 }
 
 }  // namespace pcpe
