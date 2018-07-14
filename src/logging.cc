@@ -125,11 +125,13 @@ static const char* GetLoggingLevelStr(LoggingLevel level) {
 
 void LogRecorder::record(LoggingLevel level, const char* filename,
                          uint32_t lineno, const char* msg) {
-  if (out_obj_ != nullptr && level <= filter_level_) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    out_obj_->stream() << "[" << GetLoggingLevelStr(level) << ":" << filename
-                       << ":" << lineno << "]: " << msg;
-  }
+
+  if (out_obj_ == nullptr || level > filter_level_)
+    return;
+
+  std::lock_guard<std::mutex> lock(mutex_);
+  out_obj_->stream() << "[" << GetLoggingLevelStr(level) << ":" << filename
+                     << ":" << lineno << "]: " << msg;
 
   if (level == LoggingLevel::kFatal) std::exit(1);
 }
